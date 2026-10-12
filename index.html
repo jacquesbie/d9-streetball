@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D9 Streetball Stats</title>
+<meta name="description" content="Stats fra vores pickup-kampe: box scores, pivot og makkerpar.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500&display=swap">
+<style>/* Court-blue neutrals (the hall floor) with a basketball-orange accent. */
+:root {
+  --color-bg: #eef2f6; --color-panel: #ffffff; --color-fg: #18212b; --color-fg-muted: #5a6676;
+  --color-border-line: #d9e0e8; --color-ok: #1f7a4d; --color-warn: #9a6200; --color-bad: #c0392b;
+  --d9-accent: #c95b1e;
+  --font-anthropic-sans: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --font-anthropic-serif: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+  --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 14px; --cds-gap-lg: 22px;
+  --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-md: 12px; --cds-pad-lg: 18px;
+  --cds-font-size-caption: 0.8rem; --cds-font-size-body: 0.95rem; --cds-font-size-heading: 1.1rem; --cds-font-size-title: 2rem;
+  --cds-font-weight-medium: 600; --cds-radius: 10px;
+  --cds-surface-popover: #ffffff; --cds-border: #d9e0e8; --cds-shadow-popover: 0 6px 20px rgba(20, 30, 45, .14);
+  --cds-text-secondary: #5a6676; --cds-chart-axis: #b7c1cc; --cds-dur-slow: 300ms;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --color-bg: #10151b; --color-panel: #18202a; --color-fg: #e6ebf1; --color-fg-muted: #98a4b3;
+  --color-border-line: #2a3442; --color-ok: #4cc38a; --color-warn: #e0a43a; --color-bad: #ef6a5a;
+  --d9-accent: #f0894a; --cds-surface-popover: #1f2934; --cds-border: #33404f; --cds-shadow-popover: 0 6px 20px rgba(0, 0, 0, .45);
+  --cds-text-secondary: #98a4b3; --cds-chart-axis: #3d4a5a; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --color-bg: #10151b; --color-panel: #18202a; --color-fg: #e6ebf1; --color-fg-muted: #98a4b3;
+  --color-border-line: #2a3442; --color-ok: #4cc38a; --color-warn: #e0a43a; --color-bad: #ef6a5a;
+  --d9-accent: #f0894a; --cds-surface-popover: #1f2934; --cds-border: #33404f; --cds-shadow-popover: 0 6px 20px rgba(0, 0, 0, .45);
+  --cds-text-secondary: #98a4b3; --cds-chart-axis: #3d4a5a; color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); font-size: 15px; line-height: 1.45;
+  padding-inline: 16px; padding-block: 24px 48px; }
+.d9-page { max-width: 1240px; margin-inline: auto; }
+.d9-foot { margin-top: var(--cds-gap-lg); color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.dash-skeleton { color: transparent !important; background: var(--color-border-line); border-radius: 6px; }
+@media (min-width: 900px) { body { padding-inline: 32px; } }
+
+
+/* Layout: header + tiles, then the pivot (controls, table, bar chart), then insights, duos and games. */
+.d9 { display: grid; gap: var(--cds-gap-lg); font-family: var(--font-anthropic-sans); }
+.d9 h1, .d9 h2, .d9 h3 { margin: 0; text-wrap: balance; }
+.d9-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); }
+.d9-take { margin: var(--cds-gap-xs) 0 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); max-width: 70ch; }
+.d9-take b, .d9-ins b { font-weight: 600; }
+.d9-tiles { display: grid; gap: var(--cds-gap-md); grid-template-columns: 1fr; }
+@media (min-width: 460px) { .d9-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 760px) { .d9-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.d9-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); align-content: start; }
+.d9-tile .lbl { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.d9-tile .big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.15; }
+.d9-tile .sub { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.d9-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-md); min-width: 0; }
+.d9-card h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+.d9-note { margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); max-width: 80ch; }
+.d9-controls { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-md); align-items: end; }
+.d9-field { display: grid; gap: 4px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.d9-field select, .d9-field input[type=number] { font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 6px 8px; min-width: 9rem; }
+.d9-field input[type=number] { min-width: 0; width: 5rem; }
+.d9-check { display: flex; gap: 6px; align-items: center; font-size: var(--cds-font-size-body); color: var(--color-fg); padding-bottom: 6px; }
+.d9-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.d9-chip, .d9-preset, .d9-reset { font: inherit; font-size: var(--cds-font-size-caption); cursor: pointer; border: 1px solid var(--color-border-line); background: var(--color-bg); color: var(--color-fg); border-radius: 999px; padding: 5px 12px; }
+.d9-chip[aria-pressed=true] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+.d9-preset:hover, .d9-chip:hover, .d9-reset:hover { border-color: var(--color-fg-muted); }
+.d9-chip:focus-visible, .d9-preset:focus-visible, .d9-reset:focus-visible, .d9 th button:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+.d9-presets { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.d9-presets .lbl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-right: 4px; }
+.d9-grid2 { display: grid; gap: var(--cds-gap-md); grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); align-items: start; }
+.d9-scroll { overflow: auto; max-height: 34rem; min-width: 0; }
+.d9 table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: var(--cds-font-size-body); font-variant-numeric: tabular-nums; }
+.d9 th, .d9 td { padding: 6px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--color-border-line); }
+.d9 th:first-child, .d9 td:first-child { text-align: left; position: sticky; left: 0; background: var(--color-panel); }
+.d9 thead th { position: sticky; top: 0; background: var(--color-panel); font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); z-index: 1; }
+.d9 thead th:first-child { z-index: 2; }
+.d9 th button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.d9 th[aria-sort] button::after { content: " ↓"; }
+.d9 th[aria-sort=ascending] button::after { content: " ↑"; }
+.d9 td.tot, .d9 th.tot { font-weight: 600; }
+.d9 td.n { color: var(--color-fg-muted); }
+.d9 td.na { color: var(--color-fg-muted); }
+.d9-wrap td { white-space: normal; text-align: left; min-width: 10rem; }
+.d9-wrap td.num { text-align: right; min-width: 0; white-space: nowrap; }
+.d9-wrap td.sh { min-width: 0; white-space: nowrap; }
+.d9-chart { position: relative; min-height: 14rem; }
+.d9-chart svg { display: block; }
+.d9-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 3; }
+.d9-tip .k { color: var(--cds-text-secondary); }
+.d9-ins { margin: 0; padding-left: 1.1rem; display: grid; gap: var(--cds-gap-sm); max-width: 80ch; }
+.d9-pill { display: inline-block; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); border-radius: 999px; padding: 1px 8px; }
+.d9-pill.ok { color: var(--color-ok); } .d9-pill.warn { color: var(--color-warn); }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.d9-fail { display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); min-height: 6rem; }
+.d9-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+</style>
+</head>
+<body>
+<div class="d9-page">
+
+
+<div class="d9">
+  <header id="top">
+    <h1 class="d9-title">D9 Streetball Stats</h1>
+    <p class="d9-take"><b data-source="overview" data-field="games" data-row="0" class="dash-skeleton">—</b> kampe på
+      <b data-source="overview" data-field="days" data-row="0" class="dash-skeleton">—</b> spilledage med
+      <b data-source="overview" data-field="players" data-row="0" class="dash-skeleton">—</b> spillere. Hvid har vundet
+      <b data-source="overview" data-field="hvid_wins" data-row="0" class="dash-skeleton">—</b> af dem. Vælg selv rækker, kolonner og tal i pivoten nedenfor.</p>
+  </header>
+
+  <section class="d9-tiles" id="leaders" aria-label="Rekorder">
+    <div class="d9-tile"><span class="lbl">Flest point pr. kamp (min. 2 kampe)</span>
+      <span class="big" data-source="leaders" data-where="kind=ppg" data-field="player">—</span>
+      <span class="sub"><span data-source="leaders" data-where="kind=ppg" data-field="value">—</span> point i snit over <span data-source="leaders" data-where="kind=ppg" data-field="gp">—</span> kampe</span></div>
+    <div class="d9-tile"><span class="lbl">Bedste FG% (min. 15 forsøg)</span>
+      <span class="big" data-source="leaders" data-where="kind=fg" data-field="player">—</span>
+      <span class="sub"><span data-source="leaders" data-where="kind=fg" data-field="value">—</span> % af <span data-source="leaders" data-where="kind=fg" data-field="att">—</span> skudforsøg</span></div>
+    <div class="d9-tile"><span class="lbl">Flest rebounds pr. kamp (min. 2 kampe)</span>
+      <span class="big" data-source="leaders" data-where="kind=rpg" data-field="player">—</span>
+      <span class="sub"><span data-source="leaders" data-where="kind=rpg" data-field="value">—</span> i snit over <span data-source="leaders" data-where="kind=rpg" data-field="gp">—</span> kampe med data</span></div>
+    <div class="d9-tile"><span class="lbl">Bedste pointforskel pr. kamp (min. 3 kampe)</span>
+      <span class="big" data-source="leaders" data-where="kind=margin" data-field="player">—</span>
+      <span class="sub">Holdet vandt med <span data-source="leaders" data-where="kind=margin" data-field="value">—</span> i snit over <span data-source="leaders" data-where="kind=margin" data-field="gp">—</span> kampe</span></div>
+    <div class="d9-tile"><span class="lbl">Bedste sejrsprocent (min. 3 kampe)</span>
+      <span class="big" data-source="leaders" data-where="kind=winpct" data-field="player">—</span>
+      <span class="sub"><span data-source="leaders" data-where="kind=winpct" data-field="value">—</span> % sejre i <span data-source="leaders" data-where="kind=winpct" data-field="gp">—</span> kampe</span></div>
+    <div class="d9-tile"><span class="lbl">Bedste enkeltkamp (point)</span>
+      <span class="big" data-source="leaders" data-where="kind=best" data-field="player">—</span>
+      <span class="sub"><span data-source="leaders" data-where="kind=best" data-field="value">—</span> point · <span data-source="leaders" data-where="kind=best" data-field="game">—</span></span></div>
+  </section>
+
+  <section class="d9-card" id="boxscore" aria-labelledby="box-h">
+    <div>
+      <h2 id="box-h">Box score</h2>
+      <p class="d9-note">Alle tal pr. spiller. "Pr. kamp" er gennemsnit over de kampe, hvor tallet blev målt. Rebounds findes for august og september (kun sikre tildelinger), ikke for juli. Assists er for lave, fordi afleveringer sjældent kan ses på optagelsen. Steals, blocks og turnovers tælles ikke: de kan ikke måles pålideligt.</p>
+    </div>
+    <div class="d9-controls">
+      <label class="d9-field" for="d9-box-scope">Kampe<select id="d9-box-scope" data-source="games"></select></label>
+      <div class="d9-field">Visning<div class="d9-chips" id="d9-box-mode">
+        <button class="d9-chip" data-mode="pergame">Pr. kamp</button>
+        <button class="d9-chip" data-mode="sum">I alt</button>
+      </div></div>
+    </div>
+    <div class="d9-scroll" id="box-table" data-source="player_games"></div>
+  </section>
+
+  <section class="d9-card" id="pivot" aria-labelledby="pivot-h">
+    <div>
+      <h2 id="pivot-h">Pivot: vend og drej tallene</h2>
+      <p class="d9-note">Hver kamp er dato + kampnummer, så to kampe med samme resultat på forskellige dage holdes adskilt. "Kamp nr. på dagen" samler alle 1.-kampe, 2.-kampe osv. på tværs af datoer. Bomskud tæller kun på en spiller, når skytten er sikker. Steals, blocks og turnovers tælles ikke.</p>
+    </div>
+    <div class="d9-presets" aria-label="Genveje">
+      <span class="lbl">Genveje:</span>
+      <button class="d9-preset" data-preset="ppg">Point pr. kamp</button>
+      <button class="d9-preset" data-preset="winloss">Sejr mod nederlag</button>
+      <button class="d9-preset" data-preset="team">Hvid mod sort</button>
+      <button class="d9-preset" data-preset="days">Udvikling pr. spilledag</button>
+      <button class="d9-preset" data-preset="gameno">Kamp 1 mod kamp 2</button>
+      <button class="d9-preset" data-preset="winpct">Sejrsprocent</button>
+      <button class="d9-preset" data-preset="share">Andel af holdets point</button>
+      <button class="d9-preset" data-preset="games">Kampoversigt</button>
+    </div>
+    <div class="d9-controls">
+      <label class="d9-field" for="d9-rows">Rækker<select id="d9-rows"></select></label>
+      <label class="d9-field" for="d9-cols">Kolonner<select id="d9-cols"></select></label>
+      <label class="d9-field" for="d9-metric">Tal<select id="d9-metric"></select></label>
+      <label class="d9-field" for="d9-agg">Visning<select id="d9-agg"></select></label>
+      <label class="d9-field" for="d9-min">Min. kampe<input id="d9-min" type="number" min="1" max="20" step="1"></label>
+      <label class="d9-check" for="d9-complete"><input id="d9-complete" type="checkbox"> Kun komplette kampe</label>
+      <button class="d9-reset" id="d9-reset">Nulstil</button>
+    </div>
+    <div class="d9-field">Spilledage<div class="d9-chips" id="d9-days" data-source="games"></div></div>
+    <div class="d9-grid2">
+      <div class="d9-scroll" id="pivot-table" data-source="player_games"></div>
+      <div>
+        <h3 class="d9-field" id="pivot-chart-h" style="margin-bottom:6px">—</h3>
+        <div class="d9-chart" id="pivot-chart" data-source="player_games"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="d9-card" id="insights" aria-labelledby="ins-h">
+    <h2 id="ins-h">Indsigter</h2>
+    <ul class="d9-ins">
+      <li>Scorer mest i sejrene: <b data-source="winloss" data-row="0" data-field="player">—</b> laver
+        <b data-source="winloss" data-row="0" data-field="diff">—</b> point mere pr. kamp i sejre
+        (<span data-source="winloss" data-row="0" data-field="win_ppg">—</span>) end i nederlag
+        (<span data-source="winloss" data-row="0" data-field="loss_ppg">—</span>).</li>
+      <li>Stærkeste makkerpar: <b data-source="duos" data-row="0" data-field="pair">—</b> har vundet
+        <b data-source="duos" data-row="0" data-field="wins">—</b> af <span data-source="duos" data-row="0" data-field="games">—</span> kampe sammen.</li>
+      <li>Flest 2-pointere: <b data-source="leaders" data-where="kind=twos" data-field="player">—</b> med
+        <b data-source="leaders" data-where="kind=twos" data-field="value">—</b> scorede 2-pointere i alt.</li>
+    </ul>
+  </section>
+
+  <div class="d9-grid2">
+    <section class="d9-card" id="duos-card" aria-labelledby="duos-h">
+      <div><h2 id="duos-h">Makkerpar</h2>
+        <p class="d9-note">To spillere på samme hold i samme kamp. Kun par med mindst 2 kampe sammen.</p></div>
+      <div class="d9-scroll">
+        <table id="duos" data-source="duos" data-row-key="pair">
+          <thead><tr>
+            <th data-field="pair" scope="col">Makkerpar</th>
+            <th data-field="games" scope="col">Kampe</th>
+            <th data-field="wins" scope="col">Sejre</th>
+            <th data-field="winpct" scope="col">Sejr-%</th>
+          </tr></thead><tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="d9-card" id="games-card" aria-labelledby="games-h">
+      <div><h2 id="games-h">Kampe og datakvalitet</h2>
+        <p class="d9-note">Kvaliteten varierer: i juli var der to kameraer, i august og september én GoPro.</p></div>
+      <div class="d9-scroll">
+        <table id="games" class="d9-wrap" data-source="games" data-row-key="game_id">
+          <thead><tr>
+            <th data-field="game" scope="col">Kamp</th>
+            <th data-field="hvid_pts" scope="col">Hvid</th>
+            <th data-field="sort_pts" scope="col">Sort</th>
+            <th data-field="winner" scope="col">Vinder</th>
+            <th data-field="complete" scope="col">Komplet</th>
+            <th data-field="note" scope="col">Note</th>
+            <th data-field="quality" scope="col">Datakvalitet</th>
+          </tr></thead><tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+
+
+<p class="d9-foot">Opdateret 12. oktober 2026 · Data fra kampene 6. juli, 10. august og 28. september · Holdpoint og minutter er sikre; spillerpoint er automatisk bedste bud.</p>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>window.D9_DATA = {"player_games": [{"game_id": "2026-07-06-k1", "date": "2026-07-06", "session": "6. jul", "game": "6. jul · Kamp 1", "setup": "3 mod 3 · 2 kameraer", "player": "Faber", "team": "Sort", "result": "Sejr", "won": 1, "team_pts": 7, "opp_pts": 6, "MIN": 27.3, "PTS": 3, "FGM": 3, "FGA": 13, "P2M": 0, "P2A": 2, "P1M": 3, "P1A": 11, "REB": null, "AST": null, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-07-06-k1", "date": "2026-07-06", "session": "6. jul", "game": "6. jul · Kamp 1", "setup": "3 mod 3 · 2 kameraer", "player": "Schjødt", "team": "Sort", "result": "Sejr", "won": 1, "team_pts": 7, "opp_pts": 6, "MIN": 27.3, "PTS": 2, "FGM": 2, "FGA": 12, "P2M": 0, "P2A": 7, "P1M": 2, "P1A": 5, "REB": null, "AST": null, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-07-06-k1", "date": "2026-07-06", "session": "6. jul", "game": "6. jul · Kamp 1", "setup": "3 mod 3 · 2 kameraer", "player": "Nicklas", "team": "Hvid", "result": "Nederlag", "won": 0, "team_pts": 6, "opp_pts": 7, "MIN": 27.3, "PTS": 2, "FGM": 2, "FGA": 13, "P2M": 0, "P2A": 7, "P1M": 2, "P1A": 6, "REB": null, "AST": null, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-07-06-k1", "date": "2026-07-06", "session": "6. jul", "game": "6. jul · Kamp 1", "setup": "3 mod 3 · 2 kameraer", "player": "Nicehair", "team": "Hvid", "result": "Nederlag", "won": 0, "team_pts": 6, "opp_pts": 7, "MIN": 27.3, "PTS": 2, "FGM": 2, "FGA": 12, "P2M": 0, "P2A": 1, "P1M": 2, "P1A": 11, "REB": null, "AST": null, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-07-06-k1", "date": "2026-07-06", "session": "6. jul", "game": "6. jul · Kamp 1", "setup": "3 mod 3 · 2 kameraer", "player": "Jacob", "team": "Hvid", "result": "Nederlag", "won": 0, "team_pts": 6, "opp_pts": 7, "MIN": 27.3, "PTS": 2, "FGM": 2, "FGA": 13, "P2M": 0, "P2A": 9, "P1M": 2, "P1A": 4, "REB": null, "AST": null, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-07-06-k1", "date": "2026-07-06", "session": "6. jul", "game": "6. jul · Kamp 1", "setup": "3 mod 3 · 2 kameraer", "player": "Casper", "team": "Sort", "result": "Sejr", "won": 1, "team_pts": 7, "opp_pts": 6, "MIN": 27.3, "PTS": 2, "FGM": 2, "FGA": 10, "P2M": 0, "P2A": 2, "P1M": 2, "P1A": 8, "REB": null, "AST": null, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-07-06-k2", "date": "2026-07-06", "session": "6. jul", "game": "6. jul · Kamp 2", "setup": "3 mod 3 · 2 kameraer", "player": "Casper", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 10, "opp_pts": 12, "MIN": 22.5, "PTS": 5, "FGM": 4, "FGA": 13, "P2M": 1, "P2A": 4, "P1M": 3, "P1A": 9, "REB": null, "AST": null, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-07-06-k2", "date": "2026-07-06", "session": "6. jul", "game": "6. jul · Kamp 2", "setup": "3 mod 3 · 2 kameraer", "player": "Nicehair", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 12, "opp_pts": 10, "MIN": 22.5, "PTS": 4, "FGM": 4, "FGA": 8, "P2M": 0, "P2A": 2, "P1M": 4, "P1A": 6, "REB": null, "AST": null, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-07-06-k2", "date": "2026-07-06", "session": "6. jul", "game": "6. jul · Kamp 2", "setup": "3 mod 3 · 2 kameraer", "player": "Nicklas", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 12, "opp_pts": 10, "MIN": 22.5, "PTS": 4, "FGM": 4, "FGA": 4, "P2M": 0, "P2A": 0, "P1M": 4, "P1A": 4, "REB": null, "AST": null, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-07-06-k2", "date": "2026-07-06", "session": "6. jul", "game": "6. jul · Kamp 2", "setup": "3 mod 3 · 2 kameraer", "player": "Jacob", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 12, "opp_pts": 10, "MIN": 22.5, "PTS": 4, "FGM": 4, "FGA": 6, "P2M": 0, "P2A": 1, "P1M": 4, "P1A": 5, "REB": null, "AST": null, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-07-06-k2", "date": "2026-07-06", "session": "6. jul", "game": "6. jul · Kamp 2", "setup": "3 mod 3 · 2 kameraer", "player": "Schjødt", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 10, "opp_pts": 12, "MIN": 22.5, "PTS": 3, "FGM": 3, "FGA": 8, "P2M": 0, "P2A": 3, "P1M": 3, "P1A": 5, "REB": null, "AST": null, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-07-06-k2", "date": "2026-07-06", "session": "6. jul", "game": "6. jul · Kamp 2", "setup": "3 mod 3 · 2 kameraer", "player": "Faber", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 10, "opp_pts": 12, "MIN": 22.5, "PTS": 2, "FGM": 2, "FGA": 6, "P2M": 0, "P2A": 1, "P1M": 2, "P1A": 5, "REB": null, "AST": null, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-09-28-k1", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 1", "setup": "4 mod 4 · 1 GoPro", "player": "Frederik", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 12, "opp_pts": 10, "MIN": 17.2, "PTS": 7, "FGM": 4, "FGA": 5, "P2M": 3, "P2A": 4, "P1M": 1, "P1A": 1, "REB": 4, "AST": 2, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": 0, "DREB": 4}, {"game_id": "2026-09-28-k1", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 1", "setup": "4 mod 4 · 1 GoPro", "player": "Faber", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 12, "opp_pts": 10, "MIN": 17.2, "PTS": 3, "FGM": 2, "FGA": 6, "P2M": 1, "P2A": 2, "P1M": 1, "P1A": 4, "REB": 4, "AST": 0, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": 1, "DREB": 3}, {"game_id": "2026-09-28-k1", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 1", "setup": "4 mod 4 · 1 GoPro", "player": "Thomas", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 10, "opp_pts": 12, "MIN": 14.5, "PTS": 3, "FGM": 3, "FGA": 6, "P2M": 0, "P2A": 0, "P1M": 3, "P1A": 6, "REB": 0, "AST": 0, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": 0, "DREB": 0}, {"game_id": "2026-09-28-k1", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 1", "setup": "4 mod 4 · 1 GoPro", "player": "Nicklas", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 10, "opp_pts": 12, "MIN": 17.2, "PTS": 3, "FGM": 2, "FGA": 4, "P2M": 1, "P2A": 1, "P1M": 1, "P1A": 3, "REB": 3, "AST": 0, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": 1, "DREB": 2}, {"game_id": "2026-09-28-k1", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 1", "setup": "4 mod 4 · 1 GoPro", "player": "Jacob", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 10, "opp_pts": 12, "MIN": 15.3, "PTS": 2, "FGM": 2, "FGA": 5, "P2M": 0, "P2A": 2, "P1M": 2, "P1A": 3, "REB": 3, "AST": 0, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": 0, "DREB": 3}, {"game_id": "2026-09-28-k1", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 1", "setup": "4 mod 4 · 1 GoPro", "player": "Casper", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 10, "opp_pts": 12, "MIN": 11.3, "PTS": 1, "FGM": 1, "FGA": 2, "P2M": 0, "P2A": 0, "P1M": 1, "P1A": 2, "REB": 3, "AST": 0, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": 1, "DREB": 2}, {"game_id": "2026-09-28-k1", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 1", "setup": "4 mod 4 · 1 GoPro", "player": "Benjamin", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 12, "opp_pts": 10, "MIN": 17.2, "PTS": 1, "FGM": 1, "FGA": 6, "P2M": 0, "P2A": 3, "P1M": 1, "P1A": 3, "REB": 4, "AST": 0, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": 0, "DREB": 4}, {"game_id": "2026-09-28-k1", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 1", "setup": "4 mod 4 · 1 GoPro", "player": "Nicehair", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 12, "opp_pts": 10, "MIN": 17.2, "PTS": 1, "FGM": 1, "FGA": 2, "P2M": 0, "P2A": 0, "P1M": 1, "P1A": 2, "REB": 4, "AST": 0, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": 2, "DREB": 2}, {"game_id": "2026-09-28-k1", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 1", "setup": "4 mod 4 · 1 GoPro", "player": "Moltved", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 10, "opp_pts": 12, "MIN": 10.6, "PTS": 1, "FGM": 1, "FGA": 5, "P2M": 0, "P2A": 2, "P1M": 1, "P1A": 3, "REB": 1, "AST": 1, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": 0, "DREB": 1}, {"game_id": "2026-09-28-k2", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 2", "setup": "4 mod 4 · 1 GoPro", "player": "Faber", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 11, "opp_pts": 8, "MIN": 19.9, "PTS": 5, "FGM": 3, "FGA": 9, "P2M": 2, "P2A": 3, "P1M": 1, "P1A": 6, "REB": 5, "AST": 0, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": 2, "DREB": 3}, {"game_id": "2026-09-28-k2", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 2", "setup": "4 mod 4 · 1 GoPro", "player": "Nicklas", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 8, "opp_pts": 11, "MIN": 14.8, "PTS": 2, "FGM": 2, "FGA": 10, "P2M": 0, "P2A": 4, "P1M": 2, "P1A": 6, "REB": 2, "AST": 0, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": 1, "DREB": 1}, {"game_id": "2026-09-28-k2", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 2", "setup": "4 mod 4 · 1 GoPro", "player": "Benjamin", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 11, "opp_pts": 8, "MIN": 19.9, "PTS": 1, "FGM": 1, "FGA": 3, "P2M": 0, "P2A": 0, "P1M": 1, "P1A": 3, "REB": 4, "AST": 0, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": 3, "DREB": 1}, {"game_id": "2026-09-28-k2", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 2", "setup": "4 mod 4 · 1 GoPro", "player": "Casper", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 8, "opp_pts": 11, "MIN": 19.5, "PTS": 2, "FGM": 2, "FGA": 2, "P2M": 0, "P2A": 0, "P1M": 2, "P1A": 2, "REB": 2, "AST": 0, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": 1, "DREB": 1}, {"game_id": "2026-09-28-k2", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 2", "setup": "4 mod 4 · 1 GoPro", "player": "Nicehair", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 11, "opp_pts": 8, "MIN": 19.9, "PTS": 4, "FGM": 3, "FGA": 8, "P2M": 1, "P2A": 5, "P1M": 2, "P1A": 3, "REB": 4, "AST": 0, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": 0, "DREB": 4}, {"game_id": "2026-09-28-k2", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 2", "setup": "4 mod 4 · 1 GoPro", "player": "Frederik", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 11, "opp_pts": 8, "MIN": 19.9, "PTS": 1, "FGM": 1, "FGA": 3, "P2M": 0, "P2A": 1, "P1M": 1, "P1A": 2, "REB": 3, "AST": 1, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": 1, "DREB": 2}, {"game_id": "2026-09-28-k2", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 2", "setup": "4 mod 4 · 1 GoPro", "player": "Thomas", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 8, "opp_pts": 11, "MIN": 17.3, "PTS": 4, "FGM": 3, "FGA": 6, "P2M": 1, "P2A": 1, "P1M": 2, "P1A": 5, "REB": 0, "AST": 0, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": 0, "DREB": 0}, {"game_id": "2026-09-28-k2", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 2", "setup": "4 mod 4 · 1 GoPro", "player": "Moltved", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 8, "opp_pts": 11, "MIN": 15.9, "PTS": 0, "FGM": 0, "FGA": 4, "P2M": 0, "P2A": 3, "P1M": 0, "P1A": 1, "REB": 5, "AST": 0, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": 0, "DREB": 5}, {"game_id": "2026-09-28-k2", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 2", "setup": "4 mod 4 · 1 GoPro", "player": "Jacob", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 8, "opp_pts": 11, "MIN": 12.1, "PTS": 0, "FGM": 0, "FGA": 0, "P2M": 0, "P2A": 0, "P1M": 0, "P1A": 0, "REB": 2, "AST": 1, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": 1, "DREB": 1}, {"game_id": "2026-09-28-k3", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 3", "setup": "4 mod 4 · 1 GoPro", "player": "Nicklas", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 9, "opp_pts": 11, "MIN": 11.7, "PTS": 5, "FGM": 3, "FGA": 4, "P2M": 2, "P2A": 3, "P1M": 1, "P1A": 1, "REB": 2, "AST": 0, "game_no": 3, "game_no_label": "Kamp 3 på dagen", "OREB": 0, "DREB": 2}, {"game_id": "2026-09-28-k3", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 3", "setup": "4 mod 4 · 1 GoPro", "player": "Casper", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 11, "opp_pts": 9, "MIN": 11.7, "PTS": 4, "FGM": 2, "FGA": 7, "P2M": 2, "P2A": 3, "P1M": 0, "P1A": 4, "REB": 3, "AST": 0, "game_no": 3, "game_no_label": "Kamp 3 på dagen", "OREB": 1, "DREB": 2}, {"game_id": "2026-09-28-k3", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 3", "setup": "4 mod 4 · 1 GoPro", "player": "Nicehair", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 11, "opp_pts": 9, "MIN": 11.7, "PTS": 2, "FGM": 2, "FGA": 4, "P2M": 0, "P2A": 1, "P1M": 2, "P1A": 3, "REB": 3, "AST": 0, "game_no": 3, "game_no_label": "Kamp 3 på dagen", "OREB": 0, "DREB": 3}, {"game_id": "2026-09-28-k3", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 3", "setup": "4 mod 4 · 1 GoPro", "player": "Frederik", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 11, "opp_pts": 9, "MIN": 11.7, "PTS": 3, "FGM": 2, "FGA": 3, "P2M": 1, "P2A": 1, "P1M": 1, "P1A": 2, "REB": 2, "AST": 0, "game_no": 3, "game_no_label": "Kamp 3 på dagen", "OREB": 1, "DREB": 1}, {"game_id": "2026-09-28-k3", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 3", "setup": "4 mod 4 · 1 GoPro", "player": "Thomas", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 11, "opp_pts": 9, "MIN": 11.7, "PTS": 2, "FGM": 2, "FGA": 2, "P2M": 0, "P2A": 0, "P1M": 2, "P1A": 2, "REB": 1, "AST": 0, "game_no": 3, "game_no_label": "Kamp 3 på dagen", "OREB": 0, "DREB": 1}, {"game_id": "2026-09-28-k3", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 3", "setup": "4 mod 4 · 1 GoPro", "player": "Jacob", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 9, "opp_pts": 11, "MIN": 11.7, "PTS": 3, "FGM": 2, "FGA": 5, "P2M": 1, "P2A": 1, "P1M": 1, "P1A": 4, "REB": 2, "AST": 1, "game_no": 3, "game_no_label": "Kamp 3 på dagen", "OREB": 0, "DREB": 2}, {"game_id": "2026-09-28-k3", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 3", "setup": "4 mod 4 · 1 GoPro", "player": "Benjamin", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 9, "opp_pts": 11, "MIN": 11.7, "PTS": 0, "FGM": 0, "FGA": 1, "P2M": 0, "P2A": 1, "P1M": 0, "P1A": 0, "REB": 2, "AST": 0, "game_no": 3, "game_no_label": "Kamp 3 på dagen", "OREB": 1, "DREB": 1}, {"game_id": "2026-09-28-k3", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 3", "setup": "4 mod 4 · 1 GoPro", "player": "Moltved", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 9, "opp_pts": 11, "MIN": 11.7, "PTS": 1, "FGM": 1, "FGA": 3, "P2M": 0, "P2A": 0, "P1M": 1, "P1A": 3, "REB": 0, "AST": 2, "game_no": 3, "game_no_label": "Kamp 3 på dagen", "OREB": 0, "DREB": 0}, {"game_id": "2026-08-10-a", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp A", "setup": "4 mod 4 · 1 GoPro", "player": "Nicklas", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 14, "opp_pts": 9, "MIN": null, "PTS": 4, "FGM": 4, "FGA": 7, "P2M": 0, "P2A": null, "P1M": 4, "P1A": null, "REB": 4, "AST": 1, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-08-10-a", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp A", "setup": "4 mod 4 · 1 GoPro", "player": "Jacob", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 14, "opp_pts": 9, "MIN": null, "PTS": 4, "FGM": 4, "FGA": 5, "P2M": 0, "P2A": null, "P1M": 4, "P1A": null, "REB": 10, "AST": 1, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-08-10-a", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp A", "setup": "4 mod 4 · 1 GoPro", "player": "Benjamin", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 14, "opp_pts": 9, "MIN": null, "PTS": 3, "FGM": 3, "FGA": 11, "P2M": 0, "P2A": null, "P1M": 3, "P1A": null, "REB": 0, "AST": 1, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-08-10-a", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp A", "setup": "4 mod 4 · 1 GoPro", "player": "Thomas", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 9, "opp_pts": 14, "MIN": null, "PTS": 3, "FGM": 3, "FGA": 8, "P2M": 0, "P2A": null, "P1M": 3, "P1A": null, "REB": 6, "AST": 1, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-08-10-a", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp A", "setup": "4 mod 4 · 1 GoPro", "player": "Nicehair", "team": "Hvid", "result": "Sejr", "won": 1, "team_pts": 14, "opp_pts": 9, "MIN": null, "PTS": 3, "FGM": 3, "FGA": 5, "P2M": 0, "P2A": null, "P1M": 3, "P1A": null, "REB": 2, "AST": 0, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-08-10-a", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp A", "setup": "4 mod 4 · 1 GoPro", "player": "Moltved", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 9, "opp_pts": 14, "MIN": null, "PTS": 2, "FGM": 2, "FGA": 12, "P2M": 0, "P2A": null, "P1M": 2, "P1A": null, "REB": 5, "AST": 2, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-08-10-a", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp A", "setup": "4 mod 4 · 1 GoPro", "player": "Lous", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 9, "opp_pts": 14, "MIN": null, "PTS": 2, "FGM": 2, "FGA": 8, "P2M": 0, "P2A": null, "P1M": 2, "P1A": null, "REB": 3, "AST": 0, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-08-10-a", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp A", "setup": "4 mod 4 · 1 GoPro", "player": "Daniel", "team": "Sort", "result": "Nederlag", "won": 0, "team_pts": 9, "opp_pts": 14, "MIN": null, "PTS": 2, "FGM": 2, "FGA": 7, "P2M": 0, "P2A": null, "P1M": 2, "P1A": null, "REB": 4, "AST": 1, "game_no": 1, "game_no_label": "Kamp 1 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-08-10-b", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp B", "setup": "4 mod 4 · 1 GoPro", "player": "Nicklas", "team": "Sort", "result": "Sejr", "won": 1, "team_pts": 22, "opp_pts": 12, "MIN": null, "PTS": 7, "FGM": 7, "FGA": 14, "P2M": 0, "P2A": null, "P1M": 7, "P1A": null, "REB": 10, "AST": 2, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-08-10-b", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp B", "setup": "4 mod 4 · 1 GoPro", "player": "Moltved", "team": "Sort", "result": "Sejr", "won": 1, "team_pts": 22, "opp_pts": 12, "MIN": null, "PTS": 7, "FGM": 6, "FGA": 14, "P2M": 1, "P2A": null, "P1M": 5, "P1A": null, "REB": 5, "AST": 2, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-08-10-b", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp B", "setup": "4 mod 4 · 1 GoPro", "player": "Lous", "team": "Hvid", "result": "Nederlag", "won": 0, "team_pts": 12, "opp_pts": 22, "MIN": null, "PTS": 4, "FGM": 4, "FGA": 11, "P2M": 0, "P2A": null, "P1M": 4, "P1A": null, "REB": 8, "AST": 0, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-08-10-b", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp B", "setup": "4 mod 4 · 1 GoPro", "player": "Jacob", "team": "Sort", "result": "Sejr", "won": 1, "team_pts": 22, "opp_pts": 12, "MIN": null, "PTS": 4, "FGM": 4, "FGA": 9, "P2M": 0, "P2A": null, "P1M": 4, "P1A": null, "REB": 12, "AST": 1, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-08-10-b", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp B", "setup": "4 mod 4 · 1 GoPro", "player": "Thomas", "team": "Sort", "result": "Sejr", "won": 1, "team_pts": 22, "opp_pts": 12, "MIN": null, "PTS": 4, "FGM": 4, "FGA": 8, "P2M": 0, "P2A": null, "P1M": 4, "P1A": null, "REB": 2, "AST": 0, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-08-10-b", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp B", "setup": "4 mod 4 · 1 GoPro", "player": "Nicehair", "team": "Hvid", "result": "Nederlag", "won": 0, "team_pts": 12, "opp_pts": 22, "MIN": null, "PTS": 4, "FGM": 4, "FGA": 7, "P2M": 0, "P2A": null, "P1M": 4, "P1A": null, "REB": 6, "AST": 1, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-08-10-b", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp B", "setup": "4 mod 4 · 1 GoPro", "player": "Benjamin", "team": "Hvid", "result": "Nederlag", "won": 0, "team_pts": 12, "opp_pts": 22, "MIN": null, "PTS": 2, "FGM": 2, "FGA": 12, "P2M": 0, "P2A": null, "P1M": 2, "P1A": null, "REB": 16, "AST": 1, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": null, "DREB": null}, {"game_id": "2026-08-10-b", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp B", "setup": "4 mod 4 · 1 GoPro", "player": "Daniel", "team": "Hvid", "result": "Nederlag", "won": 0, "team_pts": 12, "opp_pts": 22, "MIN": null, "PTS": 2, "FGM": 2, "FGA": 8, "P2M": 0, "P2A": null, "P1M": 2, "P1A": null, "REB": 2, "AST": 1, "game_no": 2, "game_no_label": "Kamp 2 på dagen", "OREB": null, "DREB": null}], "games": [{"game_id": "2026-07-06-k1", "date": "2026-07-06", "session": "6. jul", "game": "6. jul · Kamp 1", "game_no": 1, "setup": "3 mod 3 · 2 kameraer", "hvid_pts": 6, "sort_pts": 7, "winner": "Sort", "target": 11, "complete": "Nej", "note": "Optagelsen fangede kun en del af kampen. Sort vandt til 11.", "quality": "Lav: point ufuldstændige. Rebounds og assists vises ikke.", "length_min": 27.3}, {"game_id": "2026-07-06-k2", "date": "2026-07-06", "session": "6. jul", "game": "6. jul · Kamp 2", "game_no": 2, "setup": "3 mod 3 · 2 kameraer", "hvid_pts": 12, "sort_pts": 10, "winner": "Hvid", "target": 11, "complete": "Ja", "note": "Til 11, vind med 2.", "quality": "Point og skud: middel (rettet efter jeres facit). Rebounds og assists vises ikke: de kom fra den tidlige boldsporing.", "length_min": 22.5}, {"game_id": "2026-08-10-a", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp A", "game_no": 1, "setup": "4 mod 4 · 1 GoPro", "hvid_pts": 14, "sort_pts": 9, "winner": "Hvid", "target": 22, "complete": "Nej", "note": "Spillet til 22. Kun ca. 63 % af kurvene blev fanget; hvid vandt.", "quality": "Middel: point og skud for lave (ufuldstændig); REB kun sikre tilskrivninger.", "length_min": null}, {"game_id": "2026-08-10-b", "date": "2026-08-10", "session": "10. aug", "game": "10. aug · Kamp B", "game_no": 2, "setup": "4 mod 4 · 1 GoPro", "hvid_pts": 12, "sort_pts": 22, "winner": "Sort", "target": 22, "complete": "Ja", "note": "Spillet til 22. Komplet.", "quality": "Middel: point tilpasset 22 til vinderen; REB kun sikre tilskrivninger.", "length_min": null}, {"game_id": "2026-09-28-k1", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 1", "game_no": 1, "setup": "4 mod 4 · 1 GoPro", "hvid_pts": 12, "sort_pts": 10, "winner": "Hvid", "target": 11, "complete": "Ja", "note": "Hvid lukkede på en 2'er fra 10–10.", "quality": "Holdpoint og minutter sikre. Spillerpoint bedste bud. Bomskud tælles kun med sikker skytte. Rebounds trianguleret (middel/høj sikkerhed). Assists for lave.", "length_min": 17.2}, {"game_id": "2026-09-28-k2", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 2", "game_no": 2, "setup": "4 mod 4 · 1 GoPro", "hvid_pts": 11, "sort_pts": 8, "winner": "Hvid", "target": 11, "complete": "Ja", "note": "Sort havde 5 spillere (1 udskifter).", "quality": "Holdpoint og minutter sikre. Spillerpoint bedste bud. Bomskud tælles kun med sikker skytte. Rebounds trianguleret (middel/høj sikkerhed). Assists for lave.", "length_min": 19.9}, {"game_id": "2026-09-28-k3", "date": "2026-09-28", "session": "28. sep", "game": "28. sep · Kamp 3", "game_no": 3, "setup": "4 mod 4 · 1 GoPro", "hvid_pts": 11, "sort_pts": 9, "winner": "Hvid", "target": 11, "complete": "Ja", "note": "Nye hold; Faber var gået hjem.", "quality": "Holdpoint og minutter sikre. Spillerpoint bedste bud. Bomskud tælles kun med sikker skytte. Rebounds trianguleret (middel/høj sikkerhed). Assists for lave.", "length_min": 11.7}]};</script>
+<script>// Minimal stand-in for the claude.ai dashboard runtime: embedded data,
+// filter state in memory, calculations computed from the embedded rows.
+(function () {
+  const DATA = window.D9_DATA;
+  const calcs = {}, listeners = [];
+  let defaults = { rows: 'player', cols: 'none', metric: 'PTS', agg: 'pergame', hideDays: [], minGames: 1, completeOnly: false, boxScope: 'all', boxMode: 'pergame' };
+  let params = { ...defaults };
+  const fire = () => listeners.forEach((fn) => fn());
+  window.dash = {
+    colors: ['var(--d9-accent)'],
+    data(id) {
+      if (DATA[id]) return { status: 'ok', data: DATA[id], columns: Object.keys(DATA[id][0] || {}) };
+      const c = calcs[id];
+      if (c) { if (!c.cache) c.cache = c.fn(...c.inputs.map((i) => window.dash.data(i).data)); return { status: 'ok', data: c.cache }; }
+      return { status: 'missing', data: [] };
+    },
+    calc(id, spec) { calcs[id] = { ...spec }; },
+    onData(fn) { listeners.push(fn); fn(); },
+    params() { return { ...params }; },
+    setParams(p) { params = { ...params, ...p }; fire(); },
+    resetParams() { params = { ...defaults }; fire(); },
+    setLink() {},
+  };
+  let w = window.innerWidth;
+  window.addEventListener('resize', () => { if (Math.abs(window.innerWidth - w) > 40) { w = window.innerWidth; fire(); } });
+})();
+</script>
+<script>
+// ---------- calculations (readers see these in Sources) ----------
+dash.calc('overview', {
+  inputs: ['games', 'player_games'],
+  title: 'Kampe, dage og spillere',
+  description: 'Antal kampe, spilledage, spillere og hvide sejre.',
+  fn: (games, player_games) => [{
+    games: games.length,
+    days: new Set(games.map((g) => g.date)).size,
+    players: new Set(player_games.map((r) => r.player)).size,
+    hvid_wins: games.filter((g) => g.winner === 'Hvid').length,
+  }],
+});
+
+dash.calc('leaders', {
+  inputs: ['player_games'],
+  title: 'Rekorder pr. spiller',
+  description: 'Flest point pr. kamp (min. 2), bedste FG% (min. 15 forsøg), flest rebounds pr. målt kamp (min. 2), bedste gennemsnitlige pointforskel for spillerens hold (min. 3), bedste sejrsprocent (min. 3), bedste enkeltkamp, flest 2-pointere.',
+  fn: (player_games) => {
+    const by = {};
+    for (const r of player_games) {
+      const s = by[r.player] || (by[r.player] = { gp: 0, pts: 0, won: 0, fgm: 0, fga: 0, p2m: 0, reb: 0, rebn: 0, mar: 0 });
+      s.gp += 1; s.pts += Number(r.PTS) || 0; s.won += Number(r.won) || 0;
+      if (r.FGA != null) { s.fgm += Number(r.FGM) || 0; s.fga += Number(r.FGA) || 0; }
+      s.p2m += Number(r.P2M) || 0;
+      if (r.REB != null) { s.reb += Number(r.REB) || 0; s.rebn += 1; }
+      s.mar += (Number(r.team_pts) || 0) - (Number(r.opp_pts) || 0);
+    }
+    const list = Object.entries(by).map(([player, s]) => ({ player, ...s }));
+    const top = (rows, key) => rows.slice().sort((a, b) => b[key] - a[key])[0];
+    const r1 = (x) => Math.round(x * 10) / 10;
+    const ppg = top(list.filter((s) => s.gp >= 2).map((s) => ({ ...s, v: s.pts / s.gp })), 'v');
+    const wp = top(list.filter((s) => s.gp >= 3).map((s) => ({ ...s, v: s.won / s.gp })), 'v');
+    const most = top(list, 'gp');
+    const fg = top(list.filter((s) => s.fga >= 15).map((s) => ({ ...s, v: s.fgm / s.fga })), 'v');
+    const twos = top(list, 'p2m');
+    const rpg = top(list.filter((s) => s.rebn >= 2).map((s) => ({ ...s, v: s.reb / s.rebn })), 'v');
+    const mar = top(list.filter((s) => s.gp >= 3).map((s) => ({ ...s, v: s.mar / s.gp })), 'v');
+    const best = player_games.slice().sort((a, b) => (Number(b.PTS) || 0) - (Number(a.PTS) || 0))[0];
+    return [
+      { kind: 'ppg', player: ppg.player, value: r1(ppg.v), gp: ppg.gp, att: null, game: '' },
+      { kind: 'fg', player: fg.player, value: Math.round(fg.v * 100), gp: fg.gp, att: fg.fga, game: '' },
+      { kind: 'rpg', player: rpg.player, value: r1(rpg.v), gp: rpg.rebn, att: null, game: '' },
+      { kind: 'margin', player: mar.player, value: r1(mar.v), gp: mar.gp, att: null, game: '' },
+      { kind: 'winpct', player: wp.player, value: Math.round(wp.v * 100), gp: wp.gp, att: null, game: '' },
+      { kind: 'games', player: most.player, value: most.gp, gp: most.gp, att: null, game: '' },
+      { kind: 'best', player: best.player, value: Number(best.PTS), gp: 1, att: null, game: best.game },
+      { kind: 'twos', player: twos.player, value: twos.p2m, gp: twos.gp, att: null, game: '' },
+    ];
+  },
+});
+
+dash.calc('winloss', {
+  inputs: ['player_games'],
+  title: 'Point i sejre mod nederlag',
+  description: 'Point pr. kamp i sejre og nederlag pr. spiller med mindst én af hver; størst forskel først.',
+  fn: (player_games) => {
+    const by = {};
+    for (const r of player_games) {
+      const s = by[r.player] || (by[r.player] = { wp: 0, wn: 0, lp: 0, ln: 0 });
+      if (Number(r.won)) { s.wp += Number(r.PTS) || 0; s.wn += 1; } else { s.lp += Number(r.PTS) || 0; s.ln += 1; }
+    }
+    const r1 = (x) => Math.round(x * 10) / 10;
+    return Object.entries(by).filter(([, s]) => s.wn && s.ln)
+      .map(([player, s]) => ({ player, win_ppg: r1(s.wp / s.wn), loss_ppg: r1(s.lp / s.ln), diff: r1(s.wp / s.wn - s.lp / s.ln) }))
+      .sort((a, b) => b.diff - a.diff);
+  },
+});
+
+dash.calc('duos', {
+  inputs: ['player_games'],
+  title: 'Makkerpar',
+  description: 'Alle par på samme hold i samme kamp: kampe sammen, sejre og sejr-% (min. 2 kampe).',
+  fn: (player_games) => {
+    const teams = {};
+    for (const r of player_games) (teams[r.game_id + '|' + r.team] ||= []).push(r);
+    const pairs = {};
+    for (const rows of Object.values(teams)) {
+      const names = rows.map((r) => r.player).sort();
+      const won = Number(rows[0].won);
+      for (let i = 0; i < names.length; i++) for (let j = i + 1; j < names.length; j++) {
+        const k = names[i] + ' + ' + names[j];
+        const p = pairs[k] || (pairs[k] = { pair: k, games: 0, wins: 0 });
+        p.games += 1; p.wins += won;
+      }
+    }
+    return Object.values(pairs).filter((p) => p.games >= 2)
+      .map((p) => ({ ...p, winpct: Math.round((p.wins / p.games) * 100) }))
+      .sort((a, b) => b.winpct - a.winpct || b.games - a.games || a.pair.localeCompare(b.pair));
+  },
+});
+
+// ---------- pivot definitions ----------
+const DIMS = [
+  { id: 'player', label: 'Spiller' },
+  { id: 'team', label: 'Hold' },
+  { id: 'game', label: 'Kamp (dato + nr.)' },
+  { id: 'session', label: 'Spilledag' },
+  { id: 'game_no_label', label: 'Kamp nr. på dagen' },
+  { id: 'result', label: 'Resultat' },
+  { id: 'setup', label: 'Format' },
+];
+const METRICS = [
+  { id: 'PTS', label: 'Point', f: 'PTS' },
+  { id: 'FGM', label: 'Scoringer (FGM)', f: 'FGM' },
+  { id: 'FGA', label: 'Skudforsøg (FGA)', f: 'FGA' },
+  { id: 'FGP', label: 'Skud-% (FG%)', ratio: ['FGM', 'FGA'] },
+  { id: 'P2M', label: '2-pointere scoret', f: 'P2M' },
+  { id: 'P2A', label: '2-point-forsøg', f: 'P2A' },
+  { id: 'P2P', label: '2-point-%', ratio: ['P2M', 'P2A'] },
+  { id: 'P1M', label: '1-pointere scoret', f: 'P1M' },
+  { id: 'SHARE', label: 'Andel af holdets point (%)', ratio: ['PTS', 'team_pts'] },
+  { id: 'GP', label: 'Kampe', count: true },
+  { id: 'W', label: 'Sejre', f: 'won' },
+  { id: 'WP', label: 'Sejrs-%', ratio: ['won', null] },
+  { id: 'MARGIN', label: 'Holdets pointforskel', f: (r) => (r.team_pts == null ? null : Number(r.team_pts) - Number(r.opp_pts)) },
+  { id: 'MIN', label: 'Minutter', f: 'MIN' },
+  { id: 'REB', label: 'Rebounds', f: 'REB' },
+  { id: 'OREB', label: 'Offensive rebounds', f: 'OREB' },
+  { id: 'DREB', label: 'Defensive rebounds', f: 'DREB' },
+  { id: 'AST', label: 'Assists (for lave)', f: 'AST' },
+];
+const AGGS = [
+  { id: 'pergame', label: 'Pr. kamp' },
+  { id: 'sum', label: 'I alt' },
+  { id: 'per20', label: 'Pr. 20 min' },
+  { id: 'max', label: 'Bedste kamp' },
+];
+const PRESETS = {
+  ppg: { rows: 'player', cols: 'none', metric: 'PTS', agg: 'pergame' },
+  winloss: { rows: 'player', cols: 'result', metric: 'PTS', agg: 'pergame' },
+  team: { rows: 'player', cols: 'team', metric: 'WP', agg: 'sum' },
+  days: { rows: 'player', cols: 'session', metric: 'PTS', agg: 'pergame' },
+  gameno: { rows: 'player', cols: 'game_no_label', metric: 'PTS', agg: 'pergame' },
+  winpct: { rows: 'player', cols: 'none', metric: 'WP', agg: 'sum' },
+  share: { rows: 'player', cols: 'session', metric: 'SHARE', agg: 'sum' },
+  games: { rows: 'game', cols: 'team', metric: 'PTS', agg: 'sum' },
+};
+const DEFAULTS = { rows: 'player', cols: 'none', metric: 'PTS', agg: 'pergame', hideDays: [], minGames: 1, completeOnly: false, boxScope: 'all', boxMode: 'pergame' };
+
+const num = (v) => (v === null || v === undefined || v === '' ? null : Number(v));
+const val = (m, r) => (typeof m.f === 'function' ? m.f(r) : num(r[m.f]));
+const isRate = (m) => !!m.ratio;
+
+function cell(rows, m, agg) {
+  if (m.count) { const n = new Set(rows.map((r) => r.game_id)).size; return n ? { v: n, n } : null; }
+  if (m.ratio) {
+    let a = 0, b = 0, n = 0;
+    for (const r of rows) {
+      const x = num(r[m.ratio[0]]); const y = m.ratio[1] ? num(r[m.ratio[1]]) : 1;
+      if (x === null || y === null) continue; a += x; b += y; n++;
+    }
+    return b > 0 ? { v: (a / b) * 100, n } : null;
+  }
+  const xs = rows.map((r) => ({ v: val(m, r), min: num(r.MIN) })).filter((o) => o.v !== null && !Number.isNaN(o.v));
+  if (!xs.length) return null;
+  const s = xs.reduce((t, o) => t + o.v, 0);
+  if (agg === 'sum') return { v: s, n: xs.length };
+  if (agg === 'pergame') return { v: s / xs.length, n: xs.length };
+  if (agg === 'max') return { v: Math.max(...xs.map((o) => o.v)), n: xs.length };
+  const w = xs.filter((o) => o.min !== null && o.min > 0);
+  const mins = w.reduce((t, o) => t + o.min, 0);
+  return mins > 0 ? { v: (w.reduce((t, o) => t + o.v, 0) / mins) * 20, n: w.length } : null;
+}
+function fmt(c, m, agg) {
+  if (!c) return '–';
+  if (isRate(m)) return Math.round(c.v) + '%';
+  if (m.count || (agg === 'sum' && m.id !== 'MIN') || agg === 'max') return String(Math.round(c.v * 10) / 10);
+  return c.v.toFixed(1);
+}
+function order(dim, values, rowsAll) {
+  const firstDate = {};
+  for (const r of rowsAll) { const k = r[dim]; const key = r.date + '|' + String(r.game_no).padStart(2, '0'); if (!(k in firstDate) || key < firstDate[k]) firstDate[k] = key; }
+  if (['game', 'session', 'game_no_label'].includes(dim)) {
+    if (dim === 'game_no_label') return values.sort();
+    return values.sort((a, b) => firstDate[a].localeCompare(firstDate[b]));
+  }
+  if (dim === 'result') return values.sort((a, b) => (a === 'Sejr' ? -1 : 1) - (b === 'Sejr' ? -1 : 1));
+  return values.sort((a, b) => String(a).localeCompare(String(b), 'da'));
+}
+
+// ---------- controls ----------
+const $ = (s) => document.querySelector(s);
+const selRows = $('#d9-rows'), selCols = $('#d9-cols'), selMetric = $('#d9-metric'), selAgg = $('#d9-agg');
+const inMin = $('#d9-min'), inComplete = $('#d9-complete'), daysBox = $('#d9-days');
+selRows.replaceChildren(...DIMS.map((d) => new Option(d.label, d.id)));
+selCols.replaceChildren(new Option('Ingen', 'none'), ...DIMS.map((d) => new Option(d.label, d.id)));
+selMetric.replaceChildren(...METRICS.map((m) => new Option(m.label, m.id)));
+selAgg.replaceChildren(...AGGS.map((a) => new Option(a.label, a.id)));
+const P = () => ({ ...DEFAULTS, ...dash.params() });
+selRows.addEventListener('change', () => dash.setParams({ rows: selRows.value }));
+selCols.addEventListener('change', () => dash.setParams({ cols: selCols.value }));
+selMetric.addEventListener('change', () => dash.setParams({ metric: selMetric.value }));
+selAgg.addEventListener('change', () => dash.setParams({ agg: selAgg.value }));
+inMin.addEventListener('change', () => { const v = Math.max(1, Math.round(Number(inMin.value) || 1)); dash.setParams({ minGames: v }); });
+inComplete.addEventListener('change', () => dash.setParams({ completeOnly: inComplete.checked }));
+$('#d9-reset').addEventListener('click', () => { dash.resetParams(); sortState = null; });
+document.querySelectorAll('.d9-preset').forEach((b) => b.addEventListener('click', () => { sortState = null; dash.setParams(PRESETS[b.dataset.preset]); }));
+daysBox.addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-day]'); if (!b) return;
+  const hide = new Set(P().hideDays || []);
+  if (hide.has(b.dataset.day)) hide.delete(b.dataset.day); else hide.add(b.dataset.day);
+  dash.setParams({ hideDays: [...hide] });
+});
+
+let sortState = null; // {col, dir}
+const tableBox = $('#pivot-table');
+tableBox.addEventListener('click', (e) => {
+  const b = e.target.closest('th button[data-col]'); if (!b) return;
+  const col = b.dataset.col;
+  sortState = sortState && sortState.col === col ? { col, dir: -sortState.dir } : { col, dir: col === '__row' ? 1 : -1 };
+  draw();
+});
+
+// ---------- drawing ----------
+const tip = document.createElement('div'); tip.className = 'd9-tip'; tip.hidden = true;
+$('#pivot-chart').append(tip);
+
+function failLine(el, msg) { el.replaceChildren(Object.assign(document.createElement('div'), { className: 'd9-fail', textContent: msg })); }
+
+function draw() {
+  const p = P();
+  selRows.value = p.rows; selCols.value = p.cols; selMetric.value = p.metric; selAgg.value = p.agg;
+  if (inMin !== document.activeElement) inMin.value = p.minGames;
+  inComplete.checked = !!p.completeOnly;
+
+  const G = dash.data('games'), R = dash.data('player_games');
+  // day chips
+  if (G.status === 'ok') {
+    const days = [...new Map(G.data.map((g) => [g.session, g.date])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
+    const hide = new Set(p.hideDays || []);
+    daysBox.replaceChildren(...days.map(([s]) => {
+      const b = document.createElement('button'); b.className = 'd9-chip'; b.dataset.day = s; b.textContent = s;
+      b.setAttribute('aria-pressed', String(!hide.has(s))); return b;
+    }));
+  }
+  drawGames(G);
+  drawDuos();
+  if (R.status !== 'ok' || G.status !== 'ok') {
+    if (R.status === 'error' || G.status === 'error') { failLine(tableBox, 'Failed to load'); failLine($('#pivot-chart'), 'Failed to load'); }
+    else { tableBox.replaceChildren(); tableBox.classList.add('dash-skeleton'); }
+    return;
+  }
+  tableBox.classList.remove('dash-skeleton');
+  const complete = new Set(G.data.filter((g) => g.complete === 'Ja').map((g) => g.game_id));
+  const hide = new Set(p.hideDays || []);
+  const rows = R.data.filter((r) => !hide.has(r.session) && (!p.completeOnly || complete.has(r.game_id)));
+  const m = METRICS.find((x) => x.id === p.metric) || METRICS[0];
+  const agg = p.agg;
+  const rowDim = p.rows, colDim = p.cols === p.rows ? 'none' : p.cols;
+  const groups = new Map();
+  for (const r of rows) { const k = r[rowDim]; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); }
+  let rowKeys = [...groups.keys()].filter((k) => new Set(groups.get(k).map((r) => r.game_id)).size >= (p.minGames || 1));
+  const colKeys = colDim === 'none' ? [] : order(colDim, [...new Set(rows.map((r) => r[colDim]))], rows);
+  const data = rowKeys.map((k) => {
+    const rs = groups.get(k);
+    const cells = colKeys.map((c) => cell(rs.filter((r) => r[colDim] === c), m, agg));
+    return { key: k, cells, total: cell(rs, m, agg), games: new Set(rs.map((r) => r.game_id)).size };
+  });
+  // sort
+  const s = sortState || { col: '__total', dir: -1 };
+  const getv = (d) => (s.col === '__row' ? null : s.col === '__total' ? d.total?.v : s.col === '__games' ? d.games : d.cells[Number(s.col)]?.v);
+  if (s.col === '__row') {
+    const ord = order(rowDim, data.map((d) => d.key), rows);
+    data.sort((a, b) => (ord.indexOf(a.key) - ord.indexOf(b.key)) * s.dir);
+  } else {
+    data.sort((a, b) => { const x = getv(a), y = getv(b); if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1; return (x - y) * s.dir; });
+  }
+  // shading scale over the visible value cells
+  const vals = data.flatMap((d) => (colKeys.length ? d.cells : [d.total]).filter(Boolean).map((c) => c.v));
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const shade = (c) => { if (!c || !vals.length || hi === lo) return ''; const t = (c.v - lo) / (hi - lo); return `color-mix(in srgb, ${dash.colors[0]} ${Math.round(6 + t * 34)}%, transparent)`; };
+
+  const dimLabel = (DIMS.find((d) => d.id === rowDim) || {}).label;
+  const aggLabel = isRate(m) || m.count ? '' : ' · ' + (AGGS.find((a) => a.id === agg) || {}).label.toLowerCase();
+  const table = document.createElement('table');
+  const thead = table.createTHead().insertRow();
+  const th = (text, col, cls) => {
+    const t = document.createElement('th'); t.scope = 'col'; if (cls) t.className = cls;
+    const b = document.createElement('button'); b.dataset.col = col; b.textContent = text; t.append(b);
+    if (s.col === col) t.setAttribute('aria-sort', s.dir > 0 ? 'ascending' : 'descending');
+    thead.append(t);
+  };
+  th(dimLabel, '__row');
+  colKeys.forEach((c, i) => th(String(c), String(i)));
+  th(colKeys.length ? 'Samlet' : m.label + aggLabel, '__total', 'tot');
+  th('Kampe', '__games');
+  const tb = table.createTBody();
+  for (const d of data) {
+    const tr = tb.insertRow();
+    const td0 = document.createElement('th'); td0.scope = 'row'; td0.textContent = String(d.key); tr.append(td0);
+    for (const c of d.cells) { const td = tr.insertCell(); td.textContent = fmt(c, m, agg); if (!c) td.className = 'na'; td.style.background = shade(c); if (c) td.title = c.n + ' kampe med data'; }
+    const tt = tr.insertCell(); tt.className = 'tot' + (d.total ? '' : ' na'); tt.textContent = fmt(d.total, m, agg);
+    if (!colKeys.length) tt.style.background = shade(d.total);
+    const tg = tr.insertCell(); tg.className = 'n'; tg.textContent = String(d.games);
+  }
+  if (!data.length) {
+    const tr = tb.insertRow(); const td = tr.insertCell(); td.colSpan = colKeys.length + 3; td.textContent = 'Ingen rækker med de valgte filtre.'; td.className = 'na';
+  }
+  tableBox.replaceChildren(table);
+  drawBars(data, m, agg, dimLabel, colKeys.length > 0);
+}
+
+function drawBars(data, m, agg, dimLabel, hasCols) {
+  const box = $('#pivot-chart');
+  const label = (hasCols ? 'Samlet' : m.label) + (isRate(m) || m.count ? '' : ' · ' + (AGGS.find((a) => a.id === agg) || {}).label.toLowerCase());
+  $('#pivot-chart-h').textContent = label + ' pr. ' + dimLabel.toLowerCase();
+  const rows = data.filter((d) => d.total).slice().sort((a, b) => b.total.v - a.total.v).slice(0, 15);
+  box.querySelectorAll('svg, .d9-fail').forEach((n) => n.remove());
+  if (!box.contains(tip)) box.append(tip);
+  if (!rows.length) return;
+  const W = Math.max(280, box.clientWidth || 400);
+  const rowH = 26, top = 4;
+  const H = top + rows.length * rowH + 4;
+  const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', label);
+  // measure label widths
+  const meas = svg.append('g').attr('font-size', 12);
+  const lw = Math.max(...rows.map((d) => meas.append('text').text(String(d.key)).node().getComputedTextLength()));
+  const vw = Math.max(...rows.map((d) => meas.append('text').text(fmt(d.total, m, agg)).node().getComputedTextLength()));
+  meas.remove();
+  const left = Math.ceil(lw) + 10, right = Math.ceil(vw) + 10;
+  const minV = Math.min(0, ...rows.map((d) => d.total.v)), maxV = Math.max(0, ...rows.map((d) => d.total.v));
+  const x = d3.scaleLinear([minV, maxV || 1], [left, W - right]);
+  const y = (i) => top + i * rowH;
+  svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', top).attr('y2', H - 4).attr('stroke', 'var(--cds-chart-axis)');
+  const g = svg.selectAll('g.bar').data(rows).join('g').attr('class', 'bar');
+  g.append('text').attr('x', left - 8).attr('y', (d, i) => y(i) + rowH / 2).attr('dy', '0.35em').attr('text-anchor', 'end')
+    .attr('font-size', 12).attr('fill', 'var(--color-fg)').text((d) => String(d.key));
+  g.append('rect').attr('x', (d) => Math.min(x(0), x(d.total.v))).attr('y', (d, i) => y(i) + 5).attr('height', rowH - 10)
+    .attr('width', (d) => Math.max(1, Math.abs(x(d.total.v) - x(0)))).attr('rx', 4).attr('fill', dash.colors[0]);
+  g.append('text').attr('x', (d) => (d.total.v >= 0 ? x(d.total.v) + 6 : x(d.total.v) - 6)).attr('text-anchor', (d) => (d.total.v >= 0 ? 'start' : 'end'))
+    .attr('y', (d, i) => y(i) + rowH / 2).attr('dy', '0.35em').attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text((d) => fmt(d.total, m, agg));
+  g.append('rect').attr('x', 0).attr('y', (d, i) => y(i)).attr('width', W).attr('height', rowH).attr('fill', 'transparent')
+    .on('mousemove', (ev, d) => {
+      const [mx, my] = d3.pointer(ev, box);
+      tip.replaceChildren(Object.assign(document.createElement('div'), { className: 'k', textContent: String(d.key) }),
+        Object.assign(document.createElement('div'), { textContent: label + ': ' + fmt(d.total, m, agg) }),
+        Object.assign(document.createElement('div'), { className: 'k', textContent: d.games + ' kampe' }));
+      tip.hidden = false;
+      const bw = box.clientWidth, tw = tip.offsetWidth;
+      tip.style.left = Math.min(bw - tw - 4, Math.max(4, mx + 12)) + 'px';
+      tip.style.top = Math.max(0, my - 10) + 'px';
+    })
+    .on('mouseleave', () => { tip.hidden = true; });
+}
+
+function drawGames(G) {
+  const tb = $('#games tbody');
+  if (G.status !== 'ok') { tb.replaceChildren(); return; }
+  const rows = G.data.slice().sort((a, b) => (a.date + a.game_no).localeCompare(b.date + b.game_no));
+  tb.replaceChildren(...rows.map((g) => {
+    const tr = document.createElement('tr'); tr.dataset.key = g.game_id;
+    const add = (t, cls) => { const td = tr.insertCell(); td.textContent = t; if (cls) td.className = cls; return td; };
+    add(g.game, 'sh'); add(String(g.hvid_pts), 'num'); add(String(g.sort_pts), 'num'); add(g.winner, 'sh');
+    add(g.complete, 'sh'); add(g.note); add(g.quality);
+    return tr;
+  }));
+}
+
+function drawDuos() {
+  const D = dash.data('duos'); const tb = $('#duos tbody');
+  if (D.status !== 'ok') { tb.replaceChildren(); return; }
+  tb.replaceChildren(...D.data.map((p) => {
+    const tr = document.createElement('tr');
+    for (const [k, cls] of [['pair', ''], ['games', 'num'], ['wins', 'num'], ['winpct', 'num']]) { const td = tr.insertCell(); td.textContent = String(p[k]); if (cls) td.className = cls; }
+    return tr;
+  }));
+}
+
+
+// ---------- box score ----------
+const boxScope = $('#d9-box-scope'), boxModeBox = $('#d9-box-mode'), boxTable = $('#box-table');
+boxScope.addEventListener('change', () => { boxSort = null; dash.setParams({ boxScope: boxScope.value }); });
+boxModeBox.addEventListener('click', (e) => { const b = e.target.closest('button[data-mode]'); if (b) dash.setParams({ boxMode: b.dataset.mode }); });
+let boxSort = null;
+boxTable.addEventListener('click', (e) => {
+  const b = e.target.closest('th button[data-col]'); if (!b) return;
+  const col = b.dataset.col;
+  boxSort = boxSort && boxSort.col === col ? { col, dir: -boxSort.dir } : { col, dir: col === 'player' || col === 'team' ? 1 : -1 };
+  drawBox();
+});
+const BOX_COLS = [
+  { id: 'gp', label: 'Kampe' }, { id: 'MIN', label: 'MIN' }, { id: 'PTS', label: 'PTS' },
+  { id: 'FG', label: 'FGM–FGA', pair: ['FGM', 'FGA'] }, { id: 'FGP', label: 'FG%', pct: ['FGM', 'FGA'] },
+  { id: 'P2', label: '2PM–2PA', pair: ['P2M', 'P2A'] }, { id: 'P2P', label: '2P%', pct: ['P2M', 'P2A'] },
+  { id: 'REB', label: 'REB' }, { id: 'OREB', label: 'OREB' }, { id: 'DREB', label: 'DREB' }, { id: 'AST', label: 'AST' },
+];
+function boxLine(rs, mode) {
+  const out = { gp: new Set(rs.map((r) => r.game_id)).size };
+  const agg = (f) => { const xs = rs.map((r) => num(r[f])).filter((x) => x !== null); if (!xs.length) return null; const t = xs.reduce((a, b) => a + b, 0); return mode === 'sum' ? t : t / xs.length; };
+  for (const c of BOX_COLS) {
+    if (c.id === 'gp') continue;
+    if (c.pair) out[c.id] = [agg(c.pair[0]), agg(c.pair[1])];
+    else if (c.pct) { let a = 0, b = 0; for (const r of rs) { const x = num(r[c.pct[0]]), y = num(r[c.pct[1]]); if (x === null || y === null) continue; a += x; b += y; } out[c.id] = b > 0 ? (a / b) * 100 : null; }
+    else out[c.id] = agg(c.id);
+  }
+  return out;
+}
+function boxFmt(c, v, mode) {
+  const one = (x) => (x === null || x === undefined ? '–' : mode === 'sum' && c.id !== 'MIN' ? String(Math.round(x * 10) / 10) : x.toFixed(1));
+  if (c.id === 'gp') return String(v);
+  if (c.pair) return v[0] === null || v[1] === null ? (v[0] === null ? '–' : one(v[0]) + '–?') : one(v[0]) + '–' + one(v[1]);
+  if (c.pct) return v === null ? '–' : Math.round(v) + '%';
+  return one(v);
+}
+const sortVal = (c, v) => (c.pair ? (v[0] ?? null) : v);
+function drawBox() {
+  const p = P(); const G = dash.data('games'), R = dash.data('player_games');
+  boxModeBox.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === p.boxMode)));
+  if (G.status === 'ok') {
+    const games = G.data.slice().sort((a, b) => (a.date + a.game_no).localeCompare(b.date + b.game_no));
+    const days = [...new Map(games.map((g) => [g.session, g.date])).keys()];
+    const opts = [new Option('Alle kampe', 'all'), ...days.map((d) => new Option('Spilledag ' + d, 'day:' + d)), ...games.map((g) => new Option(g.game, 'game:' + g.game_id))];
+    if (boxScope.options.length !== opts.length) boxScope.replaceChildren(...opts);
+    boxScope.value = p.boxScope;
+  }
+  if (R.status !== 'ok') { if (R.status === 'error') failLine(boxTable, 'Failed to load'); else boxTable.replaceChildren(); return; }
+  const scope = p.boxScope || 'all', mode = p.boxMode || 'pergame';
+  const rows = R.data.filter((r) => scope === 'all' || (scope.startsWith('day:') ? r.session === scope.slice(4) : r.game_id === scope.slice(5)));
+  const single = scope.startsWith('game:');
+  const by = new Map(); for (const r of rows) { if (!by.has(r.player)) by.set(r.player, []); by.get(r.player).push(r); }
+  const lines = [...by.entries()].map(([player, rs]) => ({ player, team: [...new Set(rs.map((r) => r.team))].join('/'), ...boxLine(rs, single ? 'sum' : mode) }));
+  const s = boxSort || { col: 'PTS', dir: -1 };
+  const colDef = BOX_COLS.find((c) => c.id === s.col);
+  lines.sort((a, b) => {
+    if (s.col === 'player' || s.col === 'team') return String(a[s.col]).localeCompare(String(b[s.col]), 'da') * s.dir;
+    const x = sortVal(colDef, a[s.col]), y = sortVal(colDef, b[s.col]);
+    if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1; return (x - y) * s.dir;
+  });
+  if (single) lines.sort((a, b) => a.team.localeCompare(b.team, 'da'));
+  const effMode = single ? 'sum' : mode;
+  const table = document.createElement('table'); const hr = table.createTHead().insertRow();
+  const head = (id, label) => { const t = document.createElement('th'); t.scope = 'col'; const b = document.createElement('button'); b.dataset.col = id; b.textContent = label; t.append(b); if (s.col === id) t.setAttribute('aria-sort', s.dir > 0 ? 'ascending' : 'descending'); hr.append(t); };
+  head('player', 'Spiller'); head('team', 'Hold');
+  BOX_COLS.forEach((c) => { if (!(single && c.id === 'gp')) head(c.id, c.label); });
+  const tb = table.createTBody();
+  const addRow = (l, isTotal) => {
+    const tr = tb.insertRow(); const t0 = document.createElement('th'); t0.scope = 'row'; t0.textContent = l.player; tr.append(t0);
+    const tt = tr.insertCell(); tt.textContent = l.team; tt.style.textAlign = 'left';
+    BOX_COLS.forEach((c) => { if (single && c.id === 'gp') return; const td = tr.insertCell(); td.textContent = boxFmt(c, l[c.id], effMode); if (td.textContent === '–') td.className = 'na'; });
+    if (isTotal) tr.querySelectorAll('th, td').forEach((x) => { x.style.fontWeight = '600'; });
+  };
+  lines.forEach((l) => addRow(l, false));
+  if (single) for (const team of ['Hvid', 'Sort']) {
+    const rs = rows.filter((r) => r.team === team); if (rs.length) addRow({ player: team + ' i alt', team, ...boxLine(rs, 'sum') }, true);
+  }
+  boxTable.replaceChildren(table);
+}
+
+function fillMarks() {
+  document.querySelectorAll('[data-source][data-field]:not(th)').forEach((el) => {
+    if (el.closest('table')) return;
+    const d = dash.data(el.dataset.source);
+    if (d.status !== 'ok') return;
+    let row = null;
+    if (el.dataset.row != null) row = d.data[Number(el.dataset.row)];
+    else if (el.dataset.where) {
+      const [k, v] = el.dataset.where.split('=');
+      row = d.data.find((r) => String(r[k]) === decodeURIComponent(v));
+    }
+    el.classList.remove('dash-skeleton');
+    el.textContent = row && row[el.dataset.field] != null ? String(row[el.dataset.field]) : '—';
+  });
+}
+
+dash.onData(() => { fillMarks(); draw(); drawBox(); });
+</script>
+</body>
+</html>
