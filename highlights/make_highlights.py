@@ -1241,6 +1241,10 @@ def main(argv=None):
     pl.add_argument("--behold-tmp", action="store_true", help="behold de enkelte klip bagefter")
 
     args = p.parse_args(argv)
+    for d in args.videomappe:
+        if not Path(d).expanduser().is_dir():
+            die(f"Finder ikke videomappen {d}. Skriv stien til mappen med videoerne, fx /Volumes/GoPro/DCIM, "
+                "eller udelad --videomappe hvis videoerne ligger i ~/HoopStatsLocal.")
     {"importer": cmd_importer, "plan": cmd_plan, "lav": cmd_lav}[args.cmd](args)
 
 
