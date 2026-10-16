@@ -16,6 +16,7 @@ import csv
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -918,6 +919,9 @@ def cmd_plan(args):
     need_ffmpeg()
     chosen, used, missing, roster, games = build_plan(args)
     print_plan(chosen, used, missing, roster, games, args.max)
+    if not has_drawtext() and not has_pillow():
+        print("\nOBS: din ffmpeg kan ikke skrive tekst (den mangler drawtext-filteret). "
+              f"Installér Pillow før du kører lav:\n  {pillow_hint()}")
 
 
 # --- Video ----------------------------------------------------------------------------------
@@ -1070,22 +1074,30 @@ def has_drawtext() -> bool:
     return re.search(r"\sdrawtext\s", out) is not None
 
 
+def pillow_hint() -> str:
+    return f"{shlex.quote(sys.executable)} -m pip install --user pillow"
+
+
+def has_pillow() -> bool:
+    try:
+        import PIL  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
 def pick_renderer(args, work, W, H):
     fonts = find_fonts(args.font)
     if args.tekst in ("auto", "drawtext") and fonts[0] and has_drawtext():
         return Drawtext(work, fonts, H / 1080)
     if args.tekst == "drawtext":
         die("ffmpeg mangler drawtext-filteret, eller der er ingen skrifttype (angiv en med --font).")
-    if args.tekst in ("auto", "pillow"):
-        try:
-            import PIL  # noqa: F401
-            return Pillow(work, fonts, W, H)
-        except ImportError:
-            pass
+    if args.tekst in ("auto", "pillow") and has_pillow():
+        return Pillow(work, fonts, W, H)
     if args.tekst == "ingen":
         return None
     die("Kan ikke skrive navne på videoen: ffmpeg mangler drawtext-filteret, og Pillow er ikke installeret.\n"
-        "Løs det med:  python3 -m pip install --user pillow     (eller kør med --tekst ingen)")
+        f"Løs det med:  {pillow_hint()}     (eller kør med --tekst ingen)")
 
 
 def need_ffmpeg():

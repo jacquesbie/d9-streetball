@@ -9,8 +9,9 @@ Scriptet kører på din egen computer, hvor videoerne og `~/HoopStatsLocal` ligg
 ## Det skal du bruge
 
 - `ffmpeg` og `ffprobe`: `brew install ffmpeg`
-- Python 3.9 eller nyere (den der følger med macOS, er fin). Ingen pakker kræves. Hvis din ffmpeg mangler
-  `drawtext`-filteret, skriver scriptet navnene med Pillow i stedet: `python3 -m pip install --user pillow`
+- Python 3.9 eller nyere. Tjek med `python3 --version`; viser den 3.6, så brug `/usr/bin/python3` i stedet.
+- Pillow, til navnene på videoen: `python3 -m pip install --user pillow`. Homebrews ffmpeg har ikke længere
+  `drawtext`-filteret, så scriptet tegner teksten med Pillow. `plan` siger til, hvis det mangler.
 
 ## Tre trin
 
