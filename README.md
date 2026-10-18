@@ -9,7 +9,7 @@ Stats fra vores pickup-kampe: box scores, en pivot til selv at vende og dreje ta
 
 **PER, AST/TO og TS%** står sidst i box score og i pivotens "Tal". De ligger i `kpi.js`, fordi `build_site.py` skriver
 `index.html` forfra; `./deploy.sh` sætter linket til `kpi.js` ind igen, hvis det mangler. PER er Hollingers model tilpasset
-jeres kampe (15 er snittet i hver kamp), TS% er point pr. skudforsøg med 2'ere og skud indenfor, og AST/TO vises, når
+jeres kampe (15 er snittet i hver kamp), TS% regnes på NBA-skalaen ud fra 2'ere og skud indenfor, og AST/TO vises, når
 turnovers registreres (feltet `TOV`).
 
 **Fantasy:** https://jacquesbie.github.io/d9-streetball/fantasy/ har roto 8-cat (FG%, 2'ere, PTS, REB, AST, STL, BLK og TO,

@@ -12,10 +12,11 @@
 
   for (const r of R) {
     r.tov = n(r.TOV) ?? n(r.TO);
-    // TS%: point pr. skudforsøg, hvor en kurv indenfor tæller 1 og en 2'er 2. Der er ingen straffekast.
+    // TS% på NBA-skalaen: en kurv indenfor tæller som en NBA-2'er og jeres 2'er som en 3'er, og TS% er point ÷ (2 × forsøg).
+    // Der er ingen straffekast. Rammer man kun indenfor, er TS% det samme som FG%.
     const p1m = n(r.P1M), p2m = n(r.P2M), p1a = n(r.P1A), p2a = n(r.P2A);
-    r.tsPts = p1m !== null && p2m !== null ? p1m + 2 * p2m : null;
-    r.tsAtt = p1a !== null && p2a !== null ? p1a + p2a : null;
+    r.tsPts = p1m !== null && p2m !== null ? 2 * p1m + 3 * p2m : null;
+    r.tsAtt = p1a !== null && p2a !== null ? 2 * (p1a + p2a) : null;
   }
 
   // PER efter Hollingers model, tilpasset D9: point, bomskud, rebounds og assists (plus steals, blocks og turnovers,
@@ -62,7 +63,7 @@
   const note = document.querySelector('#boxscore .d9-note');
   if (note) note.after(Object.assign(document.createElement('p'), { className: 'd9-note', textContent:
     'PER, AST/TO og TS% står sidst. PER er effektivitet pr. minut, hvor 15 er snittet i de kampe, man spillede.'
-    + ' AST/TO kræver turnovers og vises, når de registreres. TS% er point pr. skudforsøg, hvor en kurv indenfor tæller 1'
-    + " og en 2'er 2 (der er ingen straffekast). Rammer man kun indenfor, er TS% det samme som FG%; mange 2'ere kan give over 100 %." }));
+    + " AST/TO kræver turnovers og vises, når de registreres. TS% regnes som i NBA, hvor en kurv indenfor svarer til en 2'er"
+    + " og jeres 2'er til en 3'er (der er ingen straffekast). Rammer man kun indenfor, er TS% det samme som FG%, og 2'ere trækker op." }));
   if (typeof drawAll === 'function') drawAll();
 })();
