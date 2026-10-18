@@ -7,6 +7,19 @@ Stats fra vores pickup-kampe: box scores, en pivot til selv at vende og dreje ta
 Én selvstændig side (`index.html`) med data bagt ind. Bygges fra HoopStats-dashboardet med
 `python3 ~/HoopStatsLocal/dashboard/build_site.py` og udgives med `./deploy.sh`.
 
+**Fantasy:** https://jacquesbie.github.io/d9-streetball/fantasy/ har roto 8-cat (FG%, 2'ere, PTS, REB, AST, STL, BLK og TO,
+hvor færrest turnovers vinder) og en player rater med z-score pr. kategori og samlet. Perioden kan justeres, og visningen
+kan deles som link. Siden henter tallene fra `index.html`, hver gang den åbnes, så den følger med efter `./deploy.sh`.
+Steals, blocks og turnovers kommer med af sig selv, når `player_games` får felterne `STL`, `BLK` og `TOV`.
+Fantasy-holdene skrives i `fantasy/hold.json`. Uden hold er hver spiller sit eget hold:
+
+```json
+{ "hold": [
+  { "navn": "Hold 1", "manager": "Jacob", "spillere": ["Jacob", "Nicklas", "Thomas"] },
+  { "navn": "Hold 2", "manager": "Casper", "spillere": ["Casper", "Faber", "Moltved"] }
+] }
+```
+
 **Highlights:** `highlights/make_highlights.py` klipper en video på højst 5 minutter ud af kampoptagelserne, med alle
 spillere mindst én gang. Se [highlights/README.md](highlights/README.md).
 

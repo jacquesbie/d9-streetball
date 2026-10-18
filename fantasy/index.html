@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D9 Fantasy</title>
+<meta name="description" content="Roto 8-cat og player rater med z-scores, regnet ud fra D9 Streetball-stats.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500&display=swap">
+<style>/* Same court-blue neutrals and orange accent as the stats page; blue/red diverging pair for z-scores. */
+:root {
+  --color-bg: #eef2f6; --color-panel: #ffffff; --color-fg: #18212b; --color-fg-muted: #5a6676;
+  --color-border-line: #d9e0e8; --color-bad: #c0392b; --color-warn: #9a6200;
+  --d9-accent: #c95b1e; --pos: #2a78d6; --neg: #e34948; --axis: #b7c1cc;
+  --font-sans: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --font-cond: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+  --gap-xs: 4px; --gap-sm: 8px; --gap-md: 14px; --gap-lg: 22px;
+  --pad-md: 12px; --pad-lg: 18px;
+  --fs-caption: 0.8rem; --fs-body: 0.95rem; --fs-heading: 1.1rem; --fs-title: 2rem;
+  --radius: 10px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --color-bg: #10151b; --color-panel: #18202a; --color-fg: #e6ebf1; --color-fg-muted: #98a4b3;
+  --color-border-line: #2a3442; --color-bad: #ef6a5a; --color-warn: #e0a43a;
+  --d9-accent: #f0894a; --pos: #3987e5; --neg: #e66767; --axis: #3d4a5a; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --color-bg: #10151b; --color-panel: #18202a; --color-fg: #e6ebf1; --color-fg-muted: #98a4b3;
+  --color-border-line: #2a3442; --color-bad: #ef6a5a; --color-warn: #e0a43a;
+  --d9-accent: #f0894a; --pos: #3987e5; --neg: #e66767; --axis: #3d4a5a; color-scheme: dark; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-sans); font-size: 15px; line-height: 1.45;
+  padding-inline: 16px; padding-block: 24px 48px; }
+@media (min-width: 900px) { body { padding-inline: 32px; } }
+.d9-page { max-width: 1240px; margin-inline: auto; }
+.d9 { display: grid; gap: var(--gap-lg); }
+.d9 h1, .d9 h2 { margin: 0; text-wrap: balance; }
+.d9-back { color: var(--color-fg-muted); font-size: var(--fs-caption); text-decoration: none; }
+.d9-back:hover { color: var(--color-fg); text-decoration: underline; }
+.d9-title { font-family: var(--font-cond); font-weight: 400; font-size: var(--fs-title); }
+.d9-title span { color: var(--d9-accent); }
+.d9-take { margin: var(--gap-xs) 0 0; color: var(--color-fg-muted); font-size: var(--fs-body); max-width: 75ch; }
+.d9-take b { font-weight: 600; color: var(--color-fg); }
+.d9-filters { display: flex; flex-wrap: wrap; gap: var(--gap-md) var(--gap-lg); align-items: end; background: var(--color-panel);
+  border: 1px solid var(--color-border-line); border-radius: var(--radius); padding: var(--pad-md) var(--pad-lg); }
+.d9-field { display: grid; gap: 4px; font-size: var(--fs-caption); color: var(--color-fg-muted); }
+.d9-field select, .d9-field input[type=number] { font: inherit; font-size: var(--fs-body); color: var(--color-fg); background: var(--color-bg);
+  border: 1px solid var(--color-border-line); border-radius: var(--radius); padding: 6px 8px; min-width: 8rem; }
+.d9-field input[type=number] { min-width: 0; width: 5rem; }
+.d9-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.d9-chip { font: inherit; font-size: var(--fs-caption); cursor: pointer; border: 1px solid var(--color-border-line); background: var(--color-bg);
+  color: var(--color-fg); border-radius: 999px; padding: 5px 12px; }
+.d9-chip:hover { border-color: var(--color-fg-muted); }
+.d9-chip[aria-pressed=true] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+.d9-chip.nodata { border-style: dashed; }
+.d9-chip.nodata[aria-pressed=true] { background: var(--color-bg); color: var(--color-fg); border-color: var(--color-fg); }
+.d9-chip:focus-visible, .d9 th button:focus-visible, .d9-how summary:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+.d9-tiles { display: grid; gap: var(--gap-md); grid-template-columns: 1fr; }
+@media (min-width: 460px) { .d9-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 760px) { .d9-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.d9-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--radius);
+  padding: var(--pad-md) var(--pad-lg); display: grid; gap: var(--gap-xs); align-content: start; min-width: 0; }
+.d9-tile .lbl, .d9-tile .sub { color: var(--color-fg-muted); font-size: var(--fs-caption); }
+.d9-tile .big { font-family: var(--font-cond); font-weight: 400; font-size: var(--fs-title); line-height: 1.15;
+  font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.d9-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--radius);
+  padding: var(--pad-lg); display: grid; gap: var(--gap-md); min-width: 0; }
+.d9-card h2 { font-size: var(--fs-heading); font-weight: 600; }
+.d9-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: start; gap: var(--gap-sm) var(--gap-md); }
+.d9-note { margin: 0; color: var(--color-fg-muted); font-size: var(--fs-caption); max-width: 85ch; }
+.d9-note:empty { display: none; }
+.d9-note.warn { color: var(--color-warn); }
+.d9-scroll { overflow: auto; max-height: 40rem; min-width: 0; }
+.d9 table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: var(--fs-body); font-variant-numeric: tabular-nums; }
+.d9 th, .d9 td { padding: 6px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--color-border-line); }
+.d9 th:first-child, .d9 td:first-child { text-align: left; position: sticky; left: 0; background: var(--color-panel); z-index: 1; }
+.d9 thead th { position: sticky; top: 0; background: var(--color-panel); font-weight: 600; color: var(--color-fg-muted);
+  font-size: var(--fs-caption); z-index: 2; vertical-align: bottom; }
+.d9 thead th:first-child { z-index: 3; }
+.d9 th button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.d9 th[aria-sort] button { color: var(--color-fg); }
+.d9 th[aria-sort=descending] button::after { content: " ↓"; }
+.d9 th[aria-sort=ascending] button::after { content: " ↑"; }
+.d9 th.nodata { font-weight: 400; }
+.d9 th .hint { display: block; font-weight: 400; font-size: .7rem; }
+.d9 td.n, .d9 td.nodata { color: var(--color-fg-muted); }
+.d9 td.c { padding-block: 4px; }
+.d9 td.c b { display: block; font-weight: 500; }
+.d9 td.c small { display: block; color: var(--color-fg-muted); font-size: .72rem; line-height: 1.2; }
+.d9 td.tot { font-weight: 600; }
+.d9-rk { display: inline-block; min-width: 1.7em; color: var(--color-fg-muted); font-weight: 400; }
+.d9 td.team { white-space: normal; min-width: 11rem; max-width: 18rem; }
+.d9 td.team small { display: block; color: var(--color-fg-muted); font-size: .75rem; padding-left: 1.7em; }
+.d9-zt { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+.d9-bar { position: relative; width: 6rem; height: 8px; flex: none; }
+.d9-bar::before { content: ""; position: absolute; left: 50%; top: -4px; bottom: -4px; width: 1px; background: var(--axis); }
+.d9-bar i { position: absolute; top: 0; bottom: 0; }
+.d9-bar i.pos { left: 50%; background: var(--pos); border-radius: 0 4px 4px 0; }
+.d9-bar i.neg { right: 50%; background: var(--neg); border-radius: 4px 0 0 4px; }
+.d9-empty, .d9-fail { color: var(--color-fg-muted); font-size: var(--fs-caption); padding: var(--pad-lg) 0; }
+.d9-fail { display: block; }
+.d9-fail::before { content: ""; display: inline-block; width: .4rem; height: .4rem; margin-right: 8px; border-radius: 50%; background: var(--color-bad); vertical-align: middle; }
+.d9-how summary { cursor: pointer; font-size: var(--fs-heading); font-weight: 600; }
+.d9-how ul { margin: 0; padding-left: 1.1rem; display: grid; gap: var(--gap-sm); max-width: 85ch; font-size: var(--fs-body); }
+.d9-how code { font-size: .85em; }
+.d9-foot { margin: 0; color: var(--color-fg-muted); font-size: var(--fs-caption); }
+</style>
+</head>
+<body>
+<div class="d9-page">
+<div class="d9">
+  <header>
+    <a class="d9-back" href="../">← D9 Streetball Stats</a>
+    <h1 class="d9-title">D9 <span>Fantasy</span></h1>
+    <p class="d9-take" id="take">Henter stats fra forsiden …</p>
+  </header>
+
+  <section class="d9-filters" id="filters" aria-label="Periode og indstillinger" hidden>
+    <label class="d9-field">Fra<select id="from"></select></label>
+    <label class="d9-field">Til<select id="to"></select></label>
+    <div class="d9-field">Periode<div class="d9-chips" id="presets">
+      <button class="d9-chip" data-preset="all">Hele sæsonen</button>
+      <button class="d9-chip" data-preset="last3">Seneste 3 spilledage</button>
+      <button class="d9-chip" data-preset="last">Seneste spilledag</button>
+    </div></div>
+    <div class="d9-field">Format<div class="d9-chips" id="formats"></div></div>
+    <div class="d9-field">Tal<div class="d9-chips" id="basis">
+      <button class="d9-chip" data-basis="total">I alt</button>
+      <button class="d9-chip" data-basis="kamp">Pr. kamp</button>
+    </div></div>
+    <label class="d9-field">Min. kampe<input id="min" type="number" min="1" step="1" value="1"></label>
+    <div class="d9-field">Kategorier<div class="d9-chips" id="cats"></div></div>
+  </section>
+
+  <section class="d9-tiles" id="tiles" aria-label="Overblik" hidden>
+    <div class="d9-tile"><span class="lbl" id="t-roto-lbl">Fører i roto</span><span class="big" id="t-roto">—</span><span class="sub" id="t-roto-sub"></span></div>
+    <div class="d9-tile"><span class="lbl">Højeste player rater</span><span class="big" id="t-rater">—</span><span class="sub" id="t-rater-sub"></span></div>
+    <div class="d9-tile"><span class="lbl">Periode</span><span class="big" id="t-period">—</span><span class="sub" id="t-period-sub"></span></div>
+  </section>
+
+  <section class="d9-card" id="roto-card" aria-labelledby="roto-h" hidden>
+    <div class="d9-head">
+      <div><h2 id="roto-h">Roto-stilling</h2><p class="d9-note" id="roto-note"></p></div>
+      <div class="d9-chips" id="view" hidden>
+        <button class="d9-chip" data-view="hold">Hold</button>
+        <button class="d9-chip" data-view="spillere">Spillere</button>
+      </div>
+    </div>
+    <div class="d9-scroll" id="roto"></div>
+    <p class="d9-note warn" id="roto-warn"></p>
+  </section>
+
+  <section class="d9-card" id="rater-card" aria-labelledby="rater-h" hidden>
+    <div><h2 id="rater-h">Player rater</h2><p class="d9-note" id="rater-note"></p></div>
+    <div class="d9-scroll" id="rater"></div>
+    <p class="d9-note" id="rater-out"></p>
+  </section>
+
+  <details class="d9-card d9-how" id="how" hidden>
+    <summary>Sådan regnes det</summary>
+    <ul>
+      <li><b>Roto:</b> I hver kategori får den bedste lige så mange point, som der er deltagere, og den dårligste får 1.
+        Ved lige stilling deles pointene. I TO er færrest turnovers bedst. Summen af kategorierne er stillingen.</li>
+      <li><b>Player rater:</b> z-score = (spillerens tal − gennemsnittet) ÷ spredningen blandt spillerne i perioden.
+        0 er gennemsnitligt, +1 er en hel spredning bedre end snittet. Turnovers vendes, så få turnovers giver plus.
+        Total er summen af kategorierne.</li>
+      <li><b>FG% vægtes med antal skud:</b> værdien er scoringer − (alles FG% × spillerens skudforsøg). En spiller, der rammer
+        5 af 5, slår derfor ikke en, der rammer 30 af 60 i en bedre procent end snittet.</li>
+      <li><b>I alt / Pr. kamp:</b> "I alt" lægger alle kampene i perioden sammen og belønner også at møde op. "Pr. kamp" er
+        snittet over de kampe, hvor tallet blev målt.</li>
+      <li><b>Manglende tal</b> vises som –. Er en kategori ikke målt i en spillers kampe (fx rebounds og assists i juli), tæller
+        den som gennemsnit: 0 i z-score og midt i feltet i roto. Kategorier, som ingen har tal for i perioden, er slået fra.</li>
+      <li><b>Automatisk:</b> Siden henter tallene fra forsiden, hver gang den åbnes, så nye kampe kommer med efter
+        <code>./deploy.sh</code>. Steals, blocks og turnovers kommer med af sig selv, når stats-siden får felterne
+        <code>STL</code>, <code>BLK</code> og <code>TOV</code>.</li>
+      <li><b>Hold:</b> Fantasy-holdene står i <code>fantasy/hold.json</code>. Uden hold er hver spiller sit eget hold.</li>
+    </ul>
+  </details>
+
+  <p class="d9-foot" id="foot"></p>
+</div>
+</div>
+
+<script>
+// Fantasy for D9 Streetball. Reads window.D9_DATA out of the stats page (../index.html) on every load, so a new
+// ./deploy.sh is all it takes. Roto standings and the z-score rater are worked out from player_games for the
+// chosen period; categories without numbers (steals, blocks, turnovers today) switch on when the fields show up.
+(function () {
+  'use strict';
+
+  const CATS = [
+    { id: 'FGP', label: 'FG%', name: 'Skud-% (vægtet med forsøg)', ratio: true },
+    { id: 'P2M', label: "2'ere", name: "Scorede 2'ere", fields: ['P2M'] },
+    { id: 'PTS', label: 'PTS', name: 'Point', fields: ['PTS'] },
+    { id: 'REB', label: 'REB', name: 'Rebounds', fields: ['REB'] },
+    { id: 'AST', label: 'AST', name: 'Assists', fields: ['AST'] },
+    { id: 'STL', label: 'STL', name: 'Steals', fields: ['STL'] },
+    { id: 'BLK', label: 'BLK', name: 'Blocks', fields: ['BLK'] },
+    { id: 'TO', label: 'TO', name: 'Turnovers (færrest er bedst)', fields: ['TOV', 'TO'], low: true },
+  ];
+  const ALIASES = { bie: 'Jacob', jonas: 'Nicehair' };
+  const PRESETS = { all: 'alle', last3: 'seneste3', last: 'seneste' };
+
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  const num = (v) => { if (v == null || v === '') return null; const n = Number(v); return Number.isFinite(n) ? n : null; };
+  const fmt = (v, d = 0) => v.toLocaleString('da-DK', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const signed = (v, d) => (Math.abs(v) < 0.5 * 10 ** -d ? fmt(0, d) : (v > 0 ? '+' : '−') + fmt(Math.abs(v), d));
+  const pts = (v) => fmt(v, Number.isInteger(v) ? 0 : 1);
+  const andList = (xs) => (xs.length < 2 ? xs.join('') : xs.slice(0, -1).join(', ') + ' og ' + xs[xs.length - 1]);
+  const pressed = (box, attr, isOn) => box.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(isOn(b.dataset[attr]))));
+
+  let DATA, ROWS, SESSIONS, FORMATS, EVER, UPDATED = '', LOADED = '', TEAMS = [], TEAM_WARN = [];
+  const S = { preset: 'all', from: '', to: '', formats: new Set(), basis: 'total', min: 1, cats: new Set(CATS.map((c) => c.id)), view: 'hold' };
+  const SORT = { roto: { key: 'total', dir: -1 }, rater: { key: 'total', dir: -1 } };
+
+  function catValue(r, c) {
+    for (const f of c.fields) { const v = num(r[f]); if (v != null) return v; }
+    return null;
+  }
+
+  // ---------- loading ----------
+
+  function fail(msg) {
+    $('#take').innerHTML = `<span class="d9-fail">${msg}</span>`;
+  }
+
+  async function load() {
+    let html;
+    try {
+      const res = await fetch('../index.html', { cache: 'no-cache' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      html = await res.text();
+    } catch (e) {
+      return fail(`Kunne ikke hente stats fra forsiden (${esc(e.message)}). Åbn siden på
+        <a href="https://jacquesbie.github.io/d9-streetball/fantasy/">jacquesbie.github.io/d9-streetball/fantasy/</a>,
+        eller kør <code>python3 -m http.server</code> i mappen d9-streetball og åbn localhost:8000/fantasy/.`);
+    }
+    const m = html.match(/window\.D9_DATA\s*=\s*(\{[\s\S]*?\});\s*<\/script>/);
+    try {
+      if (!m) throw new Error('window.D9_DATA mangler');
+      DATA = JSON.parse(m[1]);
+    } catch (e) {
+      return fail(`Fandt ikke tallene på forsiden (${esc(e.message)}).`);
+    }
+    const u = html.match(/Opdateret\s+([^·<]+?)\s*[·<]/);
+    UPDATED = u ? u[1] : '';
+    LOADED = new Date().toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' });
+    ROWS = (DATA.player_games || []).filter((r) => r.player && r.date);
+    if (!ROWS.length) return fail('Der er ingen kampe i stats endnu.');
+    await loadTeams();
+    setup();
+    draw();
+  }
+
+  async function loadTeams() {
+    let raw;
+    try {
+      const res = await fetch('hold.json', { cache: 'no-cache' });
+      if (!res.ok) return;
+      raw = await res.json();
+    } catch (e) {
+      TEAM_WARN.push(`hold.json kunne ikke læses: ${e.message}`);
+      return;
+    }
+    const known = new Map(ROWS.map((r) => [r.player.toLowerCase(), r.player]));
+    for (const [alias, name] of Object.entries(ALIASES)) if (!known.has(alias)) known.set(alias, name);
+    const list = Array.isArray(raw) ? raw : (raw && (raw.hold || raw.teams)) || [];
+    const seen = new Map();
+    TEAMS = list.map((t, i) => {
+      const name = String(t.navn || t.name || `Hold ${i + 1}`);
+      const players = [];
+      for (const p of t.spillere || t.players || []) {
+        const key = String(p).trim();
+        const player = known.get(key.toLowerCase()) || key;
+        if (!known.has(key.toLowerCase())) TEAM_WARN.push(`${player} (${name}) har ingen kampe i stats endnu.`);
+        if (seen.has(player)) TEAM_WARN.push(`${player} er på både ${seen.get(player)} og ${name}.`);
+        else seen.set(player, name);
+        if (!players.includes(player)) players.push(player);
+      }
+      return { name, manager: t.manager ? String(t.manager) : '', players };
+    });
+  }
+
+  // ---------- state and controls ----------
+
+  function setup() {
+    const byDate = new Map();
+    for (const g of (DATA.games && DATA.games.length ? DATA.games : ROWS)) {
+      if (!g.date) continue;
+      if (!byDate.has(g.date)) byDate.set(g.date, { date: g.date, label: g.session || g.date, formats: new Set() });
+      if (g.format) byDate.get(g.date).formats.add(g.format);
+    }
+    SESSIONS = [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
+    FORMATS = [...new Set(ROWS.map((r) => r.format).filter(Boolean))].sort();
+    EVER = new Set(CATS.filter((c) => ROWS.some((r) => (c.ratio ? num(r.FGA) != null : catValue(r, c) != null))).map((c) => c.id));
+    S.formats = new Set(FORMATS);
+    readHash();
+
+    const opts = SESSIONS.map((s) => `<option value="${esc(s.date)}">${esc(s.label)} (${esc([...s.formats].join('/'))})</option>`).join('');
+    $('#from').innerHTML = opts;
+    $('#to').innerHTML = opts;
+    $('#formats').innerHTML = FORMATS.map((f) => `<button class="d9-chip" data-format="${esc(f)}">${esc(f)}</button>`).join('');
+    $('#cats').innerHTML = CATS.map((c) => `<button class="d9-chip${EVER.has(c.id) ? '' : ' nodata'}" data-cat="${c.id}"
+      title="${esc(c.name)}${EVER.has(c.id) ? '' : ' · ikke registreret i stats endnu'}">${esc(c.label)}</button>`).join('');
+    $('#min').max = String(Math.max(...count(ROWS).values()));
+
+    const fromTo = (which) => (e) => {
+      const p = period();
+      S.preset = null; S.from = p.from; S.to = p.to; S[which] = e.target.value;
+      if (S.from > S.to) { if (which === 'from') S.to = S.from; else S.from = S.to; }
+      change();
+    };
+    $('#from').addEventListener('change', fromTo('from'));
+    $('#to').addEventListener('change', fromTo('to'));
+    $('#presets').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S.preset = b.dataset.preset; change(); } });
+    $('#formats').addEventListener('click', (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      const f = b.dataset.format;
+      if (S.formats.has(f) && S.formats.size > 1) S.formats.delete(f); else S.formats.add(f);
+      change();
+    });
+    $('#basis').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S.basis = b.dataset.basis; change(); } });
+    $('#min').addEventListener('change', (e) => { S.min = Math.max(1, Math.round(num(e.target.value) || 1)); change(); });
+    $('#cats').addEventListener('click', (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      const c = b.dataset.cat;
+      if (S.cats.has(c) && S.cats.size > 1) S.cats.delete(c); else S.cats.add(c);
+      change();
+    });
+    $('#view').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S.view = b.dataset.view; change(); } });
+    for (const id of ['roto', 'rater']) {
+      $('#' + id).addEventListener('click', (e) => {
+        const th = e.target.closest('th[data-key]'); if (!th) return;
+        const s = SORT[id], key = th.dataset.key;
+        if (s.key === key) s.dir = -s.dir; else { s.key = key; s.dir = key === 'name' ? 1 : -1; }
+        draw();
+      });
+    }
+    window.addEventListener('hashchange', () => { readHash(); draw(); });
+    ['#filters', '#tiles', '#roto-card', '#rater-card', '#how'].forEach((s) => { $(s).hidden = false; });
+  }
+
+  function count(rows) {
+    const m = new Map();
+    for (const r of rows) m.set(r.player, (m.get(r.player) || 0) + 1);
+    return m;
+  }
+
+  function period() {
+    const n = SESSIONS.length, first = SESSIONS[0].date, last = SESSIONS[n - 1].date;
+    if (S.preset === 'last') return { from: last, to: last };
+    if (S.preset === 'last3') return { from: SESSIONS[Math.max(0, n - 3)].date, to: last };
+    if (S.preset === 'all') return { from: first, to: last };
+    return { from: S.from || first, to: S.to || last };
+  }
+
+  // The hash keeps a view shareable. A period that runs to the latest game day is stored without an end date,
+  // so the link keeps following new stats.
+  function readHash() {
+    const h = new URLSearchParams(location.hash.slice(1));
+    const dates = SESSIONS.map((s) => s.date);
+    const preset = Object.keys(PRESETS).find((k) => PRESETS[k] === h.get('periode'));
+    S.preset = preset || 'all';
+    if (!preset && (h.get('fra') || h.get('til'))) {
+      S.preset = null;
+      S.from = dates.find((d) => d >= (h.get('fra') || '')) || dates[dates.length - 1];
+      S.to = [...dates].reverse().find((d) => d <= (h.get('til') || '9999')) || dates[0];
+      if (S.from > S.to) S.to = S.from;
+    }
+    const f = (h.get('format') || '').split(',').filter((x) => FORMATS.includes(x));
+    S.formats = new Set(f.length ? f : FORMATS);
+    S.basis = h.get('tal') === 'kamp' ? 'kamp' : 'total';
+    S.min = Math.max(1, Math.round(num(h.get('min')) || 1));
+    const k = (h.get('kat') || '').split(',').filter((x) => CATS.some((c) => c.id === x));
+    S.cats = new Set(k.length ? k : CATS.map((c) => c.id));
+    S.view = h.get('visning') === 'spillere' ? 'spillere' : 'hold';
+  }
+
+  function writeHash() {
+    const h = new URLSearchParams();
+    if (S.preset && S.preset !== 'all') h.set('periode', PRESETS[S.preset]);
+    if (!S.preset) {
+      h.set('fra', S.from);
+      if (S.to !== SESSIONS[SESSIONS.length - 1].date) h.set('til', S.to);
+    }
+    if (S.formats.size < FORMATS.length) h.set('format', FORMATS.filter((f) => S.formats.has(f)).join(','));
+    if (S.basis !== 'total') h.set('tal', S.basis);
+    if (S.min > 1) h.set('min', String(S.min));
+    if (S.cats.size < CATS.length) h.set('kat', CATS.filter((c) => S.cats.has(c.id)).map((c) => c.id).join(','));
+    if (S.view !== 'hold' && TEAMS.length) h.set('visning', S.view);
+    const str = h.toString().replace(/%2C/g, ',');
+    history.replaceState(null, '', str ? '#' + str : location.pathname + location.search);
+  }
+
+  function change() { writeHash(); draw(); }
+
+  // ---------- numbers ----------
+
+  function aggregate(rows) {
+    const by = new Map();
+    for (const r of rows) {
+      let p = by.get(r.player);
+      if (!p) by.set(r.player, (p = { name: r.player, gp: 0, games: new Set(), t: Object.fromEntries(CATS.map((c) => [c.id, { sum: 0, n: 0, m: 0, a: 0 }])) }));
+      p.gp += 1;
+      p.games.add(r.game_id);
+      for (const c of CATS) {
+        const t = p.t[c.id];
+        if (c.ratio) {
+          const fm = num(r.FGM), fa = num(r.FGA);
+          if (fm != null && fa != null) { t.m += fm; t.a += fa; t.n += 1; }
+        } else {
+          const v = catValue(r, c);
+          if (v != null) { t.sum += v; t.n += 1; }
+        }
+      }
+    }
+    for (const p of by.values()) p.vals = Object.fromEntries(CATS.map((c) => [c.id, scaled(p.t[c.id], c)]));
+    return [...by.values()];
+  }
+
+  // One player's number in a category for the chosen basis; null when it was never measured in their games.
+  function scaled(t, c) {
+    if (!t.n) return null;
+    const k = S.basis === 'kamp' ? 1 / t.n : 1;
+    if (c.ratio) return t.a > 0 ? { v: t.m / t.a, m: t.m * k, a: t.a * k, rm: t.m, ra: t.a } : null;
+    return { v: t.sum * k, sum: t.sum, n: t.n };
+  }
+
+  function teamRows(players) {
+    const by = new Map(players.map((p) => [p.name, p]));
+    return TEAMS.map((team) => {
+      const members = team.players.map((n) => by.get(n)).filter(Boolean);
+      const vals = {};
+      for (const c of CATS) {
+        const xs = members.map((p) => p.vals[c.id]).filter(Boolean);
+        if (!xs.length) { vals[c.id] = null; continue; }
+        if (c.ratio) {
+          const m = xs.reduce((s, x) => s + x.m, 0), a = xs.reduce((s, x) => s + x.a, 0);
+          const rm = xs.reduce((s, x) => s + x.rm, 0), ra = xs.reduce((s, x) => s + x.ra, 0);
+          vals[c.id] = a > 0 ? { v: m / a, m, a, rm, ra } : null;
+        } else {
+          vals[c.id] = { v: xs.reduce((s, x) => s + x.v, 0) };
+        }
+      }
+      return { name: team.name, team, gp: new Set(members.flatMap((p) => [...p.games])).size, vals };
+    });
+  }
+
+  // Roto points: best gets N, worst 1, ties share. An entry without a number counts as the median, so it lands
+  // in the middle of the field instead of at the bottom.
+  function rotoPoints(vals, low) {
+    const have = vals.filter((v) => v != null).sort((x, y) => x - y);
+    if (!have.length) return vals.map(() => (vals.length + 1) / 2);
+    const mid = have.length % 2 ? have[(have.length - 1) / 2] : (have[have.length / 2 - 1] + have[have.length / 2]) / 2;
+    const order = vals.map((v, i) => [v ?? mid, i]).sort((x, y) => (low ? y[0] - x[0] : x[0] - y[0]));
+    const out = [];
+    for (let i = 0; i < order.length;) {
+      let j = i;
+      while (j + 1 < order.length && Math.abs(order[j + 1][0] - order[i][0]) < 1e-9) j++;
+      for (let q = i; q <= j; q++) out[order[q][1]] = (i + j) / 2 + 1;
+      i = j + 1;
+    }
+    return out;
+  }
+
+  function roto(entries, active) {
+    for (const e of entries) { e.pts = {}; e.total = 0; }
+    for (const c of active) {
+      const p = rotoPoints(entries.map((e) => (e.vals[c.id] ? e.vals[c.id].v : null)), c.low);
+      entries.forEach((e, i) => { e.pts[c.id] = p[i]; e.total += p[i]; });
+    }
+    return entries;
+  }
+
+  function zscores(vals, low) {
+    const xs = vals.filter((v) => v != null);
+    if (xs.length < 2) return vals.map((v) => (v == null ? null : 0));
+    const mean = xs.reduce((s, x) => s + x, 0) / xs.length;
+    const sd = Math.sqrt(xs.reduce((s, x) => s + (x - mean) ** 2, 0) / xs.length);
+    return vals.map((v) => (v == null ? null : sd > 1e-9 ? ((low ? -1 : 1) * (v - mean)) / sd : 0));
+  }
+
+  function rater(pool, active) {
+    for (const p of pool) { p.z = {}; p.zTotal = 0; }
+    for (const c of active) {
+      let vals;
+      if (c.ratio) {
+        const xs = pool.map((p) => p.vals.FGP).filter(Boolean);
+        const lg = xs.reduce((s, x) => s + x.rm, 0) / (xs.reduce((s, x) => s + x.ra, 0) || 1);
+        vals = pool.map((p) => (p.vals.FGP ? p.vals.FGP.m - lg * p.vals.FGP.a : null));
+      } else {
+        vals = pool.map((p) => (p.vals[c.id] ? p.vals[c.id].v : null));
+      }
+      zscores(vals, c.low).forEach((z, i) => { pool[i].z[c.id] = z; pool[i].zTotal += z || 0; });
+    }
+    return pool;
+  }
+
+  // ---------- drawing ----------
+
+  function rawText(x, c) {
+    if (!x) return '–';
+    if (c.ratio) return fmt(x.v * 100, 0) + ' %';
+    return S.basis === 'kamp' ? fmt(x.v, 1) : fmt(x.v, Number.isInteger(x.v) ? 0 : 1);
+  }
+
+  function rawTitle(x, c) {
+    if (!x) return 'Ikke målt i de valgte kampe';
+    if (c.ratio) return `${fmt(x.rm)} af ${fmt(x.ra)} skud (${fmt(x.v * 100, 1)} %)`;
+    return x.n != null && S.basis === 'kamp' ? `${fmt(x.sum)} i alt over ${x.n} kampe med tal` : `${c.name}: ${rawText(x, c)}`;
+  }
+
+  function tint(z) {
+    if (z == null || Math.abs(z) < 0.05) return '';
+    const share = Math.round(Math.min(Math.abs(z) / 2.5, 1) * 30);
+    return ` style="background:color-mix(in srgb, var(${z > 0 ? '--pos' : '--neg'}) ${share}%, transparent)"`;
+  }
+
+  function header(id, key, label, extra = '', hint = '') {
+    const s = SORT[id];
+    const sort = s.key === key ? ` aria-sort="${s.dir > 0 ? 'ascending' : 'descending'}"` : '';
+    return `<th scope="col" data-key="${key}"${sort}${extra}><button type="button">${label}</button>${hint ? `<span class="hint">${hint}</span>` : ''}</th>`;
+  }
+
+  function catHeaders(id, shown, active) {
+    return shown.map((c) => {
+      const on = active.includes(c);
+      const hint = !on ? 'ingen tal' : c.low ? 'færrest' : '';
+      return header(id, c.id, esc(c.label), ` title="${esc(c.name)}${on ? '' : ' · ikke registreret i perioden'}"${on ? '' : ' class="nodata"'}`, hint);
+    }).join('');
+  }
+
+  function sorted(list, id, valueOf) {
+    const s = SORT[id];
+    return [...list].sort((a, b) => {
+      if (s.key === 'name') return s.dir * a.name.localeCompare(b.name, 'da');
+      const va = valueOf(a, s.key), vb = valueOf(b, s.key);
+      return s.dir * ((va ?? -Infinity) - (vb ?? -Infinity)) || a.name.localeCompare(b.name, 'da');
+    });
+  }
+
+  function ranks(list, valueOf) {
+    const order = [...list].sort((a, b) => valueOf(b) - valueOf(a));
+    const rank = new Map();
+    order.forEach((e, i) => rank.set(e, i > 0 && Math.abs(valueOf(e) - valueOf(order[i - 1])) < 1e-9 ? rank.get(order[i - 1]) : i + 1));
+    return rank;
+  }
+
+  function drawRoto(entries, shown, active, isTeams) {
+    const box = $('#roto');
+    if (!entries.length) { box.innerHTML = '<p class="d9-empty">Ingen kampe i den valgte periode.</p>'; return; }
+    const rank = ranks(entries, (e) => e.total);
+    const list = sorted(entries, 'roto', (e, key) => (key === 'total' ? e.total : key === 'gp' ? e.gp : e.pts[key]));
+    const rows = list.map((e) => {
+      const who = isTeams
+        ? `<td class="team"><span class="d9-rk">${rank.get(e)}.</span>${esc(e.name)}<small>${esc((e.team.players.join(', ') || 'ingen spillere') + (e.team.manager ? ` · manager ${e.team.manager}` : ''))}</small></td>`
+        : `<td><span class="d9-rk">${rank.get(e)}.</span>${esc(e.name)}</td>`;
+      const cells = shown.map((c) => {
+        if (!active.includes(c)) return '<td class="nodata">–</td>';
+        const x = e.vals[c.id];
+        return `<td class="c" title="${esc(rawTitle(x, c))}"><b>${pts(e.pts[c.id])}</b><small>${rawText(x, c)}</small></td>`;
+      }).join('');
+      return `<tr>${who}<td class="n">${e.gp}</td><td class="tot">${pts(e.total)}</td>${cells}</tr>`;
+    }).join('');
+    box.innerHTML = `<table><thead><tr>${header('roto', 'name', isTeams ? 'Hold' : 'Spiller')}${header('roto', 'gp', 'Kampe')}
+      ${header('roto', 'total', 'Roto-point', ' class="tot"')}${catHeaders('roto', shown, active)}</tr></thead><tbody>${rows}</tbody></table>`;
+  }
+
+  function drawRater(pool, shown, active) {
+    const box = $('#rater');
+    if (!pool.length) { box.innerHTML = '<p class="d9-empty">Ingen spillere med nok kampe i den valgte periode.</p>'; return; }
+    const rank = ranks(pool, (p) => p.zTotal);
+    const max = Math.max(...pool.map((p) => Math.abs(p.zTotal)), 0.01);
+    const list = sorted(pool, 'rater', (p, key) => (key === 'total' ? p.zTotal : key === 'gp' ? p.gp : p.z[key]));
+    const rows = list.map((p) => {
+      const w = (Math.abs(p.zTotal) / max) * 50;
+      const bar = `<span class="d9-bar" aria-hidden="true"><i class="${p.zTotal >= 0 ? 'pos' : 'neg'}" style="width:${w.toFixed(1)}%"></i></span>`;
+      const cells = shown.map((c) => {
+        if (!active.includes(c)) return '<td class="nodata">–</td>';
+        const z = p.z[c.id], x = p.vals[c.id];
+        const zt = z == null ? '–' : signed(z, 1);
+        return `<td class="c" title="${esc(rawTitle(x, c))}${z == null ? '' : ` · z ${signed(z, 2)}`}"${tint(z)}><b>${zt}</b><small>${rawText(x, c)}</small></td>`;
+      }).join('');
+      return `<tr><td><span class="d9-rk">${rank.get(p)}.</span>${esc(p.name)}</td><td class="n">${p.gp}</td>
+        <td class="tot"><span class="d9-zt">${bar}<span>${signed(p.zTotal, 2)}</span></span></td>${cells}</tr>`;
+    }).join('');
+    box.innerHTML = `<table><thead><tr>${header('rater', 'name', 'Spiller')}${header('rater', 'gp', 'Kampe')}
+      ${header('rater', 'total', 'Total z', ' class="tot"')}${catHeaders('rater', shown, active)}</tr></thead><tbody>${rows}</tbody></table>`;
+  }
+
+  function draw() {
+    const p = period();
+    const rows = ROWS.filter((r) => r.date >= p.from && r.date <= p.to && S.formats.has(r.format));
+    const players = aggregate(rows);
+    const shown = CATS.filter((c) => S.cats.has(c.id));
+    const active = shown.filter((c) => players.some((pl) => pl.vals[c.id]));
+    const pool = rater(players.filter((pl) => pl.gp >= S.min), active);
+    const isTeams = TEAMS.length > 0 && S.view === 'hold';
+    const entries = roto(isTeams ? teamRows(players) : pool.map((pl) => ({ name: pl.name, gp: pl.gp, vals: pl.vals })), active);
+
+    // controls
+    $('#from').value = p.from;
+    $('#to').value = p.to;
+    pressed($('#presets'), 'preset', (v) => v === S.preset);
+    pressed($('#formats'), 'format', (v) => S.formats.has(v));
+    pressed($('#basis'), 'basis', (v) => v === S.basis);
+    pressed($('#cats'), 'cat', (v) => S.cats.has(v));
+    pressed($('#view'), 'view', (v) => v === (isTeams ? 'hold' : 'spillere'));
+    $('#view').hidden = !TEAMS.length;
+    $('#min').value = String(S.min);
+
+    // intro
+    const missing = CATS.filter((c) => !EVER.has(c.id)).map((c) => c.label);
+    $('#take').innerHTML = `Roto ${CATS.length}-cat på <b>${andList(CATS.map((c) => esc(c.label)))}</b>, hvor færrest turnovers vinder TO,
+      og en player rater med z-scores for hver spiller. ${missing.length ? `${andList(missing)} bliver ikke registreret i stats endnu og tæller
+      med af sig selv, når de gør. ` : ''}Tallene hentes fra forsiden, hver gang siden åbnes.`;
+
+    // tiles
+    const games = new Set(rows.map((r) => r.game_id)).size;
+    const days = SESSIONS.filter((s) => s.date >= p.from && s.date <= p.to);
+    const leadR = [...entries].sort((a, b) => b.total - a.total)[0];
+    const leadZ = [...pool].sort((a, b) => b.zTotal - a.zTotal)[0];
+    $('#t-roto-lbl').textContent = isTeams ? 'Fører i roto (hold)' : 'Fører i roto';
+    $('#t-roto').textContent = leadR && active.length ? leadR.name : '—';
+    $('#t-roto-sub').textContent = leadR && active.length ? `${pts(leadR.total)} af ${entries.length * active.length} mulige point` : '';
+    $('#t-rater').textContent = leadZ && active.length ? leadZ.name : '—';
+    $('#t-rater-sub').textContent = leadZ && active.length ? `${signed(leadZ.zTotal, 2)} i samlet z-score over ${active.length} kategorier` : '';
+    $('#t-period').textContent = days.length ? (days.length > 1 ? `${days[0].label} – ${days[days.length - 1].label}` : days[0].label) : '—';
+    $('#t-period-sub').textContent = `${games} kampe · ${days.length} spilledage · ${players.length} spillere · ${S.basis === 'kamp' ? 'pr. kamp' : 'i alt'}`;
+
+    // notes
+    const off = shown.filter((c) => !active.includes(c)).map((c) => c.label);
+    const offNote = off.length ? ` ${andList(off)} har ingen tal i perioden og tæller ikke med.` : '';
+    const rotoWho = isTeams ? `${entries.length} hold` : `${entries.length} spillere`;
+    $('#roto-note').textContent = `${rotoWho} · ${active.length} kategorier · den bedste i hver kategori får ${entries.length} point.`
+      + ' Øverst i cellen står roto-point, nederst tallet.'
+      + (TEAMS.length ? '' : ' Der er ingen fantasy-hold endnu, så hver spiller er sit eget hold. Holdene skrives i fantasy/hold.json.')
+      + offNote;
+    $('#roto-warn').textContent = isTeams ? TEAM_WARN.join(' ') : '';
+    $('#rater-note').textContent = `z-score pr. kategori øverst og tallet nederst. Blå er bedre end snittet, rød dårligere. Sammenlignet med de ${pool.length} spillere med mindst ${S.min} ${S.min === 1 ? 'kamp' : 'kampe'} i perioden.` + offNote;
+    const out = players.filter((pl) => pl.gp < S.min).map((pl) => `${pl.name} (${pl.gp})`);
+    $('#rater-out').textContent = out.length ? `Under ${S.min} kampe: ${out.join(', ')}.` : '';
+    $('#foot').textContent = [UPDATED && `Stats opdateret ${UPDATED}`, `hentet fra forsiden kl. ${LOADED}`,
+      'spillerpoint og rebounds er automatisk bedste bud fra kameraet'].filter(Boolean).join(' · ');
+
+    drawRoto(entries, shown, active, isTeams);
+    drawRater(pool, shown, active);
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>
