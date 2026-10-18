@@ -63,19 +63,19 @@ main() {
   git fetch -q origin main "$branch" || stop "Kunne ikke hente fra GitHub. Tjek internettet og prøv igen."
   merge_in origin/main
   merge_in "origin/$branch"
-  if ! grep -q 'src="kpi.js"' index.html; then
-    perl -0pi -e 's#</body>#<script src="kpi.js"></script>\n</body>#' index.html
-    git commit -q -am "Sæt PER, AST/TO og TS% (kpi.js) ind på forsiden" || stop "Kunne ikke gemme linket til kpi.js."
+  if ! grep -q 'src="forside.js"' index.html; then
+    perl -0pi -e 's#</body>#<script src="forside.js"></script>\n</body>#' index.html
+    git commit -q -am "Sæt fantasy-knappen og PER, AST/TO og TS% (forside.js) ind på forsiden" || stop "Kunne ikke gemme linket til forside.js."
   fi
-  ok "Fantasy-siden, PER, AST/TO, TS% og highlights er hentet"
+  ok "Fantasy-siden og knappen til den, PER, AST/TO, TS% og highlights er hentet"
 
   step "4/4  Lægger det på hjemmesiden"
   git push -q origin main || stop "GitHub ville ikke tage imod ændringerne."
   ok "Sendt til GitHub"
 
   printf '\n\033[32mFærdig!\033[0m Om et par minutter kan du se det her:\n'
-  printf '   Forsiden (PER, AST/TO og TS%% sidst i box score):  %s/\n' "$site"
-  printf '   Fantasy:                                           %s/fantasy/\n' "$site"
+  printf '   Forsiden (fantasy-knap øverst, PER, AST/TO og TS%% sidst i box score):  %s/\n' "$site"
+  printf '   Fantasy:  %s/fantasy/\n' "$site"
   printf '\nFremover bygger og udgiver du som før med build_site.py og ./deploy.sh.\n'
 }
 

@@ -1,10 +1,25 @@
-// PER, AST/TO og TS% som de sidste tal i box score og i pivotens "Tal". index.html bygges forfra af build_site.py,
-// så udvidelsen ligger her for sig, og deploy.sh sætter <script src="kpi.js"> ind igen, hvis den mangler.
-// Den bygger på forsidens BOX_COLS, METRICS, boxFmt, fmt og drawAll; mangler de, gør den ingenting.
+// Tilføjelser til forsiden: en knap til fantasy-spillet øverst og PER, AST/TO og TS% som de sidste tal i box score og
+// i pivotens "Tal". index.html bygges forfra af build_site.py, så koden ligger her for sig, og deploy.sh sætter
+// <script src="forside.js"> ind igen, hvis den mangler. Tallene bygger på forsidens BOX_COLS, METRICS, boxFmt, fmt og
+// drawAll; mangler de, springes de over.
 (function () {
+  const title = document.querySelector('header .d9-title');
+  if (title && !document.querySelector('.d9-fantasy')) {
+    document.head.append(Object.assign(document.createElement('style'), { textContent: `
+.d9-topbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.d9-fantasy { display: inline-flex; align-items: center; gap: 8px; font-size: var(--cds-font-size-body); font-weight: 600;
+  text-decoration: none; color: var(--color-bg); background: var(--color-fg); border-radius: 999px; padding: 8px 16px; }
+.d9-fantasy::before { content: ""; width: .6rem; height: .6rem; border-radius: 50%; background: var(--d9-accent); }
+.d9-fantasy:hover { box-shadow: 0 0 0 3px var(--d9-accent); }
+.d9-fantasy:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 3px; }` }));
+    const bar = Object.assign(document.createElement('div'), { className: 'd9-topbar' });
+    title.before(bar);
+    bar.append(title, Object.assign(document.createElement('a'), { className: 'd9-fantasy', href: 'fantasy/', textContent: 'Se fantasy-spillet →' }));
+  }
+
   const R = (window.D9_DATA || {}).player_games;
   if (!R || typeof BOX_COLS === 'undefined' || typeof METRICS === 'undefined' || typeof boxFmt !== 'function' || typeof fmt !== 'function') {
-    console.warn('kpi.js: forsiden mangler box score eller pivot, som kpi.js kan bygge videre på');
+    console.warn('forside.js: forsiden mangler box score eller pivot, så PER, AST/TO og TS% springes over');
     return;
   }
   const n = (v) => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v)) ? null : Number(v));
