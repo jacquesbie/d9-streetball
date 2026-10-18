@@ -1,0 +1,3 @@
+# Highlights: lokale klip-lister og videoer skal ikke med på GitHub Pages (deploy.sh kører git add -A)
+highlights/ud/
+highlights/klip.csv
