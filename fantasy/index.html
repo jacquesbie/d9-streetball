@@ -11,7 +11,7 @@
 <style>/* Same court-blue neutrals and orange accent as the stats page; blue/red diverging pair for z-scores. */
 :root {
   --color-bg: #eef2f6; --color-panel: #ffffff; --color-fg: #18212b; --color-fg-muted: #5a6676;
-  --color-border-line: #d9e0e8; --color-bad: #c0392b; --color-warn: #9a6200;
+  --color-border-line: #d9e0e8; --color-bad: #c0392b;
   --d9-accent: #c95b1e; --pos: #2a78d6; --neg: #e34948; --axis: #b7c1cc;
   --font-sans: "Barlow", "Helvetica Neue", Arial, sans-serif;
   --font-cond: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
@@ -23,11 +23,11 @@
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --color-bg: #10151b; --color-panel: #18202a; --color-fg: #e6ebf1; --color-fg-muted: #98a4b3;
-  --color-border-line: #2a3442; --color-bad: #ef6a5a; --color-warn: #e0a43a;
+  --color-border-line: #2a3442; --color-bad: #ef6a5a;
   --d9-accent: #f0894a; --pos: #3987e5; --neg: #e66767; --axis: #3d4a5a; color-scheme: dark; } }
 :root[data-theme="dark"] {
   --color-bg: #10151b; --color-panel: #18202a; --color-fg: #e6ebf1; --color-fg-muted: #98a4b3;
-  --color-border-line: #2a3442; --color-bad: #ef6a5a; --color-warn: #e0a43a;
+  --color-border-line: #2a3442; --color-bad: #ef6a5a;
   --d9-accent: #f0894a; --pos: #3987e5; --neg: #e66767; --axis: #3d4a5a; color-scheme: dark; }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -69,10 +69,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .d9-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--radius);
   padding: var(--pad-lg); display: grid; gap: var(--gap-md); min-width: 0; }
 .d9-card h2 { font-size: var(--fs-heading); font-weight: 600; }
-.d9-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: start; gap: var(--gap-sm) var(--gap-md); }
 .d9-note { margin: 0; color: var(--color-fg-muted); font-size: var(--fs-caption); max-width: 85ch; }
 .d9-note:empty { display: none; }
-.d9-note.warn { color: var(--color-warn); }
 .d9-scroll { overflow: auto; max-height: 40rem; min-width: 0; }
 .d9 table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: var(--fs-body); font-variant-numeric: tabular-nums; }
 .d9 th, .d9 td { padding: 6px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--color-border-line); }
@@ -92,8 +90,6 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .d9 td.c small { display: block; color: var(--color-fg-muted); font-size: .72rem; line-height: 1.2; }
 .d9 td.tot { font-weight: 600; }
 .d9-rk { display: inline-block; min-width: 1.7em; color: var(--color-fg-muted); font-weight: 400; }
-.d9 td.team { white-space: normal; min-width: 11rem; max-width: 18rem; }
-.d9 td.team small { display: block; color: var(--color-fg-muted); font-size: .75rem; padding-left: 1.7em; }
 .d9-zt { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
 .d9-bar { position: relative; width: 6rem; height: 8px; flex: none; }
 .d9-bar::before { content: ""; position: absolute; left: 50%; top: -4px; bottom: -4px; width: 1px; background: var(--axis); }
@@ -136,21 +132,14 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   </section>
 
   <section class="d9-tiles" id="tiles" aria-label="Overblik" hidden>
-    <div class="d9-tile"><span class="lbl" id="t-roto-lbl">Fører i roto</span><span class="big" id="t-roto">—</span><span class="sub" id="t-roto-sub"></span></div>
+    <div class="d9-tile"><span class="lbl">Fører i roto</span><span class="big" id="t-roto">—</span><span class="sub" id="t-roto-sub"></span></div>
     <div class="d9-tile"><span class="lbl">Højeste player rater</span><span class="big" id="t-rater">—</span><span class="sub" id="t-rater-sub"></span></div>
     <div class="d9-tile"><span class="lbl">Periode</span><span class="big" id="t-period">—</span><span class="sub" id="t-period-sub"></span></div>
   </section>
 
   <section class="d9-card" id="roto-card" aria-labelledby="roto-h" hidden>
-    <div class="d9-head">
-      <div><h2 id="roto-h">Roto-stilling</h2><p class="d9-note" id="roto-note"></p></div>
-      <div class="d9-chips" id="view" hidden>
-        <button class="d9-chip" data-view="hold">Hold</button>
-        <button class="d9-chip" data-view="spillere">Spillere</button>
-      </div>
-    </div>
+    <div><h2 id="roto-h">Roto-stilling</h2><p class="d9-note" id="roto-note"></p></div>
     <div class="d9-scroll" id="roto"></div>
-    <p class="d9-note warn" id="roto-warn"></p>
   </section>
 
   <section class="d9-card" id="rater-card" aria-labelledby="rater-h" hidden>
@@ -162,7 +151,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   <details class="d9-card d9-how" id="how" hidden>
     <summary>Sådan regnes det</summary>
     <ul>
-      <li><b>Roto:</b> I hver kategori får den bedste lige så mange point, som der er deltagere, og den dårligste får 1.
+      <li><b>Roto:</b> Hver spiller er sit eget hold. I hver kategori får den bedste lige så mange point, som der er spillere, og den dårligste får 1.
         Ved lige stilling deles pointene. I TO er færrest turnovers bedst. Summen af kategorierne er stillingen.</li>
       <li><b>Player rater:</b> z-score = (spillerens tal − gennemsnittet) ÷ spredningen blandt spillerne i perioden.
         0 er gennemsnitligt, +1 er en hel spredning bedre end snittet. Turnovers vendes, så få turnovers giver plus.
@@ -176,7 +165,6 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       <li><b>Automatisk:</b> Siden henter tallene fra forsiden, hver gang den åbnes, så nye kampe kommer med efter
         <code>./deploy.sh</code>. Steals, blocks og turnovers kommer med af sig selv, når stats-siden får felterne
         <code>STL</code>, <code>BLK</code> og <code>TOV</code>.</li>
-      <li><b>Hold:</b> Fantasy-holdene står i <code>fantasy/hold.json</code>. Uden hold er hver spiller sit eget hold.</li>
     </ul>
   </details>
 
@@ -187,7 +175,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 <script>
 // Fantasy for D9 Streetball. Reads window.D9_DATA out of the stats page (../index.html) on every load, so a new
 // ./deploy.sh is all it takes. Roto standings and the z-score rater are worked out from player_games for the
-// chosen period; categories without numbers (steals, blocks, turnovers today) switch on when the fields show up.
+// chosen period, with every player as their own team; categories without numbers (steals, blocks, turnovers today) switch on when the fields show up.
 (function () {
   'use strict';
 
@@ -201,7 +189,6 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     { id: 'BLK', label: 'BLK', name: 'Blocks', fields: ['BLK'] },
     { id: 'TO', label: 'TO', name: 'Turnovers (færrest er bedst)', fields: ['TOV', 'TO'], low: true },
   ];
-  const ALIASES = { bie: 'Jacob', jonas: 'Nicehair' };
   const PRESETS = { all: 'alle', last3: 'seneste3', last: 'seneste' };
 
   const $ = (s) => document.querySelector(s);
@@ -210,17 +197,20 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   const fmt = (v, d = 0) => v.toLocaleString('da-DK', { minimumFractionDigits: d, maximumFractionDigits: d });
   const signed = (v, d) => (Math.abs(v) < 0.5 * 10 ** -d ? fmt(0, d) : (v > 0 ? '+' : '−') + fmt(Math.abs(v), d));
   const pts = (v) => fmt(v, Number.isInteger(v) ? 0 : 1);
+  const many = (k, one, more) => `${k} ${k === 1 ? one : more}`;
   const andList = (xs) => (xs.length < 2 ? xs.join('') : xs.slice(0, -1).join(', ') + ' og ' + xs[xs.length - 1]);
   const pressed = (box, attr, isOn) => box.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(isOn(b.dataset[attr]))));
 
-  let DATA, ROWS, SESSIONS, FORMATS, EVER, UPDATED = '', LOADED = '', TEAMS = [], TEAM_WARN = [];
-  const S = { preset: 'all', from: '', to: '', formats: new Set(), basis: 'total', min: 1, cats: new Set(CATS.map((c) => c.id)), view: 'hold' };
+  let DATA, ROWS, SESSIONS, FORMATS, EVER, UPDATED = '', LOADED = '';
+  const S = { preset: 'all', from: '', to: '', formats: new Set(), basis: 'total', min: 1, cats: new Set(CATS.map((c) => c.id)) };
   const SORT = { roto: { key: 'total', dir: -1 }, rater: { key: 'total', dir: -1 } };
 
   function catValue(r, c) {
     for (const f of c.fields) { const v = num(r[f]); if (v != null) return v; }
     return null;
   }
+  // Some games only have team scores; a row counts once it has a number in at least one category.
+  const measured = (r) => CATS.some((c) => (c.ratio ? num(r.FGA) != null : catValue(r, c) != null));
 
   // ---------- loading ----------
 
@@ -251,38 +241,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     LOADED = new Date().toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' });
     ROWS = (DATA.player_games || []).filter((r) => r.player && r.date);
     if (!ROWS.length) return fail('Der er ingen kampe i stats endnu.');
-    await loadTeams();
     setup();
     draw();
-  }
-
-  async function loadTeams() {
-    let raw;
-    try {
-      const res = await fetch('hold.json', { cache: 'no-cache' });
-      if (!res.ok) return;
-      raw = await res.json();
-    } catch (e) {
-      TEAM_WARN.push(`hold.json kunne ikke læses: ${e.message}`);
-      return;
-    }
-    const known = new Map(ROWS.map((r) => [r.player.toLowerCase(), r.player]));
-    for (const [alias, name] of Object.entries(ALIASES)) if (!known.has(alias)) known.set(alias, name);
-    const list = Array.isArray(raw) ? raw : (raw && (raw.hold || raw.teams)) || [];
-    const seen = new Map();
-    TEAMS = list.map((t, i) => {
-      const name = String(t.navn || t.name || `Hold ${i + 1}`);
-      const players = [];
-      for (const p of t.spillere || t.players || []) {
-        const key = String(p).trim();
-        const player = known.get(key.toLowerCase()) || key;
-        if (!known.has(key.toLowerCase())) TEAM_WARN.push(`${player} (${name}) har ingen kampe i stats endnu.`);
-        if (seen.has(player)) TEAM_WARN.push(`${player} er på både ${seen.get(player)} og ${name}.`);
-        else seen.set(player, name);
-        if (!players.includes(player)) players.push(player);
-      }
-      return { name, manager: t.manager ? String(t.manager) : '', players };
-    });
   }
 
   // ---------- state and controls ----------
@@ -331,7 +291,6 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       if (S.cats.has(c) && S.cats.size > 1) S.cats.delete(c); else S.cats.add(c);
       change();
     });
-    $('#view').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S.view = b.dataset.view; change(); } });
     for (const id of ['roto', 'rater']) {
       $('#' + id).addEventListener('click', (e) => {
         const th = e.target.closest('th[data-key]'); if (!th) return;
@@ -377,7 +336,6 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     S.min = Math.max(1, Math.round(num(h.get('min')) || 1));
     const k = (h.get('kat') || '').split(',').filter((x) => CATS.some((c) => c.id === x));
     S.cats = new Set(k.length ? k : CATS.map((c) => c.id));
-    S.view = h.get('visning') === 'spillere' ? 'spillere' : 'hold';
   }
 
   function writeHash() {
@@ -391,7 +349,6 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     if (S.basis !== 'total') h.set('tal', S.basis);
     if (S.min > 1) h.set('min', String(S.min));
     if (S.cats.size < CATS.length) h.set('kat', CATS.filter((c) => S.cats.has(c.id)).map((c) => c.id).join(','));
-    if (S.view !== 'hold' && TEAMS.length) h.set('visning', S.view);
     const str = h.toString().replace(/%2C/g, ',');
     history.replaceState(null, '', str ? '#' + str : location.pathname + location.search);
   }
@@ -404,9 +361,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     const by = new Map();
     for (const r of rows) {
       let p = by.get(r.player);
-      if (!p) by.set(r.player, (p = { name: r.player, gp: 0, games: new Set(), t: Object.fromEntries(CATS.map((c) => [c.id, { sum: 0, n: 0, m: 0, a: 0 }])) }));
-      p.gp += 1;
-      p.games.add(r.game_id);
+      if (!p) by.set(r.player, (p = { name: r.player, gp: 0, t: Object.fromEntries(CATS.map((c) => [c.id, { sum: 0, n: 0, m: 0, a: 0 }])) }));
+      if (measured(r)) p.gp += 1;
       for (const c of CATS) {
         const t = p.t[c.id];
         if (c.ratio) {
@@ -430,27 +386,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     return { v: t.sum * k, sum: t.sum, n: t.n };
   }
 
-  function teamRows(players) {
-    const by = new Map(players.map((p) => [p.name, p]));
-    return TEAMS.map((team) => {
-      const members = team.players.map((n) => by.get(n)).filter(Boolean);
-      const vals = {};
-      for (const c of CATS) {
-        const xs = members.map((p) => p.vals[c.id]).filter(Boolean);
-        if (!xs.length) { vals[c.id] = null; continue; }
-        if (c.ratio) {
-          const m = xs.reduce((s, x) => s + x.m, 0), a = xs.reduce((s, x) => s + x.a, 0);
-          const rm = xs.reduce((s, x) => s + x.rm, 0), ra = xs.reduce((s, x) => s + x.ra, 0);
-          vals[c.id] = a > 0 ? { v: m / a, m, a, rm, ra } : null;
-        } else {
-          vals[c.id] = { v: xs.reduce((s, x) => s + x.v, 0) };
-        }
-      }
-      return { name: team.name, team, gp: new Set(members.flatMap((p) => [...p.games])).size, vals };
-    });
-  }
-
-  // Roto points: best gets N, worst 1, ties share. An entry without a number counts as the median, so it lands
+  // Roto points: best gets N, worst 1, ties share. A player without a number counts as the median, so it lands
   // in the middle of the field instead of at the bottom.
   function rotoPoints(vals, low) {
     const have = vals.filter((v) => v != null).sort((x, y) => x - y);
@@ -550,23 +486,20 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     return rank;
   }
 
-  function drawRoto(entries, shown, active, isTeams) {
+  function drawRoto(entries, shown, active) {
     const box = $('#roto');
     if (!entries.length) { box.innerHTML = '<p class="d9-empty">Ingen kampe i den valgte periode.</p>'; return; }
     const rank = ranks(entries, (e) => e.total);
     const list = sorted(entries, 'roto', (e, key) => (key === 'total' ? e.total : key === 'gp' ? e.gp : e.pts[key]));
     const rows = list.map((e) => {
-      const who = isTeams
-        ? `<td class="team"><span class="d9-rk">${rank.get(e)}.</span>${esc(e.name)}<small>${esc((e.team.players.join(', ') || 'ingen spillere') + (e.team.manager ? ` · manager ${e.team.manager}` : ''))}</small></td>`
-        : `<td><span class="d9-rk">${rank.get(e)}.</span>${esc(e.name)}</td>`;
       const cells = shown.map((c) => {
         if (!active.includes(c)) return '<td class="nodata">–</td>';
         const x = e.vals[c.id];
         return `<td class="c" title="${esc(rawTitle(x, c))}"><b>${pts(e.pts[c.id])}</b><small>${rawText(x, c)}</small></td>`;
       }).join('');
-      return `<tr>${who}<td class="n">${e.gp}</td><td class="tot">${pts(e.total)}</td>${cells}</tr>`;
+      return `<tr><td><span class="d9-rk">${rank.get(e)}.</span>${esc(e.name)}</td><td class="n">${e.gp}</td><td class="tot">${pts(e.total)}</td>${cells}</tr>`;
     }).join('');
-    box.innerHTML = `<table><thead><tr>${header('roto', 'name', isTeams ? 'Hold' : 'Spiller')}${header('roto', 'gp', 'Kampe')}
+    box.innerHTML = `<table><thead><tr>${header('roto', 'name', 'Spiller')}${header('roto', 'gp', 'Kampe')}
       ${header('roto', 'total', 'Roto-point', ' class="tot"')}${catHeaders('roto', shown, active)}</tr></thead><tbody>${rows}</tbody></table>`;
   }
 
@@ -595,12 +528,12 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   function draw() {
     const p = period();
     const rows = ROWS.filter((r) => r.date >= p.from && r.date <= p.to && S.formats.has(r.format));
-    const players = aggregate(rows);
+    const all = aggregate(rows), players = all.filter((pl) => pl.gp > 0);
+    const unmeasured = all.filter((pl) => !pl.gp).map((pl) => pl.name);
     const shown = CATS.filter((c) => S.cats.has(c.id));
     const active = shown.filter((c) => players.some((pl) => pl.vals[c.id]));
     const pool = rater(players.filter((pl) => pl.gp >= S.min), active);
-    const isTeams = TEAMS.length > 0 && S.view === 'hold';
-    const entries = roto(isTeams ? teamRows(players) : pool.map((pl) => ({ name: pl.name, gp: pl.gp, vals: pl.vals })), active);
+    const entries = roto(pool.map((pl) => ({ name: pl.name, gp: pl.gp, vals: pl.vals })), active);
 
     // controls
     $('#from').value = p.from;
@@ -609,8 +542,6 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     pressed($('#formats'), 'format', (v) => S.formats.has(v));
     pressed($('#basis'), 'basis', (v) => v === S.basis);
     pressed($('#cats'), 'cat', (v) => S.cats.has(v));
-    pressed($('#view'), 'view', (v) => v === (isTeams ? 'hold' : 'spillere'));
-    $('#view').hidden = !TEAMS.length;
     $('#min').value = String(S.min);
 
     // intro
@@ -620,34 +551,31 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       med af sig selv, når de gør. ` : ''}Tallene hentes fra forsiden, hver gang siden åbnes.`;
 
     // tiles
-    const games = new Set(rows.map((r) => r.game_id)).size;
+    const games = new Set(rows.filter(measured).map((r) => r.game_id)).size;
+    const bare = new Set(rows.map((r) => r.game_id)).size - games;
     const days = SESSIONS.filter((s) => s.date >= p.from && s.date <= p.to);
     const leadR = [...entries].sort((a, b) => b.total - a.total)[0];
     const leadZ = [...pool].sort((a, b) => b.zTotal - a.zTotal)[0];
-    $('#t-roto-lbl').textContent = isTeams ? 'Fører i roto (hold)' : 'Fører i roto';
     $('#t-roto').textContent = leadR && active.length ? leadR.name : '—';
     $('#t-roto-sub').textContent = leadR && active.length ? `${pts(leadR.total)} af ${entries.length * active.length} mulige point` : '';
     $('#t-rater').textContent = leadZ && active.length ? leadZ.name : '—';
     $('#t-rater-sub').textContent = leadZ && active.length ? `${signed(leadZ.zTotal, 2)} i samlet z-score over ${active.length} kategorier` : '';
     $('#t-period').textContent = days.length ? (days.length > 1 ? `${days[0].label} – ${days[days.length - 1].label}` : days[0].label) : '—';
-    $('#t-period-sub').textContent = `${games} kampe · ${days.length} spilledage · ${players.length} spillere · ${S.basis === 'kamp' ? 'pr. kamp' : 'i alt'}`;
+    $('#t-period-sub').textContent = `${many(games, 'kamp', 'kampe')}${bare ? ` (+${bare} uden spillerstats)` : ''} · ${many(days.length, 'spilledag', 'spilledage')} · ${many(players.length, 'spiller', 'spillere')} · ${S.basis === 'kamp' ? 'pr. kamp' : 'i alt'}`;
 
     // notes
     const off = shown.filter((c) => !active.includes(c)).map((c) => c.label);
     const offNote = off.length ? ` ${andList(off)} har ingen tal i perioden og tæller ikke med.` : '';
-    const rotoWho = isTeams ? `${entries.length} hold` : `${entries.length} spillere`;
-    $('#roto-note').textContent = `${rotoWho} · ${active.length} kategorier · den bedste i hver kategori får ${entries.length} point.`
-      + ' Øverst i cellen står roto-point, nederst tallet.'
-      + (TEAMS.length ? '' : ' Der er ingen fantasy-hold endnu, så hver spiller er sit eget hold. Holdene skrives i fantasy/hold.json.')
-      + offNote;
-    $('#roto-warn').textContent = isTeams ? TEAM_WARN.join(' ') : '';
+    $('#roto-note').textContent = !players.length ? 'Der er ingen spillerstats i den valgte periode.' : `Hver spiller er sit eget hold: ${entries.length} spillere · ${active.length} kategorier · den bedste i hver`
+      + ` kategori får ${entries.length} point. Øverst i cellen står roto-point, nederst tallet.` + offNote
+      + (unmeasured.length ? ` ${andList(unmeasured)} har kun spillet kampe uden spillerstats i perioden og er ikke med.` : '');
     $('#rater-note').textContent = `z-score pr. kategori øverst og tallet nederst. Blå er bedre end snittet, rød dårligere. Sammenlignet med de ${pool.length} spillere med mindst ${S.min} ${S.min === 1 ? 'kamp' : 'kampe'} i perioden.` + offNote;
     const out = players.filter((pl) => pl.gp < S.min).map((pl) => `${pl.name} (${pl.gp})`);
     $('#rater-out').textContent = out.length ? `Under ${S.min} kampe: ${out.join(', ')}.` : '';
     $('#foot').textContent = [UPDATED && `Stats opdateret ${UPDATED}`, `hentet fra forsiden kl. ${LOADED}`,
       'spillerpoint og rebounds er automatisk bedste bud fra kameraet'].filter(Boolean).join(' · ');
 
-    drawRoto(entries, shown, active, isTeams);
+    drawRoto(entries, shown, active);
     drawRater(pool, shown, active);
   }
 
