@@ -13,17 +13,10 @@ jeres kampe (15 er snittet i hver kamp), TS% er point pr. skudforsøg med 2'ere 
 turnovers registreres (feltet `TOV`).
 
 **Fantasy:** https://jacquesbie.github.io/d9-streetball/fantasy/ har roto 8-cat (FG%, 2'ere, PTS, REB, AST, STL, BLK og TO,
-hvor færrest turnovers vinder) og en player rater med z-score pr. kategori og samlet. Perioden kan justeres, og visningen
-kan deles som link. Siden henter tallene fra `index.html`, hver gang den åbnes, så den følger med efter `./deploy.sh`.
-Steals, blocks og turnovers kommer med af sig selv, når `player_games` får felterne `STL`, `BLK` og `TOV`.
-Fantasy-holdene skrives i `fantasy/hold.json`. Uden hold er hver spiller sit eget hold:
-
-```json
-{ "hold": [
-  { "navn": "Hold 1", "manager": "Jacob", "spillere": ["Jacob", "Nicklas", "Thomas"] },
-  { "navn": "Hold 2", "manager": "Casper", "spillere": ["Casper", "Faber", "Moltved"] }
-] }
-```
+hvor færrest turnovers vinder) og en player rater med z-score pr. kategori og samlet. Der draftes ikke, så hver spiller er
+sit eget hold. Perioden kan justeres, og visningen kan deles som link. Siden henter tallene fra `index.html`, hver gang den
+åbnes, så den følger med efter `./deploy.sh`. Steals, blocks og turnovers kommer med af sig selv, når `player_games` får
+felterne `STL`, `BLK` og `TOV`.
 
 **Highlights:** `highlights/make_highlights.py` klipper en video på højst 5 minutter ud af kampoptagelserne, med alle
 spillere mindst én gang. Se [highlights/README.md](highlights/README.md).
