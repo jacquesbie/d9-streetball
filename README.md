@@ -7,8 +7,9 @@ Stats fra vores pickup-kampe: box scores, en pivot til selv at vende og dreje ta
 Én selvstændig side (`index.html`) med data bagt ind. Bygges fra HoopStats-dashboardet med
 `python3 ~/HoopStatsLocal/dashboard/build_site.py` og udgives med `./deploy.sh`.
 
-**PER, AST/TO og TS%** står sidst i box score og i pivotens "Tal". De ligger i `kpi.js`, fordi `build_site.py` skriver
-`index.html` forfra; `./deploy.sh` sætter linket til `kpi.js` ind igen, hvis det mangler. PER er Hollingers model tilpasset
+**Forsiden** har en knap til fantasy-spillet øverst og **PER, AST/TO og TS%** sidst i box score og i pivotens "Tal".
+Det ligger i `forside.js`, fordi `build_site.py` skriver `index.html` forfra; `./deploy.sh` sætter linket til `forside.js`
+ind igen, hvis det mangler. PER er Hollingers model tilpasset
 jeres kampe (15 er snittet i hver kamp), TS% regnes på NBA-skalaen ud fra 2'ere og skud indenfor, og AST/TO vises, når
 turnovers registreres (feltet `TOV`).
 
