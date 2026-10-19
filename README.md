@@ -22,5 +22,6 @@ felterne `STL`, `BLK` og `TOV`.
 **Highlights:** `highlights/make_highlights.py` klipper en video på højst 5 minutter ud af kampoptagelserne, med alle
 spillere mindst én gang. Se [highlights/README.md](highlights/README.md).
 
-Holdpoint, slutstillinger og minutter er sikre. Spillerpoint og rebounds er automatisk bedste bud fra én kameravinkel.
-Steals, blocks og turnovers tælles ikke.
+Slutstillinger og minutter er sikre. Fra 28. sep. er hver kurv og assist tjekket i videoen, og 1 eller 2 er målt mod den
+sorte 2'er-linje. Rebounds og bom er automatisk bedste bud fra én kameravinkel. Steals, blocks, turnovers og screen-assists
+(`STL`, `BLK`, `TOV`, `SAST`) er talt i videoen for 28. sep. kamp 1–2, 12. okt. og 17. okt.; andre kampe har `null`.
