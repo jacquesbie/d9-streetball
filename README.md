@@ -15,7 +15,7 @@ turnovers registreres (feltet `TOV`).
 
 **Fantasy:** https://jacquesbie.github.io/d9-streetball/fantasy/ har roto 8-cat (FG%, 2'ere, PTS, REB, AST, STL, BLK og TO,
 hvor færrest turnovers vinder) og en player rater med z-score pr. kategori og samlet. Der draftes ikke, så hver spiller er
-sit eget hold. Perioden kan justeres, og visningen kan deles som link. Siden henter tallene fra `index.html`, hver gang den
+sit eget hold. Fra start vises 3v3 og 4v4 med tal pr. kamp. Perioden kan justeres, og visningen kan deles som link. Siden henter tallene fra `index.html`, hver gang den
 åbnes, så den følger med efter `./deploy.sh`. Steals, blocks og turnovers kommer med af sig selv, når `player_games` får
 felterne `STL`, `BLK` og `TOV`.
 
