@@ -190,6 +190,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     { id: 'TO', label: 'TO', name: 'Turnovers (færrest er bedst)', fields: ['TOV', 'TO'], low: true },
   ];
   const PRESETS = { all: 'alle', last3: 'seneste3', last: 'seneste' };
+  const START_FORMATS = ['3v3', '4v4'];  // 2v2 er fravalgt fra start, som på forsiden
 
   const $ = (s) => document.querySelector(s);
   const esc = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -201,8 +202,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   const andList = (xs) => (xs.length < 2 ? xs.join('') : xs.slice(0, -1).join(', ') + ' og ' + xs[xs.length - 1]);
   const pressed = (box, attr, isOn) => box.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(isOn(b.dataset[attr]))));
 
-  let DATA, ROWS, SESSIONS, FORMATS, EVER, UPDATED = '', LOADED = '';
-  const S = { preset: 'all', from: '', to: '', formats: new Set(), basis: 'total', min: 1, cats: new Set(CATS.map((c) => c.id)) };
+  let DATA, ROWS, SESSIONS, FORMATS, DEFAULT_FORMATS, EVER, UPDATED = '', LOADED = '';
+  const S = { preset: 'all', from: '', to: '', formats: new Set(), basis: 'kamp', min: 1, cats: new Set(CATS.map((c) => c.id)) };
   const SORT = { roto: { key: 'total', dir: -1 }, rater: { key: 'total', dir: -1 } };
 
   function catValue(r, c) {
@@ -257,7 +258,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     SESSIONS = [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
     FORMATS = [...new Set(ROWS.map((r) => r.format).filter(Boolean))].sort();
     EVER = new Set(CATS.filter((c) => ROWS.some((r) => (c.ratio ? num(r.FGA) != null : catValue(r, c) != null))).map((c) => c.id));
-    S.formats = new Set(FORMATS);
+    DEFAULT_FORMATS = FORMATS.filter((f) => START_FORMATS.includes(f));
+    if (!DEFAULT_FORMATS.length) DEFAULT_FORMATS = FORMATS;
     readHash();
 
     const opts = SESSIONS.map((s) => `<option value="${esc(s.date)}">${esc(s.label)} (${esc([...s.formats].join('/'))})</option>`).join('');
@@ -309,12 +311,15 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     return m;
   }
 
+  // The presets count game days with the chosen formats, so "Seneste spilledag" skips a 2v2 day while 2v2 is off.
   function period() {
-    const n = SESSIONS.length, first = SESSIONS[0].date, last = SESSIONS[n - 1].date;
+    const days = SESSIONS.filter((s) => [...s.formats].some((f) => S.formats.has(f)));
+    const list = days.length ? days : SESSIONS;
+    const n = list.length, first = list[0].date, last = list[n - 1].date;
     if (S.preset === 'last') return { from: last, to: last };
-    if (S.preset === 'last3') return { from: SESSIONS[Math.max(0, n - 3)].date, to: last };
+    if (S.preset === 'last3') return { from: list[Math.max(0, n - 3)].date, to: last };
     if (S.preset === 'all') return { from: first, to: last };
-    return { from: S.from || first, to: S.to || last };
+    return { from: S.from || SESSIONS[0].date, to: S.to || SESSIONS[SESSIONS.length - 1].date };
   }
 
   // The hash keeps a view shareable. A period that runs to the latest game day is stored without an end date,
@@ -331,8 +336,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       if (S.from > S.to) S.to = S.from;
     }
     const f = (h.get('format') || '').split(',').filter((x) => FORMATS.includes(x));
-    S.formats = new Set(f.length ? f : FORMATS);
-    S.basis = h.get('tal') === 'kamp' ? 'kamp' : 'total';
+    S.formats = new Set(f.length ? f : DEFAULT_FORMATS);
+    S.basis = h.get('tal') === 'total' ? 'total' : 'kamp';
     S.min = Math.max(1, Math.round(num(h.get('min')) || 1));
     const k = (h.get('kat') || '').split(',').filter((x) => CATS.some((c) => c.id === x));
     S.cats = new Set(k.length ? k : CATS.map((c) => c.id));
@@ -345,8 +350,9 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       h.set('fra', S.from);
       if (S.to !== SESSIONS[SESSIONS.length - 1].date) h.set('til', S.to);
     }
-    if (S.formats.size < FORMATS.length) h.set('format', FORMATS.filter((f) => S.formats.has(f)).join(','));
-    if (S.basis !== 'total') h.set('tal', S.basis);
+    const formats = FORMATS.filter((f) => S.formats.has(f));
+    if (formats.join() !== DEFAULT_FORMATS.join()) h.set('format', formats.join(','));
+    if (S.basis !== 'kamp') h.set('tal', S.basis);
     if (S.min > 1) h.set('min', String(S.min));
     if (S.cats.size < CATS.length) h.set('kat', CATS.filter((c) => S.cats.has(c.id)).map((c) => c.id).join(','));
     const str = h.toString().replace(/%2C/g, ',');
