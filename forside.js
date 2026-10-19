@@ -1,10 +1,25 @@
-// PER, AST/TO og TS% som de sidste tal i box score og i pivotens "Tal". index.html bygges forfra af build_site.py,
-// så udvidelsen ligger her for sig, og deploy.sh sætter <script src="kpi.js"> ind igen, hvis den mangler.
-// Den bygger på forsidens BOX_COLS, METRICS, boxFmt, fmt og drawAll; mangler de, gør den ingenting.
+// Tilføjelser til forsiden: en knap til fantasy-spillet øverst og PER, AST/TO og TS% som de sidste tal i box score og
+// i pivotens "Tal". index.html bygges forfra af build_site.py, så koden ligger her for sig, og deploy.sh sætter
+// <script src="forside.js"> ind igen, hvis den mangler. Tallene bygger på forsidens BOX_COLS, METRICS, boxFmt, fmt og
+// drawAll; mangler de, springes de over.
 (function () {
+  const title = document.querySelector('header .d9-title');
+  if (title && !document.querySelector('.d9-fantasy')) {
+    document.head.append(Object.assign(document.createElement('style'), { textContent: `
+.d9-topbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.d9-fantasy { display: inline-flex; align-items: center; gap: 8px; font-size: var(--cds-font-size-body); font-weight: 600;
+  text-decoration: none; color: var(--color-bg); background: var(--color-fg); border-radius: 999px; padding: 8px 16px; }
+.d9-fantasy::before { content: ""; width: .6rem; height: .6rem; border-radius: 50%; background: var(--d9-accent); }
+.d9-fantasy:hover { box-shadow: 0 0 0 3px var(--d9-accent); }
+.d9-fantasy:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 3px; }` }));
+    const bar = Object.assign(document.createElement('div'), { className: 'd9-topbar' });
+    title.before(bar);
+    bar.append(title, Object.assign(document.createElement('a'), { className: 'd9-fantasy', href: 'fantasy/', textContent: 'Se fantasy-spillet →' }));
+  }
+
   const R = (window.D9_DATA || {}).player_games;
   if (!R || typeof BOX_COLS === 'undefined' || typeof METRICS === 'undefined' || typeof boxFmt !== 'function' || typeof fmt !== 'function') {
-    console.warn('kpi.js: forsiden mangler box score eller pivot, som kpi.js kan bygge videre på');
+    console.warn('forside.js: forsiden mangler box score eller pivot, så PER, AST/TO og TS% springes over');
     return;
   }
   const n = (v) => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v)) ? null : Number(v));
@@ -12,10 +27,11 @@
 
   for (const r of R) {
     r.tov = n(r.TOV) ?? n(r.TO);
-    // TS%: point pr. skudforsøg, hvor en kurv indenfor tæller 1 og en 2'er 2. Der er ingen straffekast.
+    // TS% på NBA-skalaen: en kurv indenfor tæller som en NBA-2'er og jeres 2'er som en 3'er, og TS% er point ÷ (2 × forsøg).
+    // Der er ingen straffekast. Rammer man kun indenfor, er TS% det samme som FG%.
     const p1m = n(r.P1M), p2m = n(r.P2M), p1a = n(r.P1A), p2a = n(r.P2A);
-    r.tsPts = p1m !== null && p2m !== null ? p1m + 2 * p2m : null;
-    r.tsAtt = p1a !== null && p2a !== null ? p1a + p2a : null;
+    r.tsPts = p1m !== null && p2m !== null ? 2 * p1m + 3 * p2m : null;
+    r.tsAtt = p1a !== null && p2a !== null ? 2 * (p1a + p2a) : null;
   }
 
   // PER efter Hollingers model, tilpasset D9: point, bomskud, rebounds og assists (plus steals, blocks og turnovers,
@@ -62,7 +78,7 @@
   const note = document.querySelector('#boxscore .d9-note');
   if (note) note.after(Object.assign(document.createElement('p'), { className: 'd9-note', textContent:
     'PER, AST/TO og TS% står sidst. PER er effektivitet pr. minut, hvor 15 er snittet i de kampe, man spillede.'
-    + ' AST/TO kræver turnovers og vises, når de registreres. TS% er point pr. skudforsøg, hvor en kurv indenfor tæller 1'
-    + " og en 2'er 2 (der er ingen straffekast). Rammer man kun indenfor, er TS% det samme som FG%; mange 2'ere kan give over 100 %." }));
+    + " AST/TO kræver turnovers og vises, når de registreres. TS% regnes som i NBA, hvor en kurv indenfor svarer til en 2'er"
+    + " og jeres 2'er til en 3'er (der er ingen straffekast). Rammer man kun indenfor, er TS% det samme som FG%, og 2'ere trækker op." }));
   if (typeof drawAll === 'function') drawAll();
 })();
