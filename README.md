@@ -1,6 +1,6 @@
 # D9 Streetball Stats
 
-Stats fra vores pickup-kampe: box scores, en pivot til selv at vende og dreje tallene, rekorder og makkerpar.
+Stats fra vores pickup-kampe: box scores, Nemesis-tabellen, en pivot til selv at vende og dreje tallene, rekorder og makkerpar.
 
 **Live:** https://jacquesbie.github.io/d9-streetball/
 
@@ -12,6 +12,13 @@ Det ligger i `forside.js`, fordi `build_site.py` skriver `index.html` forfra; `.
 ind igen, hvis det mangler. PER er Hollingers model tilpasset
 jeres kampe (15 er snittet i hver kamp), TS% regnes på NBA-skalaen ud fra 2'ere og skud indenfor, og AST/TO vises, når
 turnovers registreres (feltet `TOV`).
+
+**Nemesis-tabellen:** hvem dækker hvem. Den, der står over for en spiller ved check ball (i midten lige uden for toppen af
+den sorte bue), er hans direkte modstander resten af sekvensen, til bolden er død igen. Tabellen viser hver spillers
+nemesis og yndlingsmodstander og pr. modstander point, skud og point pr. 10 min i angreb og forsvar, sammenlignet med
+modstanderens snit mod andre. Data er `matchups` i `index.html` (én række pr. kamp, angriber og forsvarer), lavet af
+`~/HoopStatsLocal/review/matchups.py`. Parrene er tjekket på video for 12. okt. og 17. okt.; 28. sep. er ikke med
+(ens sorte T-shirts, og checket sker i billedets kant).
 
 **Fantasy:** https://jacquesbie.github.io/d9-streetball/fantasy/ har roto 8-cat (FG%, 2'ere, PTS, REB, AST, STL, BLK og TO,
 hvor færrest turnovers vinder) og en player rater med z-score pr. kategori og samlet. Der draftes ikke, så hver spiller er
