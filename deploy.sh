@@ -2,9 +2,9 @@
 # Commit and push the rebuilt page; GitHub Pages updates in about a minute.
 set -euo pipefail
 cd "$(dirname "$0")"
-# build_site.py skriver index.html forfra, så fantasy-knappen og PER, AST/TO og TS% (forside.js) sættes ind igen, hvis linket mangler.
+# build_site.py skriver index.html forfra, så fantasy-knappen (forside.js) sættes ind igen, hvis linket mangler.
 # ?v= skal ændres, når forside.js ændres, så browsere ikke bruger en gammel kopi (GitHub Pages cacher i 10 min).
-grep -q 'src="forside.js' index.html || perl -0pi -e 's#</body>#<script src="forside.js?v=20261106"></script>\n</body>#' index.html
+grep -q 'src="forside.js' index.html || perl -0pi -e 's#</body>#<script src="forside.js?v=20261106b"></script>\n</body>#' index.html
 git add -A
 if git diff --cached --quiet; then echo "Ingen ændringer at udgive."; exit 0; fi
 git commit -m "Opdatér stats ($(date +%Y-%m-%d))" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
