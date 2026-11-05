@@ -186,6 +186,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     <div>
       <h2 id="box-h">Box score</h2>
       <p class="d9-note">Alle tal pr. spiller for de valgte kampe. "Pr. kamp" er gennemsnit over de kampe, hvor tallet blev målt. Rebounds findes for 28. sep., 12. okt., 17. okt., 26. okt. og 2. nov., og hver eneste er set i videoen; assists er talt i videoen for hver kurv fra 28. sep. til 2. nov. Hvert bom fra 28. sep. til 2. nov. er også set i videoen: for 28. sep., 12. okt. og 17. okt. hver gang bolden var ved ringen, for 26. okt. og 2. nov. hvert forsøg, en model fandt (bolden ved ringen uden kurv, mens spillet fortsætter), plus de skud, modellen missede. Reboundet går til den første, der ses med bolden bagefter. Steals (STL), blocks (BLK), turnovers (TOV) og screen-assists (SA) er talt i videoen for 28. sep. kamp 1–2, 12. okt., 17. okt., 26. okt. og 2. nov. (2. nov. uden blocks), og kun når det ses tydeligt; blocks for 26. okt. er jeres egne tal. Andre kampe viser –. +/- er holdets point minus modstandernes, mens spilleren var på banen (I alt = summen over alle valgte kampe).</p>
+      <p class="d9-note">PER, AST/TO og TS% står sidst. PER er effektivitet pr. minut, hvor 15 er snittet i de kampe, man spillede. AST/TO kræver turnovers og vises, når de registreres. TS% regnes som i NBA, hvor en kurv indenfor svarer til en 2'er og jeres 2'er til en 3'er (der er ingen straffekast). Rammer man kun indenfor, er TS% det samme som FG%, og 2'ere trækker op.</p>
     </div>
     <div class="d9-controls">
       <label class="d9-field" for="d9-box-scope">Kampe<select id="d9-box-scope"></select></label>
@@ -523,6 +524,9 @@ const METRICS = [
   { id: 'TOV', label: 'Turnovers', f: 'TOV' },
   { id: 'SAST', label: 'Screen-assists', f: 'SAST' },
   { id: 'PM', label: '+/- (point for minus imod, mens man er på banen)', f: 'PM' },
+  { id: 'PER', label: 'PER (effektivitet, snit 15)', ratio: ['perVal', 'perExp'], kpi: (v) => (v * 0.15).toFixed(1) },
+  { id: 'ASTTO', label: 'Assists pr. turnover (AST/TO)', ratio: ['AST', 'tov'], kpi: (v) => (v / 100).toFixed(1) },
+  { id: 'TS', label: "True shooting (TS%, 2'ere og skud indenfor)", ratio: ['tsPts', 'tsAtt'] },
 ];
 const AGGS = [
   { id: 'pergame', label: 'Pr. kamp' },
@@ -573,6 +577,7 @@ function cell(rows, m, agg) {
 }
 function fmt(c, m, agg) {
   if (!c) return '–';
+  if (m.kpi) return m.kpi(c.v);
   if (isRate(m)) return Math.round(c.v) + '%';
   if (m.count || (agg === 'sum' && m.id !== 'MIN') || agg === 'max') return String(Math.round(c.v * 10) / 10);
   return c.v.toFixed(1);
@@ -593,13 +598,51 @@ const $ = (s) => document.querySelector(s);
 const P = () => ({ ...DEFAULTS, ...dash.params() });
 const r1 = (x) => Math.round(x * 10) / 10;
 
+// PER, AST/TO and TS% per row (on the public site since 19 Oct via forside.js; in the page itself since 6 Nov, so the
+// artifact has them too). TS% on the NBA scale: a basket inside counts as an NBA 2 and your 2 as a 3, TS% = points /
+// (2 x attempts), no free throws. PER after Hollinger, adapted to D9: points, misses, rebounds and assists (plus
+// steals, blocks and turnovers where recorded) weighted by what a possession is worth in your games, per minute; every
+// game is scaled so its average is 15, which evens out formats and games without rebounds.
+let perSrc = null, perRows = null;
+function withPer(R) {
+  if (R === perSrc) return perRows;
+  const n = (v) => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v)) ? null : Number(v));
+  const sum = (rs, f) => rs.reduce((t, r) => t + (f(r) || 0), 0);
+  const rows = R.map((r) => {
+    const p1m = n(r.P1M), p2m = n(r.P2M), p1a = n(r.P1A), p2a = n(r.P2A);
+    return { ...r, tov: n(r.TOV) ?? n(r.TO), tsPts: p1m !== null && p2m !== null ? 2 * p1m + 3 * p2m : null,
+      tsAtt: p1a !== null && p2a !== null ? 2 * (p1a + p2a) : null };
+  });
+  const shot = rows.filter((r) => n(r.PTS) !== null && n(r.FGA) !== null && n(r.MIN) > 0);
+  const reb = shot.filter((r) => n(r.REB) !== null && n(r.OREB) !== null);
+  const poss = sum(shot, (r) => n(r.FGA)) - sum(shot, (r) => n(r.OREB)) + sum(shot, (r) => r.tov);
+  const vop = poss > 0 ? sum(shot, (r) => n(r.PTS)) / poss : 1;
+  const trb = sum(reb, (r) => n(r.REB));
+  const drbp = trb > 0 ? 1 - sum(reb, (r) => n(r.OREB)) / trb : 0.7;
+  const fgm = sum(shot, (r) => n(r.FGM));
+  const astVal = fgm > 0 ? sum(shot, (r) => n(r.PTS)) / fgm / 3 : 1 / 3;
+  const value = (r) => {
+    const orb = n(r.OREB) ?? 0, drb = n(r.DREB) ?? (n(r.REB) !== null ? n(r.REB) - orb : 0);
+    return n(r.PTS) - vop * drbp * (n(r.FGA) - (n(r.FGM) || 0)) + vop * drbp * orb + vop * (1 - drbp) * drb
+      + astVal * (n(r.AST) || 0) + vop * (n(r.STL) || 0) + vop * drbp * (n(r.BLK) || 0) - vop * (r.tov || 0);
+  };
+  const games = new Map();
+  for (const r of shot) { if (!games.has(r.game_id)) games.set(r.game_id, []); games.get(r.game_id).push(r); }
+  for (const rs of games.values()) {
+    const perMin = sum(rs, value) / sum(rs, (r) => n(r.MIN));
+    if (perMin > 0) for (const r of rs) { r.perVal = value(r); r.perExp = n(r.MIN) * perMin; }
+  }
+  perSrc = R; perRows = rows;
+  return rows;
+}
+
 function selection() {
   const p = P(), G = dash.data('games'), R = dash.data('player_games');
   if (G.status !== 'ok' || R.status !== 'ok') return null;
   const fm = new Set(p.formats || []), hide = new Set(p.hideDays || []);
   const games = G.data.filter((g) => fm.has(g.format) && !hide.has(g.session) && (!p.completeOnly || g.complete === 'Ja'));
   const ids = new Set(games.map((g) => g.game_id));
-  return { p, games, rows: R.data.filter((r) => ids.has(r.game_id)), allGames: G.data };
+  return { p, games, rows: withPer(R.data).filter((r) => ids.has(r.game_id)), allGames: G.data };
 }
 
 // ---------- records, takeaway, insights ----------
@@ -824,6 +867,10 @@ const BOX_COLS = [
   { id: 'REB', label: 'REB' }, { id: 'OREB', label: 'OREB' }, { id: 'DREB', label: 'DREB' }, { id: 'AST', label: 'AST' },
   { id: 'STL', label: 'STL' }, { id: 'BLK', label: 'BLK' }, { id: 'TOV', label: 'TOV' }, { id: 'SAST', label: 'SA' },
   { id: 'PM', label: '+/-', signed: true },
+  // ratio columns compute (a / b) x 100: PER is 15 x a / b, AST/TO is a / b
+  { id: 'PER', label: 'PER', pct: ['perVal', 'perExp'], kpi: (v) => (v * 0.15).toFixed(1) },
+  { id: 'ASTTO', label: 'AST/TO', pct: ['AST', 'tov'], kpi: (v) => (v / 100).toFixed(1) },
+  { id: 'TS', label: 'TS%', pct: ['tsPts', 'tsAtt'] },
 ];
 function boxLine(rs, mode) {
   const out = { gp: new Set(rs.map((r) => r.game_id)).size };
@@ -837,6 +884,7 @@ function boxLine(rs, mode) {
   return out;
 }
 function boxFmt(c, v, mode) {
+  if (c.kpi) return v === null || v === undefined ? '–' : c.kpi(v);
   const one = (x) => (x === null || x === undefined ? '–' : mode === 'sum' && c.id !== 'MIN' ? String(Math.round(x * 10) / 10) : x.toFixed(1));
   if (c.id === 'gp') return String(v);
   if (c.pair) return v[0] === null || v[1] === null ? (v[0] === null ? '–' : one(v[0]) + '–?') : one(v[0]) + '–' + one(v[1]);
