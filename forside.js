@@ -1,5 +1,5 @@
-// Tilføjelser til forsiden: en knap til fantasy-spillet øverst og PER, AST/TO og TS% som de sidste tal i box score og
-// i pivotens "Tal". index.html bygges forfra af build_site.py, så koden ligger her for sig, og deploy.sh sætter
+// Tilføjelser til forsiden: en knap til fantasy-spillet øverst og (for ældre udgaver af forsiden) PER, AST/TO og TS% som de
+// sidste tal i box score og i pivotens "Tal". index.html bygges forfra af build_site.py, så koden ligger her for sig, og deploy.sh sætter
 // <script src="forside.js"> ind igen, hvis den mangler. Tallene bygger på forsidens BOX_COLS, METRICS, boxFmt, fmt og
 // drawAll; mangler de, springes de over.
 (function () {
@@ -17,6 +17,8 @@
     bar.append(title, Object.assign(document.createElement('a'), { className: 'd9-fantasy', href: 'fantasy/', textContent: 'Se fantasy-spillet →' }));
   }
 
+  // Siden 6. nov. har forsiden selv PER, AST/TO og TS% (så artifacten også har dem); så lægges de ikke på igen her.
+  if (typeof BOX_COLS !== 'undefined' && BOX_COLS.some((c) => c.id === 'PER')) return;
   const R = (window.D9_DATA || {}).player_games;
   if (!R || typeof BOX_COLS === 'undefined' || typeof METRICS === 'undefined' || typeof boxFmt !== 'function' || typeof fmt !== 'function') {
     console.warn('forside.js: forsiden mangler box score eller pivot, så PER, AST/TO og TS% springes over');
