@@ -192,7 +192,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   <section class="d9-card" id="boxscore" aria-labelledby="box-h">
     <div>
       <h2 id="box-h">Box score</h2>
-      <p class="d9-note">Alle tal pr. spiller for de valgte kampe. "Pr. kamp" er gennemsnit over de kampe, hvor tallet blev målt. Rebounds findes for 28. sep., 12. okt., 17. okt., 26. okt. og 2. nov., og hver eneste er set i videoen; assists er talt i videoen for hver kurv fra 28. sep. til 2. nov. Hvert bom fra 28. sep. til 2. nov. er også set i videoen, også hvem der skød: for 28. sep., 12. okt. og 17. okt. hver gang bolden var ved ringen, for 26. okt. og 2. nov. hvert forsøg, en model fandt (bolden ved ringen uden kurv, mens spillet fortsætter), plus de skud, modellen missede. Kan skytten ikke ses, tæller forsøget ikke for nogen, men returen tæller. Reboundet går til den første, der ses med bolden bagefter. Steals (STL), blocks (BLK), turnovers (TOV) og screen-assists (SA) er talt i videoen for 28. sep. kamp 1–2, 12. okt., 17. okt., 26. okt. og 2. nov. (2. nov. uden blocks), og kun når det ses tydeligt; blocks for 26. okt. er jeres egne tal. Andre kampe viser –. +/- er holdets point minus modstandernes, mens spilleren var på banen (I alt = summen over alle valgte kampe).</p>
+      <p class="d9-note">Alle tal pr. spiller for de valgte kampe. "Pr. kamp" er gennemsnit over de kampe, hvor tallet blev målt. Rebounds findes for 28. sep., 12. okt., 17. okt., 26. okt. og 2. nov., og hver eneste er set i videoen; assists er talt i videoen for hver kurv fra 28. sep. til 2. nov. Hvert bom fra 28. sep. til 2. nov. er også set i videoen, også hvem der skød: for 28. sep., 12. okt. og 17. okt. hver gang bolden var ved ringen, for 26. okt. og 2. nov. hvert forsøg, en model fandt (bolden ved ringen uden kurv, mens spillet fortsætter), plus de skud, modellen missede. Kan skytten ikke ses, tæller forsøget ikke for nogen, men reboundet tæller. Reboundet går til den første, der ses med bolden bagefter. Steals (STL), blocks (BLK), turnovers (TOV) og screen-assists (SA) er talt i videoen for 28. sep. kamp 1–2, 12. okt., 17. okt., 26. okt. og 2. nov. (2. nov. uden blocks), og kun når det ses tydeligt; blocks for 26. okt. er jeres egne tal. Andre kampe viser –. +/- er holdets point minus modstandernes, mens spilleren var på banen (I alt = summen over alle valgte kampe).</p>
       <p class="d9-note">PER, AST/TO og TS% står sidst. PER er effektivitet pr. minut, hvor 15 er snittet i de kampe, man spillede. AST/TO kræver turnovers og vises, når de registreres. TS% regnes som i NBA, hvor en kurv indenfor svarer til en 2'er og jeres 2'er til en 3'er (der er ingen straffekast). Rammer man kun indenfor, er TS% det samme som FG%, og 2'ere trækker op.</p>
     </div>
     <div class="d9-controls">
@@ -207,7 +207,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 
   <section class="d9-card" id="scout-card" aria-labelledby="scout-h">
     <div><h2 id="scout-h">Scouting report</h2>
-      <p class="d9-note">Én rapport pr. spiller, regnet på alle 3v3- og 4v4-kampe. Filtrene øverst gælder ikke her, så rapporten følger selv med, når nye kampe kommer ind. Placeringerne er blandt spillerne med mindst 4 kampe med fuld box score, og små stikprøver trækkes mod gruppens snit, før der rangeres, så 2 af 2 ikke topper en liste. Point, skud, returer og assists er målt som andel af holdets, hvor 1,0 er en ligelig fordeling, så 3v3 og 4v4 kan sammenlignes. Afstande er sporingens. NBA-sammenligningen er den aktive NBA-spiller (listen er fra 2026), hvis styrker og svagheder ligner mest ud fra de samme tal; hver NBA-spiller bruges kun én gang.</p></div>
+      <p class="d9-note">Én rapport pr. spiller, regnet på alle 3v3- og 4v4-kampe. Filtrene øverst gælder ikke her, så rapporten følger selv med, når nye kampe kommer ind. Placeringerne er blandt spillerne med mindst 4 kampe med fuld box score, og små stikprøver trækkes mod gruppens snit, før der rangeres, så 2 af 2 ikke topper en liste. Point, skud, rebounds og assists er målt som andel af holdets, hvor 1,0 er en ligelig fordeling, så 3v3 og 4v4 kan sammenlignes. Afstande er sporingens. NBA-sammenligningen er den aktive NBA-spiller (listen er fra 2026), hvis styrker og svagheder ligner mest ud fra de samme tal; hver NBA-spiller bruges kun én gang.</p></div>
     <div class="d9-controls">
       <label class="d9-field" for="d9-scout-player">Spiller<select id="d9-scout-player"></select></label>
     </div>
@@ -256,7 +256,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 
   <section class="d9-card" id="heat-card" aria-labelledby="heat-h">
     <div><h2 id="heat-h">Hvor på banen</h2>
-      <p class="d9-note">Heatmaps over skud, point, assists, rebounds og tid på banen. Kun med bolden i spil: tiden fra en kurv til næste check, pauser og alt efter kampen er sorteret fra. Følger filtrene øverst. Banen ses som fra kameraet med kurven øverst.</p></div>
+      <p class="d9-note">Heatmaps over skud, point, assists, rebounds og tid på banen. Kun med bolden i spil: tiden fra en kurv til næste check, pauser og alt efter kampen er sorteret fra. Følger filtrene øverst. Banen ses som fra kameraet med kurven øverst. xFG viser, hvor man skal afslutte: hvor stor en del af alle skud fra hver zone der går i (alle kampe med plads, så det ikke skifter med filtrene; få skud trækkes mod det, afstanden alene giver), og hvor mange point et skud derfra giver i snit, hvor 2'ere tæller dobbelt. Vælg en spiller for at se spillerens egen forventede skud-% pr. zone; få skud trækkes mod gruppens.</p></div>
     <div class="d9-controls">
       <div class="d9-field">Vis<div class="d9-chips" id="d9-heat-metric"></div></div>
       <label class="d9-field" for="d9-heat-player">Spiller<select id="d9-heat-player"></select></label>
@@ -445,7 +445,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       <div class="d9-rule"><h3>Skudforsøg</h3><ul>
         <li>Kun kampens spilletid tæller: fra første check til vinderkurven. Opvarmning, pauser og skud efter kampen tæller ikke.</li>
         <li>Hvert billede (30 pr. sekund) scannes i et lille felt om ringen efter en bold i bevægelse. Observationer med under 1,4 s mellemrum er ét forsøg.</li>
-        <li>Scanningen finder kun kandidaterne. Fra 28. sep. er hver kandidat set i videoen: et forsøg er et skud mod kurven, mens bolden er i spil. Et putback i en returkamp er et nyt forsøg, som i NBA – derfor har 12. okt. mange forsøg. En bold, der kun slås op eller væk uden kontrol, er ikke et forsøg, og det er afleveringer, finter og skud i død bold (før checket, efter en fejl og efter kampen) heller ikke.</li>
+        <li>Scanningen finder kun kandidaterne. Fra 28. sep. er hver kandidat set i videoen: et forsøg er et skud mod kurven, mens bolden er i spil. Et putback i en reboundkamp er et nyt forsøg, som i NBA – derfor har 12. okt. mange forsøg. En bold, der kun slås op eller væk uden kontrol, er ikke et forsøg, og det er afleveringer, finter og skud i død bold (før checket, efter en fejl og efter kampen) heller ikke.</li>
       </ul></div>
       <div class="d9-rule"><h3>Mål eller bom</h3><ul>
         <li>Mål kræver to ting: i ringens højde er bolden inden for ringens kanter (højst 1 ringradius fra midten), og bagefter ses den nede i nettet (1,2–2,6 ringradier under ringen), stadig centreret.</li>
@@ -459,7 +459,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
         <li>Scoringer: den kombination af skytter og point, der passer bedst med slutstillingen, vælges for hele kampen på én gang (ingen kan vinde for tidligt, og vinderkurven er vinderholdets).</li>
         <li>Bom: hvert bom er set i videoen og tæller kun for en skytte, der ses sikkert eller sandsynligt. Ellers tæller forsøget ikke for nogen spiller.</li>
         <li>Til sidst er hver kurv set igennem i videoen: hvem slap bolden? Forkerte skytter og 1/2-point er rettet.</li>
-        <li>2. nov. (6. nov.): alle bom er desuden set blindt af to video-agenter og en kontrol-agent uden navneskilte. Hvor to af tre var uenige med den første gennemgang, er det set efter igen. Syv "bom" var afleveringer, en fint eller et steal og er fjernet, tre bom var 2'ere, og flere skytter og returer er rettet.</li>
+        <li>2. nov. (6. nov.): alle bom er desuden set blindt af to video-agenter og en kontrol-agent uden navneskilte. Hvor to af tre var uenige med den første gennemgang, er det set efter igen. Syv "bom" var afleveringer, en fint eller et steal og er fjernet, tre bom var 2'ere, og flere skytter og rebounds er rettet.</li>
       </ul></div>
       <div class="d9-rule"><h3>1 eller 2 point</h3><ul>
         <li>Husregel: 1 point inden for buen, 2 point uden for. 2'er-linjen er den sorte basketbue, 6,75 m fra kurven. Den hvide bue er håndbold.</li>
@@ -468,14 +468,14 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
         <li>Til og med 12. okt. blev buen målt efter den hvide linje. Nu er alt regnet om, og næsten alle de gamle 2'ere er blevet til 1'ere. Derfor går spillernes point ikke op med slutresultatet for 28. sep. og 12. okt.</li>
       </ul></div>
       <div class="d9-rule"><h3>Rebounds</h3><ul>
-        <li>Alle dage fra 28. sep. til 2. nov.: hvert bom er set i videoen. Returen går til den første, der ses med bolden bagefter, og tæller kun, når det ses sikkert eller sandsynligt. En retur på et skud, ingen kunne se skytten til, tæller stadig (så kendes offensiv/defensiv ikke).</li>
+        <li>Alle dage fra 28. sep. til 2. nov.: hvert bom er set i videoen. Reboundet går til den første, der ses med bolden bagefter, og tæller kun, når det ses sikkert eller sandsynligt. Et rebound på et skud, ingen kunne se skytten til, tæller stadig (så kendes offensiv/defensiv ikke).</li>
         <li>Under gennemgangen viste flere "bom" sig at være afleveringer, finter eller død bold. De er fjernet fra skudforsøgene, og skud, modellen ikke fandt, er lagt til.</li>
-        <li>28. sep. og 12. okt. (gennemgået 6. nov.): hver gang bolden var ved ringen, er set i videoen, også dem den gamle metode havde sorteret fra. Et bom tæller kun for en skytte, der ses sikkert eller sandsynligt. På 28. sep. kunne skytten ikke ses ved 24 af 102 bom (sorte T-shirts set bagfra); de tæller ikke for nogen. 12. okt. fik 33 flere bom end før – mest putbacks og returkampe, som den gamle metode slog sammen eller kasserede – og alle 64 har en skytte.</li>
+        <li>28. sep. og 12. okt. (gennemgået 6. nov.): hver gang bolden var ved ringen, er set i videoen, også dem den gamle metode havde sorteret fra. Et bom tæller kun for en skytte, der ses sikkert eller sandsynligt. På 28. sep. kunne skytten ikke ses ved 24 af 102 bom (sorte T-shirts set bagfra); de tæller ikke for nogen. 12. okt. fik 33 flere bom end før – mest putbacks og reboundkampe, som den gamle metode slog sammen eller kasserede – og alle 64 har en skytte.</li>
       </ul></div>
       <div class="d9-rule"><h3>Assists</h3><ul>
         <li>Hver kurv er set igennem i videoen: kom der en aflevering fra en holdkammerat, før scoreren skød? Kurve uden assist er set igen fra 12 s før kurven.</li>
         <li>Assist: scoreren skyder højst ca. 4½ s efter at have grebet afleveringen. Drib, finter og drive er tilladt, og en aflevering lige efter check ball tæller også.</li>
-        <li>Ingen assist: scoreren har haft bolden i mere end ca. 4½ s og går selv 1 mod 1, eller kurven kommer på en returbold, en løs bold eller et steal.</li>
+        <li>Ingen assist: scoreren har haft bolden i mere end ca. 4½ s og går selv 1 mod 1, eller kurven kommer på et rebound, en løs bold eller et steal.</li>
         <li>Talt i videoen for alle kampe fra 28. sep. til 2. nov. Reglerne blev gjort løsere 22. okt. (før: højst ca. 3 s og et par drib). Juli og august har ingen assists: videoerne fra juli ligger ikke på computeren, og i august kan spillerne ikke genkendes sikkert. Ens tøj gør nogle afleveringer usikre (se Spillere og minutter).</li>
       </ul></div>
       <div class="d9-rule"><h3>Heatmaps og død bold</h3><ul>
@@ -507,7 +507,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       </ul></div>
       <div class="d9-rule"><h3>Spillestil (afslutningstyper)</h3><ul>
         <li>Hver kurv fra 17. okt. er set i videoen og sorteret efter, hvordan den blev til. Drive: dribler (eller poster) sig ind og afslutter ved kurven, også runners og floaters. Pull-up: skud efter drib, også fadeaways og stepbacks. Catch &amp; shoot: skud lige efter en aflevering, uden drib.</li>
-        <li>Cut: løber fri og får bolden tæt ved kurven. Putback: afslutning lige efter en offensiv rebound eller i en returkamp. Den ene post-up, der er set, tæller som drive.</li>
+        <li>Cut: løber fri og får bolden tæt ved kurven. Putback: afslutning lige efter en offensiv rebound eller i en reboundkamp. Den ene post-up, der er set, tæller som drive.</li>
         <li>Bom er ikke sorteret. Videoen viser sjældent, hvordan et bom opstod, og en automatisk sortering ud fra sporingen ramte kun en tredjedel af de kontrollerede kurve. Derfor er tallene andele af kurvene og ikke skud-% pr. type.</li>
         <li>Skudside og retning er fra sporingen: hvor skytten stod 1 s før bolden nåede ringen, set med front mod kurven (midt er ±1,4 m ud for kurven), og om han bevægede sig mindst 1 m til siden i de 1,5 s før. Alle forsøg tæller, også bom.</li>
         <li>Skud-% og point pr. skud bruger også 28. sep. kamp 1–3 og 12. okt. (kurve og bom set i videoen). Skudside og afstand bruger 28. sep. kamp 1–2 og 12. okt. (kurvenes plads er tjekket i videoen, bommenes er sporingens); kamp 3 har ingen pålidelig plads. Assisteret: kampe, hvor assists er talt i videoen (28. sep., 12. okt., 17. okt., 26. okt. og 2. nov.). Mærkerne (fx Spot-up-skytte) sættes automatisk ud fra tallene, når spilleren har mindst 6 kurve.</li>
@@ -533,7 +533,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       <div class="d9-rule"><h3>Avancerede tal</h3><ul>
         <li>WPA: vinderchancen regnes ud fra stillingen, som om hver kurv var et møntkast mellem holdene (med sæsonens andel af 2'ere), indtil et hold når vindernes slutscore. En kurvs WPA er holdets chance efter minus før og tilskrives skytten; 1,0 = en hel kamp.</li>
         <li>Skudkvalitet: forventet skud-% (xFG%) ud fra afstanden alene, fundet med logistisk regression på alle skud med en plads. "Over forventet" = skud-% minus xFG%.</li>
-        <li>Game Score: point + 0,4 × kurve − 0,7 × skud + 0,7 × offensive returer + 0,3 × defensive returer + steals + 0,7 × assists + 0,7 × blocks − turnovers (der er ingen straffekast eller fejl). Kampens spiller har kampens højeste, i kampe hvor alle har fuld box score; ved lighed vinder vinderholdet.</li>
+        <li>Game Score: point + 0,4 × kurve − 0,7 × skud + 0,7 × offensive rebounds + 0,3 × defensive rebounds + steals + 0,7 × assists + 0,7 × blocks − turnovers (der er ingen straffekast eller fejl). Kampens spiller har kampens højeste, i kampe hvor alle har fuld box score; ved lighed vinder vinderholdet.</li>
       </ul></div>
       <div class="d9-rule"><h3>Elo, priser og rekorder</h3><ul>
         <li>Elo: alle starter på 1500. Efter hver kamp får hver spiller 32 × M × (resultat − forventet) × andel af spilletiden, hvor forventet = 1 / (1 + 10^((modstandernes snit − holdets snit) / 400)) og M = ln(margin + 1) / ln 3 (1, når stillingen mangler).</li>
@@ -1070,6 +1070,7 @@ const HEAT = [
   { id: 'fgm', label: 'Kurve', kind: 'shot' },
   { id: 'fga', label: 'Skudforsøg', kind: 'shot' },
   { id: 'fgp', label: 'Skud-%', kind: 'shot' },
+  { id: 'xfg', label: 'xFG: hvor skal man afslutte', kind: 'shot' },
   { id: 'ast', label: 'Assists', kind: 'ast' },
   { id: 'reb', label: 'Rebounds', kind: 'reb' },
   { id: 'pos', label: 'Tid på banen', kind: 'pos' },
@@ -1104,6 +1105,22 @@ const ZONES = (() => {                        // distance bands x left / middle 
     for (const [side, a0, a1] of [['venstre', -180, -35], ['midt', -35, 35], ['højre', 35, 180.01]]) z.push({ id: band + side, label: band + ', ' + side, d0, d1, a0, a1 });
   return z;
 })();
+// xFG per zone (user, 6 Nov: "så folk kan se hvor de skal afslutte"): every shot with a spot in all games, the group's
+// FG% in the zone pulled towards the distance model (XFG_GK shots of it mixed in); pv = points per make (2'ere count double).
+const XFG_GK = 10, XFG_K = 4;                 // shots of prior mixed in: group zone (distance model), one player (group zone)
+let xzKey = null, xzRes = null;
+function xfgZones(events) {
+  if (events === xzKey) return xzRes;
+  const fx = xfgModel(), by = new Map();
+  for (const e of events) {
+    if (e.type !== 'shot' || e.u == null || e.live === 0) continue;
+    const z = zoneOf(e.u, e.v), o = by.get(z.id) || { m: 0, a: 0, p: 0, val: 0 };
+    o.m += Number(e.made); o.a += 1; o.val += Number(e.value) || 1; o.p += fx ? fx(Math.hypot(e.u, e.v - HOOP_V)) : 0; by.set(z.id, o);
+  }
+  for (const o of by.values()) { o.x = (o.m + XFG_GK * (o.p / o.a)) / (o.a + XFG_GK); o.pv = o.val / o.a; }
+  xzKey = events; xzRes = by;
+  return by;
+}
 function zoneOf(u, v) {
   const d = Math.hypot(u, v - HOOP_V), a = (Math.atan2(u, v - HOOP_V) * 180) / Math.PI;
   return ZONES.find((z) => d >= z.d0 && d < z.d1 && a >= z.a0 && a < z.a1) || ZONES[ZONES.length - 1];
@@ -1115,7 +1132,7 @@ function zonePath(z) {
   return 'M' + [...out, ...inn.reverse()].map((p) => p[0].toFixed(3) + ',' + p[1].toFixed(3)).join('L') + 'Z';
 }
 function zoneLabelAt(z) {
-  if (z.id === 'rim') return [0, HOOP_V + 0.75];
+  if (z.id === 'rim') return [0, HOOP_V + 0.95];          // below the restricted arc, so the second line stays readable
   const a = z.a0 < -100 ? -62 : z.a1 > 100 ? 62 : 0;
   const d = z.d1 > 20 ? 8.4 : (z.d0 + z.d1) / 2;
   const [u, v] = polar(d, a);
@@ -1140,9 +1157,9 @@ function drawHeat(sel) {
   const E = dash.data('events');
   if (E.status !== 'ok') { if (E.status === 'error') failLine(heatBox, 'Failed to load'); return; }
   const p = sel.p, m = HEAT.find((x) => x.id === p.heatMetric) || HEAT[0];
-  const view = m.id === 'fgp' ? 'zones' : p.heatView === 'zones' ? 'zones' : 'hex';
+  const zonesOnly = m.id === 'fgp' || m.id === 'xfg', view = zonesOnly ? 'zones' : p.heatView === 'zones' ? 'zones' : 'hex';
   heatMetricBox.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.metric === m.id)));
-  heatViewBox.querySelectorAll('button').forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.view === view)); b.disabled = m.id === 'fgp' && b.dataset.view === 'hex'; });
+  heatViewBox.querySelectorAll('button').forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.view === view)); b.disabled = zonesOnly && b.dataset.view === 'hex'; });
   const dotsOk = m.kind === 'shot' || m.kind === 'ast';
   heatDots.checked = !!p.heatDots && dotsOk; heatDots.disabled = !dotsOk;
   const { rows, withData, psel } = heatRows(sel, E);
@@ -1160,7 +1177,7 @@ function drawHeat(sel) {
       }
     }
   }
-  const val = (b) => (m.id === 'pts' ? b.pts : m.id === 'fgm' ? b.made : m.id === 'fga' ? b.att : m.id === 'fgp' ? (b.att >= 3 ? b.made / b.att : null) : m.kind === 'pos' ? b.secs : b.n);
+  const val = (b) => (m.id === 'pts' ? b.pts : m.id === 'fgm' ? b.made : m.id === 'fga' ? b.att : m.id === 'fgp' ? (b.att >= 3 ? b.made / b.att : null) : m.id === 'xfg' ? b.xf ?? null : m.kind === 'pos' ? b.secs : b.n);
   const bins = new Map();
   for (const it of items) {
     if (Math.abs(it.u) > U_MAX + 0.3 || it.v < -0.3 || it.v > V_MAX + 0.3) continue;
@@ -1171,6 +1188,15 @@ function drawHeat(sel) {
     b.att += it.att || 0; b.made += it.made || 0; b.pts += it.pts || 0; b.n += it.n || 0; b.secs += it.secs || 0;
     b.d += Math.hypot(it.u, it.v - HOOP_V); b.cnt += 1;
     bins.set(key, b);
+  }
+  // xFG: every zone anybody shot from; all players = the group's estimate, one player = own makes with XFG_K shots of the group's mixed in
+  if (m.id === 'xfg') {
+    for (const [id, o] of xfgZones(E.data)) {
+      const z = ZONES.find((x) => x.id === id); if (!z) continue;
+      if (!bins.has(id)) bins.set(id, { shape: z, att: 0, made: 0, pts: 0, n: 0, secs: 0, d: 0, cnt: 0 });
+      const b = bins.get(id); b.zx = o.x; b.pv = o.pv; b.ga = o.a; b.gm = o.m;
+      b.xf = psel === 'all' ? o.x : (b.made + XFG_K * o.x) / (b.att + XFG_K);
+    }
   }
   const vals = [...bins.values()].map(val).filter((x) => x != null && x > 0);
   const hi = m.id === 'fgp' ? 1 : Math.max(0, ...vals);
@@ -1185,6 +1211,12 @@ function drawHeat(sel) {
   const tipFor = (b) => {
     const where = view === 'zones' ? b.shape.label : 'ca. ' + (b.d / b.cnt).toFixed(1).replace('.', ',') + ' m fra kurven';
     const lines = [where];
+    if (m.id === 'xfg') {
+      lines.push('Alle spillere: ' + b.gm + ' af ' + b.ga + ' skud, xFG ' + Math.round(b.zx * 100) + '%');
+      if (psel !== 'all') lines.push(psel + ': ' + b.made + ' af ' + b.att + ' skud' + (b.att ? ' (' + pct(b.made, b.att) + ')' : '') + ', forventet ' + Math.round(b.xf * 100) + '%');
+      lines.push(dk(b.xf * b.pv, 2) + ' point pr. skud' + (b.pv > 1.3 ? " (2'ere tæller dobbelt)" : ''));
+      return lines;
+    }
     if (m.kind === 'shot') lines.push(`${b.made} kurve af ${b.att} skud (${pct(b.made, b.att)})`, `${b.pts} point`);
     else if (m.kind === 'ast') lines.push(`${b.n} ${b.n === 1 ? 'assist' : 'assists'} herfra`);
     else if (m.kind === 'reb') lines.push(`${b.n} ${b.n === 1 ? 'rebound' : 'rebounds'}`);
@@ -1226,10 +1258,10 @@ function drawHeat(sel) {
     for (const z of ZONES) {
       const b = [...bins.values()].find((x) => x.shape === z); if (!b) continue;
       const [u, v] = zoneLabelAt(z);
-      const main = m.kind === 'shot' ? (m.id === 'fgp' ? pct(b.made, b.att) : m.id === 'pts' ? b.pts + ' p' : m.id === 'fgm' ? String(b.made) : String(b.att))
+      const main = m.id === 'xfg' ? Math.round(b.xf * 100) + '%' : m.kind === 'shot' ? (m.id === 'fgp' ? pct(b.made, b.att) : m.id === 'pts' ? b.pts + ' p' : m.id === 'fgm' ? String(b.made) : String(b.att))
         : m.kind === 'pos' ? fmtSecs(b.secs) : String(b.n);
       svg.append('text').attr('class', 'zlab').attr('x', u).attr('y', v).text(main);
-      if (m.kind === 'shot') svg.append('text').attr('class', 'zlab sub').attr('x', u).attr('y', v + 0.55).text(b.made + '/' + b.att);
+      if (m.kind === 'shot') svg.append('text').attr('class', 'zlab sub').attr('x', u).attr('y', v + 0.55).text(m.id === 'xfg' ? dk(b.xf * b.pv, 2) + ' p/skud' : b.made + '/' + b.att);
     }
   }
   // individual shots / passes
@@ -1253,21 +1285,27 @@ function drawHeat(sel) {
     else if (e.type === 'reb') { S.reb++; S.oreb += e.off || 0; }
     else if (e.type === 'pos') S.secs += Number(e.secs) || 0;
   }
-  const big = m.kind === 'shot' ? (m.id === 'fgp' ? pct(S.made, S.att) : m.id === 'pts' ? S.pts : m.id === 'fgm' ? S.made : S.att)
+  const big = m.kind === 'shot' ? (m.id === 'fgp' || m.id === 'xfg' ? pct(S.made, S.att) : m.id === 'pts' ? S.pts : m.id === 'fgm' ? S.made : S.att)
     : m.kind === 'ast' ? S.ast : m.kind === 'reb' ? S.reb : fmtSecs(S.secs);
-  const bigLabel = m.kind === 'pos' && psel === 'all' ? 'Spillertid i alt, bold i spil' : m.label + (psel === 'all' ? ', alle spillere' : ', ' + psel);
+  const bigLabel = m.kind === 'pos' && psel === 'all' ? 'Spillertid i alt, bold i spil' : (m.id === 'xfg' ? 'Skud-%' : m.label) + (psel === 'all' ? ', alle spillere' : ', ' + psel);
   const dl = document.createElement('dl'); dl.className = 'd9-heat-stats';
   const add = (k, v) => { dl.append(Object.assign(document.createElement('dt'), { textContent: k }), Object.assign(document.createElement('dd'), { textContent: v })); };
   add('Skud', S.att + ' (' + S.made + ' kurve, ' + pct(S.made, S.att) + ')'); add('Point', String(S.pts));
   add("2'ere", S.two + ' af ' + S.twoA); add('Assists', String(S.ast)); add('Rebounds', S.reb + (S.reb ? ' (' + S.oreb + ' offensive)' : ''));
   add(psel === 'all' ? 'Spillertid i alt' : 'Tid på banen', S.secs ? fmtSecs(S.secs) : '–');
+  if (m.id === 'xfg') {                        // the best and worst places to finish: expected points per shot
+    const zs = [...bins.values()].filter((b) => b.zx != null && b.ga >= 5).map((b) => ({ b, pps: b.xf * b.pv })).sort((a, b) => b.pps - a.pps);
+    const nm = (o) => o.b.shape.label + ' (' + dk(o.pps, 2) + ')';
+    add('Bedst at afslutte, point pr. skud', zs.slice(0, 3).map(nm).join(' · ') || '–');
+    add('Dårligst', zs.slice(-2).reverse().map(nm).join(' · ') || '–');
+  }
   const head = document.createElement('div');
   head.append(Object.assign(document.createElement('div'), { className: 'lbl', textContent: bigLabel }),
     Object.assign(document.createElement('div'), { className: 'big', textContent: String(big) }));
   const leg = document.createElement('div'); leg.className = 'd9-legend';
   const bar = document.createElement('span'); bar.className = 'bar'; bar.style.background = `linear-gradient(90deg, color-mix(in srgb, ${ACC} 14%, transparent), ${ACC})`;
-  leg.append(Object.assign(document.createElement('span'), { textContent: m.id === 'fgp' ? '0%' : 'lidt' }), bar,
-    Object.assign(document.createElement('span'), { textContent: m.id === 'fgp' ? '100% (mindst 3 skud)' : 'meget' }));
+  leg.append(Object.assign(document.createElement('span'), { textContent: m.id === 'fgp' ? '0%' : m.id === 'xfg' ? 'lav xFG' : 'lidt' }), bar,
+    Object.assign(document.createElement('span'), { textContent: m.id === 'fgp' ? '100% (mindst 3 skud)' : m.id === 'xfg' ? 'høj xFG' : 'meget' }));
   if (heatDots.checked && m.kind === 'shot') {
     const k = document.createElement('span');
     k.innerHTML = '<span class="dot" style="background:' + ACC + '"></span>kurv &nbsp; <span class="dot" style="border:1px solid var(--color-fg-muted)"></span>bom';
@@ -1426,7 +1464,7 @@ function styleTags(s) {
     if (sh('drive') + sh('cut') >= 0.45) t.push('Søger kurven');
     if (sh('pullup') >= 0.5) t.push('Pull-up-skytte');
     if (s.jump >= 5 && q(s.pt.catch.n, s.jump) >= 0.35) t.push('Spot-up-skytte');
-    if (sh('putback') >= 0.15) t.push('Lever af returer');
+    if (sh('putback') >= 0.15) t.push('Lever af putbacks');
   }
   if (s.astk >= 6 && q(s.ast, s.astk) >= 0.6) t.push('Afslutter på oplæg');
   if (s.astk >= 6 && q(s.ast, s.astk) <= 0.25) t.push('Skaber selv');
@@ -1744,7 +1782,7 @@ const dlRows = (dl, pairs) => dl.replaceChildren(...pairs.flatMap(([k, v]) => [e
 const SF = { usg: { k: 2 }, pts: { k: 2 }, reb: { k: 2 }, ast: { k: 2 }, eff: { k: 15, pool: 1 }, rimFG: { k: 4, pool: 1 },
   midFG: { k: 10, pool: 1 }, longShare: { k: 15, pool: 1 }, longFG: { k: 15, pool: 1 }, oreb: { k: 6, pool: 1 }, tov: { k: 20, pool: 1 },
   pullup: { k: 6, pool: 1 }, drive: { k: 6, pool: 1 }, catch: { k: 6, pool: 1 }, putback: { k: 6, pool: 1 }, assisted: { k: 6, pool: 1 },
-  stl: { k: 4 }, blk: { k: 4 }, sast: { k: 4 }, def: { k: 4 }, clutch: { k: 3 }, win: { k: 4, mu: 0.5 }, motor: { k: 20 }, apm: { k: 0 }, pie: { k: 3 },
+  stl: { k: 4 }, blk: { k: 4 }, sast: { k: 4 }, def: { k: 4 }, asto: { k: 0 }, clutch: { k: 3 }, win: { k: 4, mu: 0.5 }, motor: { k: 20 }, apm: { k: 0 }, pie: { k: 3 },
   per: { k: 2 }, dmatch: { k: 0 } };
 const NBA_F = ['usg', 'pts', 'eff', 'rimFG', 'midFG', 'longShare', 'longFG', 'pullup', 'drive', 'catch', 'putback', 'assisted',
   'reb', 'oreb', 'ast', 'tov', 'stl', 'blk', 'sast', 'clutch', 'impact', 'win', 'motor'];
@@ -1753,7 +1791,7 @@ const TRAIT = { usg: ['tager mange skud', 'tager få skud'], pts: ['scorer meget
   rimFG: ['sikker ved kurven', 'brænder ved kurven'], midFG: ['stærk i mellemdistancen', 'svag i mellemdistancen'],
   longShare: ["skyder mange 2'ere", "skyder sjældent 2'ere"], longFG: ['rammer langt fra', 'rammer sjældent langt fra'],
   pullup: ['pull-ups', 'få pull-ups'], drive: ['drives', 'få drives'], catch: ['catch & shoot', 'lidt catch & shoot'], putback: ['putbacks', 'få putbacks'],
-  assisted: ['scorer på oplæg', 'skaber selv'], reb: ['mange returer', 'få returer'], oreb: ['offensive returer', 'mest defensive returer'],
+  assisted: ['scorer på oplæg', 'skaber selv'], reb: ['mange rebounds', 'få rebounds'], oreb: ['offensive rebounds', 'mest defensive rebounds'],
   ast: ['afleverer meget', 'afleverer lidt'], tov: ['mister bolden tit', 'mister sjældent bolden'], stl: ['steals', 'få steals'],
   blk: ['blocks', 'få blocks'], sast: ['screens', 'få screens'], clutch: ['clutch', 'lidt i clutch-tid'], impact: ['stor impact', 'lav impact'],
   win: ['vinder', 'taber tit'], motor: ['løber meget', 'løber lidt'] };
@@ -1761,7 +1799,7 @@ const TRAIT = { usg: ['tager mange skud', 'tager få skud'], pts: ['scorer meget
 const NBA = `
 Shai Gilgeous-Alexander|Pull-ups i mellemdistancen, clutch og hænder i forsvaret|usg 1.5 pts 2 eff 1 pullup 2 midFG 1.5 drive 1 clutch 2 stl 1.5 tov -0.5 impact 2 win 1.5 longShare -0.5 ast 0.5
 Jalen Brunson|Clutch-scoreren, der lever af pull-ups og footwork|usg 2 pts 2 pullup 2 midFG 1.5 clutch 2 tov -1 ast 1 stl -0.5 reb -1 impact 1 drive 1
-Luka Dončić|Alt går gennem ham: skud, afleveringer og returer|usg 2 pts 2 ast 2 reb 1.5 longShare 1.5 pullup 1.5 tov 2 assisted -2 clutch 1.5 impact 1.5 motor -1.5
+Luka Dončić|Alt går gennem ham: skud, afleveringer og rebounds|usg 2 pts 2 ast 2 reb 1.5 longShare 1.5 pullup 1.5 tov 2 assisted -2 clutch 1.5 impact 1.5 motor -1.5
 Stephen Curry|Langskud fra alle vinkler og løber hele tiden uden bold|longShare 2 longFG 2 eff 2 usg 1 pts 1.5 motor 1.5 catch 1 impact 1.5 clutch 1
 Tyrese Haliburton|Afleverer først, mister næsten aldrig bolden og rammer langt fra|ast 2 tov -2 longShare 1.5 longFG 1 usg -0.5 clutch 1.5 eff 1
 Trae Young|Volumen-playmaker: mange skud og afleveringer, gerne langt fra|usg 2 ast 2 longShare 1.5 pullup 1.5 tov 2 eff -0.5 reb -1.5 blk -1 assisted -1.5
@@ -1777,7 +1815,7 @@ Alex Caruso|Forsvar og det usynlige arbejde – har sjældent bolden|stl 2 usg -
 Marcus Smart|Hjerte, hustle og afleveringer – og skud, der ikke altid sidder|stl 1.5 ast 1 longShare 1 longFG -1 eff -1 oreb 1 motor 1 usg -0.5
 Klay Thompson|Skytten, der får bolden og skyder med det samme|longShare 2 longFG 1.5 catch 2 assisted 2 ast -1 tov -1 drive -1 reb -0.5
 Dyson Daniels|Steal-maskinen – skuddet er stadig på vej|stl 2.5 eff -1 longFG -1 usg -1 ast 0.5 motor 1
-Josh Giddey|Returtagende playmaker uden stort skud|ast 2 reb 1.5 longShare -0.5 longFG -0.5 tov 0.5
+Josh Giddey|Playmaker med mange rebounds, uden stort skud|ast 2 reb 1.5 longShare -0.5 longFG -0.5 tov 0.5
 Donovan Mitchell|Eksplosiv scorer med pull-ups og langskud|usg 2 pts 2 pullup 2 longShare 1.5 drive 1 clutch 1.5 assisted -1.5 stl 0.5
 Devin Booker|Mellemdistance-scorer med silkeblød pull-up|usg 1.5 pts 2 pullup 2 midFG 2 ast 1 assisted -1 tov 0.5
 Tyrese Maxey|Fart, drives og næsten ingen turnovers|drive 1.5 usg 1.5 pts 1.5 tov -1.5 motor 1.5 longShare 1 assisted -1
@@ -1785,40 +1823,40 @@ Cade Cunningham|Stor playmaker, der styrer alt – også turnovers|usg 2 ast 2 r
 Austin Reaves|Snedig: drives, afleveringer og de rigtige valg|drive 1 ast 1 eff 1 tov -0.5 usg 0.5 clutch 0.5
 Tyler Herro|Pull-up-skytte, der gerne tager skuddet selv|pullup 2 usg 1.5 longShare 1.5 assisted -1.5 ast 0.5 reb -0.5 stl -0.5
 Jordan Clarkson|Mikrobølgeovnen: skyder, så snart bolden kommer|usg 2 pullup 1.5 assisted -1.5 eff -1 ast -1 longShare 1
-Josh Hart|Tager returer som en big, afslutter tæt på og vinder|reb 2 oreb -0.5 rimFG 1.5 longFG -1.5 longShare -0.5 tov -0.5 win 1.5 motor 1 impact 1 usg -0.5 ast 1
+Josh Hart|Tager rebounds som en big, afslutter tæt på og vinder|reb 2 oreb -0.5 rimFG 1.5 longFG -1.5 longShare -0.5 tov -0.5 win 1.5 motor 1 impact 1 usg -0.5 ast 1
 Andrew Wiggins|Scorer på andres oplæg, på drives og i mellemdistancen|assisted 2 midFG 0.5 drive 1 eff 0.5 reb -1 ast -1 pts 1 usg 0.5 impact -0.5 win -0.5
 Mikal Bridges|Jernmanden: sikker med bolden og pull-ups i mellemdistancen|tov -1.5 midFG 1 pullup 1 eff 0.5 motor 1 reb -1 stl 0.5
 Michael Porter Jr.|Langskud på oplæg – skyder over alle|assisted 2 longShare 1.5 longFG 1.5 catch 1.5 reb 0.5 ast -1.5 stl -1 impact -0.5 pts 1
 Kevin Durant|Mellemdistance-maestro, der rammer fra alle steder|midFG 2 eff 2 pullup 1.5 pts 2 usg 1.5 longFG 1.5 blk 0.5 clutch 1
 DeMar DeRozan|Mellemdistance og clutch – ingen langskud|pullup 2 midFG 1.5 clutch 2 longShare -2 assisted -1.5 ast 1 tov -1 stl -0.5 usg 1
 Jaylen Brown|Kraftfulde drives og mange point|drive 1.5 pts 1.5 usg 1.5 tov 1 reb 0.5 stl 0.5 assisted -0.5
-Scottie Barnes|Allround-forward: returer, forsvar og afleveringer|reb 1.5 ast 1 stl 1 blk 1 rimFG 1 longFG -1 usg 0.5
-Amen Thompson|Atlet ved kurven med returer og forsvar – skyder sjældent langt|rimFG 2 drive 1.5 reb 1.5 stl 1 longShare -2 longFG -1 motor 1
+Scottie Barnes|Allround-forward: rebounds, forsvar og afleveringer|reb 1.5 ast 1 stl 1 blk 1 rimFG 1 longFG -1 usg 0.5
+Amen Thompson|Atlet ved kurven med rebounds og forsvar – skyder sjældent langt|rimFG 2 drive 1.5 reb 1.5 stl 1 longShare -2 longFG -1 motor 1
 Aaron Gordon|Kraftfuld afslutter på oplæg, der får holdet til at vinde|assisted 1.5 rimFG 1.5 reb 1 eff 1 win 1.5 impact 1 usg -0.5
 Herb Jones|Låsen i forsvaret, tager få skud|stl 2 blk 1 usg -1.5 eff -0.5 impact 1
 OG Anunoby|Forsvar og skud på oplæg|stl 1.5 catch 1.5 assisted 1.5 longShare 1 usg -0.5 tov -1 impact 1
 Kentavious Caldwell-Pope|Catch & shoot og forsvar – har sjældent bolden selv|catch 2 assisted 2 longShare 1.5 usg -1.5 tov -1 stl 1 ast -0.5
 Dillon Brooks|Skyder med selvtillid – også når det ikke går|usg 1 eff -1.5 longShare 1.5 longFG -0.5 ast -1.5 stl 0.5 pullup 1
 Ausar Thompson|Forsvar, steals og hustle – skuddet halter|stl 2 reb 1 rimFG 1 longShare -2 longFG -1.5 eff -0.5 motor 1.5 usg -1
-Nikola Jokić|Alt i én: afleveringer, returer og effektivitet|ast 2.5 reb 2 eff 2 impact 2.5 pts 2 usg 1 midFG 1.5 motor -2 stl 1 win 1
-Giannis Antetokounmpo|Kurvejægeren: drives, returer og point ved kurven|rimFG 2 drive 2 reb 2 usg 2 pts 2 longShare -2 ast 1 tov 1.5 blk 1 impact 2
+Nikola Jokić|Alt i én: afleveringer, rebounds og effektivitet|ast 2.5 reb 2 eff 2 impact 2.5 pts 2 usg 1 midFG 1.5 motor -2 stl 1 win 1
+Giannis Antetokounmpo|Kurvejægeren: drives, rebounds og point ved kurven|rimFG 2 drive 2 reb 2 usg 2 pts 2 longShare -2 ast 1 tov 1.5 blk 1 impact 2
 Bam Adebayo|Anker i forsvaret, screens og skud fra midten|reb 1.5 blk 1 sast 2 stl 0.5 midFG 0.5 pullup 1 win 1 impact 1 ast 0.5 longShare -1
-Julius Randle|Fysisk volumen: drives, pull-ups og masser af returer|usg 1.5 reb 2 drive 1.5 pullup 1 eff -1 tov 1 stl -0.5 impact -0.5 pts 1.5
-Domantas Sabonis|Returkongen med screens og afleveringer|reb 2.5 ast 2 sast 2 eff 1.5 oreb 1 longShare -1.5 usg 0.5
+Julius Randle|Fysisk volumen: drives, pull-ups og masser af rebounds|usg 1.5 reb 2 drive 1.5 pullup 1 eff -1 tov 1 stl -0.5 impact -0.5 pts 1.5
+Domantas Sabonis|Reboundkongen med screens og afleveringer|reb 2.5 ast 2 sast 2 eff 1.5 oreb 1 longShare -1.5 usg 0.5
 Victor Wembanyama|Blokerer alt og kan skyde langt|blk 2.5 reb 2 longShare 1 usg 1.5 pts 1.5 stl 0.5 impact 1.5
-Rudy Gobert|Rimbeskytteren: blocks, returer og screens|blk 2 reb 2 sast 2 usg -1.5 rimFG 2 longShare -2 assisted 2 ast -1 impact 1
-Steven Adams|Grovarbejderen: offensive returer, screens og putbacks|oreb 2.5 reb 1.5 sast 2 usg -2 ast 0.5 putback 2 longShare -2 pts -1.5 impact 0.5
-Evan Mobley|Moderne big: blocks, returer og effektivitet|blk 2 reb 1.5 eff 1.5 win 1.5 impact 1 drive 0.5 midFG 0.5
-Karl-Anthony Towns|Skydende big med mange returer|reb 2 longShare 1.5 longFG 1.5 eff 1.5 usg 1 pts 1.5 tov 0.5
+Rudy Gobert|Rimbeskytteren: blocks, rebounds og screens|blk 2 reb 2 sast 2 usg -1.5 rimFG 2 longShare -2 assisted 2 ast -1 impact 1
+Steven Adams|Grovarbejderen: offensive rebounds, screens og putbacks|oreb 2.5 reb 1.5 sast 2 usg -2 ast 0.5 putback 2 longShare -2 pts -1.5 impact 0.5
+Evan Mobley|Moderne big: blocks, rebounds og effektivitet|blk 2 reb 1.5 eff 1.5 win 1.5 impact 1 drive 0.5 midFG 0.5
+Karl-Anthony Towns|Skydende big med mange rebounds|reb 2 longShare 1.5 longFG 1.5 eff 1.5 usg 1 pts 1.5 tov 0.5
 Draymond Green|Hjernen: screens, afleveringer og forsvar – få skud|ast 1.5 sast 1.5 stl 1 blk 1 usg -2 eff -1 longFG -1 win 1.5 impact 1 tov 1
-Jarrett Allen|Effektiv ved kurven: screens, returer og blocks|rimFG 2 eff 2 reb 1.5 sast 1.5 blk 1 usg -1.5 assisted 2 longShare -2 putback 1
-Alperen Şengün|Post-playmaker med returer og fine fødder|reb 1.5 ast 1.5 usg 1.5 pts 1 oreb 1 longShare -1.5 stl 1
-Bobby Portis|Skyder, når bolden kommer, og tager returer|usg 1.5 reb 1.5 ast -1.5 catch 1 pullup 0.5
+Jarrett Allen|Effektiv ved kurven: screens, rebounds og blocks|rimFG 2 eff 2 reb 1.5 sast 1.5 blk 1 usg -1.5 assisted 2 longShare -2 putback 1
+Alperen Şengün|Post-playmaker med rebounds og fine fødder|reb 1.5 ast 1.5 usg 1.5 pts 1 oreb 1 longShare -1.5 stl 1
+Bobby Portis|Skyder, når bolden kommer, og tager rebounds|usg 1.5 reb 1.5 ast -1.5 catch 1 pullup 0.5
 Zion Williamson|Bulldozer ved kurven|rimFG 2 drive 2 eff 1.5 usg 1.5 pts 2 longShare -2 reb 0.5
 Brook Lopez|Blocks under egen kurv, langskud i den anden ende|blk 2 longShare 2 catch 1.5 assisted 1.5 usg -0.5 reb -0.5 ast -1
-Mitchell Robinson|Offensive returer og blocks, ingen skud udefra|oreb 2.5 blk 2 reb 2 usg -2 putback 2 longShare -2 ast -1
-Isaiah Hartenstein|Returer, screens og overraskende afleveringer|reb 2 oreb 1.5 ast 1.5 sast 1.5 usg -1 longShare -2 putback 1
-Nikola Vučević|Returer og skud fra mellemdistancen|reb 2 midFG 1 pullup 1 usg 1 longShare 0.5 ast 0.5 impact -0.5 win -0.5 motor -1
+Mitchell Robinson|Offensive rebounds og blocks, ingen skud udefra|oreb 2.5 blk 2 reb 2 usg -2 putback 2 longShare -2 ast -1
+Isaiah Hartenstein|Rebounds, screens og overraskende afleveringer|reb 2 oreb 1.5 ast 1.5 sast 1.5 usg -1 longShare -2 putback 1
+Nikola Vučević|Rebounds og skud fra mellemdistancen|reb 2 midFG 1 pullup 1 usg 1 longShare 0.5 ast 0.5 impact -0.5 win -0.5 motor -1
 Jaren Jackson Jr.|Blocks og skud fra mange steder|blk 2.5 usg 1 pts 1 reb -0.5 longShare 1 tov 0.5 ast -1
 `.trim().split('\n').map((l) => {
   const [n, d, t] = l.split('|'), v = t.trim().split(/\s+/), w = {};
@@ -1827,22 +1865,23 @@ Jaren Jackson Jr.|Blocks og skud fra mange steder|blk 2.5 usg 1 pts 1 reb -0.5 l
 });
 // profile rows: feature, +1 if more is better (tov: fewer is better), label; short and long value texts
 const SCOUT_BARS = [['pts', 1, 'Scoring'], ['usg', 1, 'Skudvolumen'], ['eff', 1, 'Effektivitet'], ['rimFG', 1, 'Ved kurven'],
-  ['midFG', 1, 'Mellemdistance'], ['longFG', 1, "2'ere"], ['reb', 1, 'Returer'], ['ast', 1, 'Afleveringer'], ['tov', -1, 'Boldsikkerhed'],
-  ['def', 1, 'Steals og blocks'], ['sast', 1, 'Screen assists'], ['clutch', 1, 'Clutch'], ['impact', 1, 'Impact'], ['win', 1, 'Sejre'], ['motor', 1, 'Løb']];
+  ['midFG', 1, 'Mellemdistance'], ['longFG', 1, "2'ere"], ['reb', 1, 'Rebounds'], ['ast', 1, 'Afleveringer'], ['asto', 1, 'AST/TO'],
+  ['stl', 1, 'Steals'], ['blk', 1, 'Blocks'], ['sast', 1, 'Screen assists'], ['clutch', 1, 'Clutch'], ['impact', 1, 'Impact'], ['win', 1, 'Sejre'], ['motor', 1, 'Løb']];
 const SCOUT_LISTN = { rimFG: 4, midFG: 8, longFG: 6 };          // attempts needed before a shot zone is called a strength or weakness
 const SV = { pts: (s) => dk(s.x.pts.v) + '× andel', usg: (s) => dk(s.x.usg.v) + '× andel', eff: (s) => 'TS ' + Math.round(s.ts * 100) + '%',
   rimFG: (s) => s.rim.m + ' af ' + s.rim.a, midFG: (s) => s.mid.m + ' af ' + s.mid.a, longFG: (s) => s.p2m + ' af ' + s.p2a,
-  reb: (s) => dk(s.x.reb.v) + '× andel', ast: (s) => dk(s.x.ast.v) + '× andel', tov: (s) => dk(100 * s.x.tov.v) + '% af aktionerne',
-  def: (s) => dk(s.x.def.v, 2) + ' pr. kamp', sast: (s) => dk(s.x.sast.v, 2) + ' pr. kamp', clutch: (s) => dk(s.x.clutch.v, 2) + ' pr. kamp',
+  reb: (s) => dk(s.x.reb.v) + '× andel', ast: (s) => dk(s.x.ast.v) + '× andel', asto: (s) => s.astT + '/' + s.tov + (s.tov ? ' = ' + dk(s.astT / s.tov) : ''),
+  stl: (s) => dk(s.x.stl.v, 2) + ' pr. kamp', blk: (s) => dk(s.x.blk.v, 2) + ' pr. kamp', sast: (s) => dk(s.x.sast.v, 2) + ' pr. kamp', clutch: (s) => dk(s.x.clutch.v, 2) + ' pr. kamp',
   impact: (s) => sgnDk(s.apm) + (s.pie != null ? ' · PIE ' + Math.round(s.pie) : ''), win: (s) => s.won + '–' + s.lost, motor: (s) => Math.round(s.motor) + ' m/min' };
 const LV = { pts: (s) => dk(s.ppg) + ' point pr. kamp, ' + dk(s.x.pts.v) + ' gange sin andel af holdets point',
   usg: (s) => dk(s.fgapg) + ' skud pr. kamp, ' + dk(s.x.usg.v) + ' gange sin andel af holdets skud',
   eff: (s) => 'TS ' + Math.round(s.ts * 100) + '%, og ' + pctTxt(s.fgm, s.fga) + ' af skuddene rammer',
   rimFG: (s) => s.rim.m + ' af ' + s.rim.a + ' tæt ved kurven (højst 2 m)', midFG: (s) => s.mid.m + ' af ' + s.mid.a + ' fra 2–6 m',
-  longFG: (s) => s.p2m + ' af ' + s.p2a + ' bag buen', reb: (s) => dk(s.rpg) + ' returer pr. kamp, ' + dk(s.x.reb.v) + ' gange sin andel af holdets',
+  longFG: (s) => s.p2m + ' af ' + s.p2a + ' bag buen', reb: (s) => dk(s.rpg) + ' rebounds pr. kamp, ' + dk(s.x.reb.v) + ' gange sin andel af holdets',
   ast: (s) => dk(s.apg) + ' assists pr. kamp, ' + dk(s.x.ast.v) + ' gange sin andel af holdets',
-  tov: (s) => dk(100 * s.x.tov.v) + '% af aktionerne (skud, assists og turnovers) endte med turnover: ' + nOf(s.tov, 'turnover', 'turnovers') + ' på ' + s.tovG + ' kampe',
-  def: (s) => dk(s.stl / s.stlG, 2) + ' steals' + (s.blkG ? ' og ' + dk(s.blk / s.blkG, 2) + ' blocks' : '') + ' pr. kamp (' + nOf(s.stl, 'steal', 'steals') + ' på ' + s.stlG + ' kampe)',
+  asto: (s) => nOf(s.astT, 'assist', 'assists') + ' mod ' + nOf(s.tov, 'turnover', 'turnovers') + ' på ' + s.tovG + ' kampe' + (s.tov ? ' (' + dk(s.astT / s.tov) + ')' : ''),
+  stl: (s) => dk(s.stl / s.stlG, 2) + ' steals pr. kamp (' + s.stl + ' på ' + s.stlG + ' kampe)',
+  blk: (s) => dk(s.blk / s.blkG, 2) + ' blocks pr. kamp (' + s.blk + ' på ' + s.blkG + ' kampe)',
   sast: (s) => dk(s.x.sast.v, 2) + ' screen assists pr. kamp (' + s.sast + ' på ' + s.sastG + ' kampe)',
   clutch: (s) => dk(s.x.clutch.v, 2) + ' point pr. kamp, mens det var tæt til sidst (' + s.clu + ' i ' + s.x.clutch.n + ' kampe' + (s.gw ? ', ' + nOf(s.gw, 'vinderkurv', 'vinderkurve') : '') + ')',
   impact: (s) => 'justeret +/- ' + sgnDk(s.apm) + ' pr. kamp' + (s.pie != null ? ' og PIE ' + Math.round(s.pie) : ''),
@@ -1891,6 +1930,8 @@ function scoutAll(scope) {
   if (E.status === 'ok') for (const e of E.data) if (e.type === 'ast' && e.to && scope.ids.has(e.game_id)) { inc(give, e.player, e.to); inc(got, e.to, e.player); }
   const most = (m) => { const x = m && [...m].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'da'))[0]; return x ? { who: x[0], n: x[1] } : null; };
   const M = dash.data('matchups'), pairs = M.status === 'ok' ? nemPairs(M.data.filter((r) => scope.ids.has(r.game_id))) : [];
+  const tgAll = rows.filter((r) => ['TOV', 'AST'].every((f) => num(r[f]) !== null));
+  const astoR = tgAll.reduce((t, r) => t + num(r.AST), 0) / Math.max(1, tgAll.reduce((t, r) => t + num(r.TOV), 0));
   const list = [];
   for (const p of [...new Set(rows.map((r) => r.player))]) {
     const rs = rows.filter((r) => r.player === p), x = {};
@@ -1918,6 +1959,7 @@ function scoutAll(scope) {
     x.oreb = rate(orb, rebT);
     const tg = has('TOV', 'FGA', 'AST'), tov = sum('TOV', tg), astT = sum('AST', tg);
     x.tov = rate(tov, sum('FGA', tg) + astT + tov);
+    x.asto = { v: rs.some(tg) ? (astT + 2 * astoR) / (tov + 2) : null, n: tov };   // AST/TO, 2 turnovers at the group's ratio mixed in
     x.stl = perGame('STL'); x.blk = perGame('BLK'); x.sast = perGame('SAST');
     x.def = { v: x.stl.v == null ? null : x.stl.v + (x.blk.v || 0), n: x.stl.n };   // blocks aren't counted on every day
     const won = rs.reduce((t, r) => t + (Number(r.won) || 0), 0);
@@ -2022,9 +2064,9 @@ function scoutStop(s) {
   if (st.latn >= 8 && st.right / st.latn <= 0.35) add(1.3 - st.right / st.latn, 'Tving ' + s.p + ' til højre: går til venstre før ' + pctTxt(st.latn - st.right, st.latn) + ' af skuddene.');
   if (z.longShare >= 0.7 && z.longFG <= -0.5) add(z.longShare - z.longFG, 'Lad ' + s.p + " skyde 2'ere: " + s.p2m + ' af ' + s.p2a + ' rammer.');
   if (z.longFG >= 0.8 && s.p2a >= 5) add(z.longFG, 'Gå ud til ' + s.p + ' bag buen: ' + s.p2m + ' af ' + s.p2a + " 2'ere rammer.");
-  const ob = [z.oreb >= 0.8 ? pctTxt(s.orb, s.rebT) + ' af returerne er offensive' : '', z.putback >= 0.8 ? pctTxt(st.pt.putback.n, st.tfgm) + ' af kurvene er putbacks' : ''].filter(Boolean);
+  const ob = [z.oreb >= 0.8 ? pctTxt(s.orb, s.rebT) + ' offensive rebounds' : '', z.putback >= 0.8 ? pctTxt(st.pt.putback.n, st.tfgm) + ' af kurvene er putbacks' : ''].filter(Boolean);
   if (ob.length) add(Math.max(z.oreb, z.putback), 'Box ' + s.p + ' ud: ' + og(ob) + '.');
-  if (z.reb >= 1) add(z.reb, 'Box ud på hvert skud: ' + s.p + ' tager ' + dk(s.x.reb.v) + ' gange sin andel af returerne.');
+  if (z.reb >= 1) add(z.reb, 'Box ud på hvert skud: ' + s.p + ' tager ' + dk(s.x.reb.v) + ' gange sin andel af holdets rebounds.');
   if (z.ast >= 0.8 && s.giveTop) add(z.ast, 'Luk afleveringen til ' + s.giveTop.who + ': ' + s.giveTop.n + ' assists er gået dertil.');
   if (z.clutch >= 1) add(z.clutch, 'Pas ekstra på til sidst: ' + dk(s.x.clutch.v, 2) + ' clutch-point pr. kamp (' + s.clu + ' i alt' + (s.gw ? ', ' + nOf(s.gw, 'vinderkurv', 'vinderkurve') : '') + ').');
   const h = s.hh;
@@ -2048,7 +2090,7 @@ function drawScout() {
     el('span', { className: 'big', textContent: v == null ? '–' : f(v) }), el('span', { className: 'sub', textContent: sub || ' ' }));
   const perRank = s.q && s.per != null ? 'nr. ' + (1 + S.Q.filter((o) => o.per != null && o.per > s.per + 1e-9).length) + ' af ' + S.Q.filter((o) => o.per != null).length : '';
   $('#scout-keys').replaceChildren(tile('Point pr. kamp', s.ppg, dk, s.x.pts.v != null ? dk(s.x.pts.v) + '× sin andel' : ''),
-    tile('Returer pr. kamp', s.rpg, dk, s.x.reb.v != null ? dk(s.x.reb.v) + '× sin andel' : ''),
+    tile('Rebounds pr. kamp', s.rpg, dk, s.x.reb.v != null ? dk(s.x.reb.v) + '× sin andel' : ''),
     tile('Assists pr. kamp', s.apg, dk, s.tovG ? nOf(s.astT, 'assist', 'assists') + ' mod ' + nOf(s.tov, 'turnover', 'turnovers') : ''),
     tile('Skud-%', s.fgp, (v) => Math.round(v * 100) + '%', s.ts != null ? 'TS ' + Math.round(s.ts * 100) + '%' : ''),
     tile('PER', s.per, dk, perRank), tile('Justeret +/-', s.apm, sgnDk, s.pie != null ? 'PIE ' + Math.round(s.pie) : ''));
@@ -2179,7 +2221,7 @@ function potgOf(rows) {
   }
   return out;
 }
-const statLine = (r) => [nOf(num(r.PTS), 'point', 'point'), nOf(num(r.REB), 'retur', 'returer'), nOf(num(r.AST), 'assist', 'assists'),
+const statLine = (r) => [nOf(num(r.PTS), 'point', 'point'), nOf(num(r.REB), 'rebound', 'rebounds'), nOf(num(r.AST), 'assist', 'assists'),
   ...(num(r.STL) ? [nOf(num(r.STL), 'steal', 'steals')] : []), ...(num(r.BLK) ? [nOf(num(r.BLK), 'block', 'blocks')] : [])].join(', ');
 const pp = (x) => { const v = Math.round(100 * x); return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v) + ' %-point'; };
 const byDate = (a, b) => a.date.localeCompare(b.date) || num(a.game_no) - num(b.game_no);
@@ -2350,7 +2392,7 @@ function recordBook(scope, plays) {
     recs.push([title, unit(top), [...who].map(([pl, gs]) => pl + ' (' + gs.join(', ') + ')').join(' · ')]);
   };
   best(rows, (r) => num(r.PTS), 'Flest point i en kamp', (v) => nOf(v, 'point', 'point'), 1);
-  best(rows, (r) => num(r.REB), 'Flest returer i en kamp', (v) => nOf(v, 'retur', 'returer'), 1);
+  best(rows, (r) => num(r.REB), 'Flest rebounds i en kamp', (v) => nOf(v, 'rebound', 'rebounds'), 1);
   best(rows, (r) => num(r.AST), 'Flest assists i en kamp', (v) => nOf(v, 'assist', 'assists'), 1);
   best(rows, (r) => num(r.STL), 'Flest steals i en kamp', (v) => nOf(v, 'steal', 'steals'), 2);
   best(rows, (r) => num(r.P2M), "Flest 2'ere i en kamp", (v) => v + " 2'ere", 2);
