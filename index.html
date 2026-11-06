@@ -147,10 +147,6 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .d9-scout-nba p { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
 .d9-scout-list { margin: 0 0 var(--cds-gap-sm); padding-left: 1.1rem; display: grid; gap: 5px; font-size: var(--cds-font-size-body); line-height: 1.45; }
 .d9-scout-list b { font-weight: 600; }
-.d9-clip { display: grid; gap: var(--cds-gap-sm); max-width: 44rem; }
-.d9-clip-head { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; justify-content: space-between; font-size: var(--cds-font-size-body); }
-.d9-clip video { width: 100%; aspect-ratio: 16 / 9; border-radius: var(--cds-radius); background: #000; }
-.d9-cliplink { font-size: var(--cds-font-size-caption); margin-left: 4px; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -211,7 +207,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 
   <section class="d9-card" id="scout-card" aria-labelledby="scout-h">
     <div><h2 id="scout-h">Scouting report</h2>
-      <p class="d9-note">Én rapport pr. spiller, regnet på alle 3v3- og 4v4-kampe. Filtrene øverst gælder ikke her, så rapporten følger selv med, når nye kampe kommer ind. Placeringerne er blandt spillerne med mindst 4 kampe med fuld box score, og små stikprøver trækkes mod gruppens snit, før der rangeres, så 2 af 2 ikke topper en liste. Point, skud, rebounds og assists er målt som andel af holdets, hvor 1,0 er en ligelig fordeling, så 3v3 og 4v4 kan sammenlignes. Afstande er sporingens. NBA-sammenligningen er den aktive NBA-spiller (listen er fra 2026), hvis styrker og svagheder ligner mest ud fra de samme tal; hver NBA-spiller bruges kun én gang. I den private udgave har styrker og tips et videoklip, hvor der står ▶ Se klip.</p></div>
+      <p class="d9-note">Én rapport pr. spiller, regnet på alle 3v3- og 4v4-kampe. Filtrene øverst gælder ikke her, så rapporten følger selv med, når nye kampe kommer ind. Placeringerne er blandt spillerne med mindst 4 kampe med fuld box score, og små stikprøver trækkes mod gruppens snit, før der rangeres, så 2 af 2 ikke topper en liste. Point, skud, rebounds og assists er målt som andel af holdets, hvor 1,0 er en ligelig fordeling, så 3v3 og 4v4 kan sammenlignes. Afstande er sporingens. NBA-sammenligningen er den aktive NBA-spiller (listen er fra 2026), hvis styrker og svagheder ligner mest ud fra de samme tal; hver NBA-spiller bruges kun én gang.</p></div>
     <div class="d9-controls">
       <label class="d9-field" for="d9-scout-player">Spiller<select id="d9-scout-player"></select></label>
     </div>
@@ -231,12 +227,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       </div>
       <div style="min-width:0" id="scout-text" data-source="player_games plays"></div>
     </div>
-    <div class="d9-clip" id="scout-clip" hidden>
-      <div class="d9-clip-head"><b id="scout-clip-cap">—</b>
-        <span class="d9-chips"><button class="d9-chip" id="scout-clip-prev">Forrige</button><button class="d9-chip" id="scout-clip-next">Næste</button><button class="d9-chip" id="scout-clip-close">Luk</button></span></div>
-      <video id="scout-clip-video" controls muted playsinline preload="metadata"></video>
-    </div>
-    <div class="d9-grid2" style="min-width:0">
+        <div class="d9-grid2" style="min-width:0">
       <div style="min-width:0"><h3 class="d9-sub3">Skudprofil</h3><div class="d9-court" id="scout-court" data-source="events" style="max-width:26rem"></div><div class="d9-legend" id="scout-court-leg" style="margin:6px 0 10px"></div><dl class="d9-heat-stats" id="scout-shots" data-source="plays"></dl></div>
       <div style="min-width:0"><h3 class="d9-sub3">Makkere, modstandere og sjove tal</h3><dl class="d9-heat-stats" id="scout-more" data-source="plays"></dl></div>
     </div>
@@ -2084,35 +2075,7 @@ function scoutStop(s) {
   return t.sort((a, b) => b.w - a.w).slice(0, 3);
 }
 const scoutSel = $('#d9-scout-player'), scoutBars = $('#scout-bars'), scoutTip = makeTip(scoutBars);
-// video clips of the highlights (dataset 'clips': the private artifact only; the public site has none and shows no buttons):
-// one video per player, a clip = start..end seconds in it; the strength or tip a clip shows is its category
-const CLIP_OF = { rimFG: 'rim', midFG: 'mid', longFG: 'two', reb: 'reb', ast: 'ast', asto: 'ast', stl: 'stl', blk: 'blk', sast: 'sast', clutch: 'clutch' };
-const clipBox = $('#scout-clip'), clipVid = $('#scout-clip-video'), clipCap = $('#scout-clip-cap');
-let clipState = null;
-function scoutClips(player) {
-  const D = dash.data('clips'), by = {};
-  if (D.status === 'ok') for (const c of D.data) if (c.player === player) (by[c.cat] ||= []).push(c);
-  return by;
-}
-function showClip(player, list, i, scroll) {
-  clipState = { player, list, i }; const c = list[i];
-  clipBox.hidden = false;
-  clipCap.textContent = c.label + ' · ' + c.game + (list.length > 1 ? ' (' + (i + 1) + ' af ' + list.length + ')' : '');
-  $('#scout-clip-prev').disabled = i === 0; $('#scout-clip-next').disabled = i === list.length - 1;
-  const go = () => { clipVid.currentTime = c.start + 0.05; const pr = clipVid.play(); if (pr) pr.catch(() => {}); };
-  if (clipVid.getAttribute('src') !== c.src) { clipVid.src = c.src; clipVid.addEventListener('loadedmetadata', go, { once: true }); } else go();
-  if (scroll) clipBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-const clipNow = () => clipState && clipState.list[clipState.i];
-clipVid.addEventListener('timeupdate', () => {          // stop at the clip's end; seek again if a seek didn't take (video not loaded yet)
-  const c = clipNow(); if (!c) return;
-  if (clipVid.currentTime < c.start - 0.3) clipVid.currentTime = c.start + 0.05;
-  else if (clipVid.currentTime >= c.end - 0.08) clipVid.pause();
-});
-clipVid.addEventListener('play', () => { const c = clipNow(); if (c && (clipVid.currentTime < c.start || clipVid.currentTime >= c.end - 0.1)) clipVid.currentTime = c.start + 0.05; });
-$('#scout-clip-prev').addEventListener('click', () => { if (clipState && clipState.i > 0) showClip(clipState.player, clipState.list, clipState.i - 1, false); });
-$('#scout-clip-next').addEventListener('click', () => { if (clipState && clipState.i < clipState.list.length - 1) showClip(clipState.player, clipState.list, clipState.i + 1, false); });
-$('#scout-clip-close').addEventListener('click', () => { clipState = null; clipVid.pause(); clipBox.hidden = true; });
+const CLIP_OF = {}; const scoutClips = () => ({}); const showClip = () => {}; const clipReset = () => {};
 scoutSel.addEventListener('change', () => dash.setParams({ scoutPlayer: scoutSel.value }));
 function drawScout() {
   const scope = scoutScope(); if (!scope) return;
@@ -2121,7 +2084,7 @@ function drawScout() {
   scoutSel.replaceChildren(...S.list.slice().sort((a, b) => a.p.localeCompare(b.p, 'da')).map((o) => new Option(o.p + ' (' + o.gp + ' kampe)', o.p)));
   scoutSel.value = s.p;
   $('#scout-name').textContent = s.p;
-  if (clipState && clipState.player !== s.p) { clipState = null; clipVid.pause(); clipBox.hidden = true; }
+  clipReset(s.p);
   $('#scout-sub').textContent = s.gp + ' kampe · ' + s.won + (s.won === 1 ? ' sejr' : ' sejre') + ' og ' + s.lost + ' nederlag · ' + s.days
     + (s.days === 1 ? ' spilledag (' + s.last + ')' : ' spilledage (' + s.first + ' – ' + s.last + ')') + (s.box < s.gp ? ' · ' + s.box + ' med fuld box score' : '');
   // key numbers (the ranks are in the profile, where point, shots and rebounds are shares of the team's)
@@ -2148,11 +2111,7 @@ function drawScout() {
   else failLine(scoutBars, 'Placeringerne kræver mindst ' + SCOUT_MIN + ' kampe med fuld box score.');
   // strengths, weaknesses, how to stop the player, play-style tags
   const ranked = SCOUT_BARS.filter(([f]) => f !== 'usg' && s.rank[f] && !(s.x[f] && s.x[f].n < (SCOUT_LISTN[f] || 0))).map(([f, sg, label]) => ({ f, label, z: sg * s.z[f] }));
-  const CL = scoutClips(s.p), withClip = (li, cat) => {
-    const xs = cat && CL[cat]; if (!xs || !xs.length) return li;
-    const b = el('button', { className: 'd9-link d9-cliplink', textContent: '▶ Se klip' + (xs.length > 1 ? ' (' + xs.length + ')' : '') });
-    b.addEventListener('click', () => showClip(s.p, xs, 0, true)); li.append(' ', b); return li;
-  };
+  const withClip = (li) => li;
   const item = (o, clip) => withClip(el('li', {}, el('b', { textContent: o.label }), ': ' + LV[o.f](s) + ' – nr. ' + s.rank[o.f].rank + ' af ' + s.rank[o.f].n + '.'), clip && CLIP_OF[o.f]);
   const block = (h, lis, none) => [el('h3', { className: 'd9-sub3', textContent: h }), lis.length ? el('ul', { className: 'd9-scout-list' }, ...lis) : el('p', { className: 'd9-note', textContent: none, style: 'margin-bottom:10px' })];
   const good = ranked.filter((o) => o.z >= 0.6).sort((a, b) => b.z - a.z).slice(0, 3), bad = ranked.filter((o) => o.z <= -0.6).sort((a, b) => a.z - b.z).slice(0, 3);
@@ -2617,10 +2576,13 @@ function drawAll() {
   if (wl) Object.assign(vals, { 'wl.player': wl.player, 'wl.diff': wl.diff, 'wl.win_ppg': wl.win_ppg, 'wl.loss_ppg': wl.loss_ppg });
   const du = duos(sel.rows);
   if (du[0]) Object.assign(vals, { 'duo.pair': du[0].pair, 'duo.wins': du[0].wins, 'duo.games': du[0].games });
-  Object.assign(vals, drawFun(sel));
+  const safe = (box, f) => { try { f(); } catch (e) { console.error(e); if (box) failLine(box, 'Kunne ikke vises: ' + ((e && e.message) || e)); } };
+  safe(funTable, () => Object.assign(vals, drawFun(sel)));
   setK(vals);
   $('#ins-wl').hidden = !wl; $('#ins-duo').hidden = !du[0]; $('#ins-twos').hidden = !vals['twos.player'];
-  drawBox(sel); drawScout(); drawSeasonCards(); drawHeat(sel); drawStyle(sel); drawNemesis(sel); drawImpact(sel); drawAdv(sel); drawTrios(sel); drawPivot(sel); drawDuos(du); drawGames(sel);
+  safe(boxTable, () => drawBox(sel)); safe($('#scout-keys'), drawScout); safe($('#awards'), drawSeasonCards); safe(heatBox, () => drawHeat(sel));
+  safe(styleBars, () => drawStyle(sel)); safe(nemBox, () => drawNemesis(sel)); safe(impChart, () => drawImpact(sel)); safe(advChart, () => drawAdv(sel));
+  safe($('#trio-table'), () => drawTrios(sel)); safe(tableBox, () => drawPivot(sel)); safe($('#duos'), () => drawDuos(du)); safe(null, () => drawGames(sel));
 }
 dash.onData(drawAll);
 </script>
