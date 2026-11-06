@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>D9 Streetball Stats</title>
-<meta name="description" content="Stats fra vores pickup-kampe: box scores, heatmaps, spillestil, impact, nemesis-tabel, pivot og makkerpar.">
+<meta name="description" content="Stats fra vores pickup-kampe: box scores, scouting reports, heatmaps, spillestil, impact, nemesis-tabel, pivot og makkerpar.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500&display=swap">
@@ -140,6 +140,13 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 @media (min-width: 460px) { .d9-fun-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 760px) { .d9-fun-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .d9-fun-tiles .d9-tile { background: var(--color-bg); }
+.d9-scout-name { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); line-height: 1.15; }
+.d9-scout-keys { display: grid; gap: var(--cds-gap-sm); grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: var(--cds-gap-sm); }
+.d9-scout-keys .d9-tile { background: var(--color-bg); padding: var(--cds-pad-sm) var(--cds-pad-md); min-width: 0; }
+.d9-scout-nba { background: var(--color-bg); min-width: 0; }
+.d9-scout-nba p { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
+.d9-scout-list { margin: 0 0 var(--cds-gap-sm); padding-left: 1.1rem; display: grid; gap: 5px; font-size: var(--cds-font-size-body); line-height: 1.45; }
+.d9-scout-list b { font-weight: 600; }
 </style>
 </head>
 <body>
@@ -196,6 +203,34 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       </div></div>
     </div>
     <div class="d9-scroll" id="box-table" data-source="player_games"></div>
+  </section>
+
+  <section class="d9-card" id="scout-card" aria-labelledby="scout-h">
+    <div><h2 id="scout-h">Scouting report</h2>
+      <p class="d9-note">Én rapport pr. spiller, regnet på alle 3v3- og 4v4-kampe. Filtrene øverst gælder ikke her, så rapporten følger selv med, når nye kampe kommer ind. Placeringerne er blandt spillerne med mindst 4 kampe med fuld box score, og små stikprøver trækkes mod gruppens snit, før der rangeres, så 2 af 2 ikke topper en liste. Point, skud, returer og assists er målt som andel af holdets, hvor 1,0 er en ligelig fordeling, så 3v3 og 4v4 kan sammenlignes. Afstande er sporingens. NBA-sammenligningen er den aktive NBA-spiller (listen er fra 2026), hvis styrker og svagheder ligner mest ud fra de samme tal; hver NBA-spiller bruges kun én gang.</p></div>
+    <div class="d9-controls">
+      <label class="d9-field" for="d9-scout-player">Spiller<select id="d9-scout-player"></select></label>
+    </div>
+    <div class="d9-grid2" style="min-width:0">
+      <div style="min-width:0">
+        <h3 class="d9-scout-name" id="scout-name">—</h3>
+        <p class="d9-note" id="scout-sub" data-source="player_games">—</p>
+        <div class="d9-scout-keys" id="scout-keys" data-source="player_games"></div>
+      </div>
+      <div class="d9-tile d9-scout-nba" id="scout-nba" data-source="player_games plays"></div>
+    </div>
+    <div class="d9-grid2" style="min-width:0">
+      <div style="min-width:0">
+        <h3 class="d9-sub3">Profil: placering blandt spillerne</h3>
+        <div class="d9-chart" id="scout-bars" data-source="player_games plays" style="min-height:9rem"></div>
+        <div class="d9-legend"><span><span class="dot" id="scout-dot"></span>Længst = nr. 1</span><span><span class="tick"></span>Midten af gruppen</span></div>
+      </div>
+      <div style="min-width:0" id="scout-text" data-source="player_games plays"></div>
+    </div>
+    <div class="d9-grid2" style="min-width:0">
+      <div style="min-width:0"><h3 class="d9-sub3">Skudprofil</h3><dl class="d9-heat-stats" id="scout-shots" data-source="plays"></dl></div>
+      <div style="min-width:0"><h3 class="d9-sub3">Makkere, modstandere og sjove tal</h3><dl class="d9-heat-stats" id="scout-more" data-source="plays"></dl></div>
+    </div>
   </section>
 
   <section class="d9-card" id="heat-card" aria-labelledby="heat-h">
@@ -1341,7 +1376,7 @@ function styleTags(s) {
 }
 function makeTip(box) { const t = document.createElement('div'); t.className = 'd9-tip'; t.hidden = true; box.append(t); return t; }
 // Horizontal bars from a zero line: rows [{ key, v, txt, mark?, tip: [lines] }]; one hue, value at the bar end.
-function hbars(box, tipEl, rows, label) {
+function hbars(box, tipEl, rows, label, fixedHi) {      // fixedHi: fixed end of the scale (otherwise the longest bar)
   box.querySelectorAll('svg, .d9-fail').forEach((n) => n.remove());
   if (!box.contains(tipEl)) box.append(tipEl);
   if (!rows.length) return;
@@ -1353,7 +1388,7 @@ function hbars(box, tipEl, rows, label) {
   meas.remove();
   const neg = rows.some((d) => d.v < 0);
   const left = Math.ceil(lw) + 10 + (neg ? Math.ceil(vw) + 6 : 0), right = Math.ceil(vw) + 10;
-  const lo = Math.min(0, ...rows.map((d) => d.v)), hi = Math.max(0, ...rows.map((d) => Math.max(d.v, d.mark ?? 0)));
+  const lo = Math.min(0, ...rows.map((d) => d.v)), hi = fixedHi ?? Math.max(0, ...rows.map((d) => Math.max(d.v, d.mark ?? 0)));
   const x = d3.scaleLinear([lo, hi || 1], [left, W - right]), y = (i) => top + i * rowH;
   svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', top).attr('y2', H - 4).attr('stroke', 'var(--cds-chart-axis)');
   const g = svg.selectAll('g.bar').data(rows).join('g').attr('class', 'bar');
@@ -1619,6 +1654,365 @@ function drawFun(sel) {
 }
 
 
+// ---------- scouting report ----------
+// One report per player from every 3v3 and 4v4 game, whatever the filters say, so it keeps up with new games by
+// itself. Numbers are ranked among the regulars (at least SCOUT_MIN games with a full box score); before ranking, a
+// small sample is mixed with k games or attempts at the group's average, so 2 of 2 doesn't top a list. The NBA
+// comparison is the active player whose traits point the same way as the player's z-scores (cosine similarity); the
+// best fits are placed first and each NBA player is used once.
+const SCOUT_FORMATS = ['3v3', '4v4'], SCOUT_MIN = 4;
+const dk = (x, d = 1) => x.toFixed(d).replace('.', ',');
+const nOf = (n, one, many) => n + ' ' + (n === 1 ? one : many);
+const sgnDk = (x) => sgn(x).replace('.', ','), duelDk = (o) => o.opp + ' (' + o.mine + '–' + o.his + ', ' + dk(o.sec / 60) + ' min)';
+const og = (xs) => (xs.length > 1 ? xs.slice(0, -1).join(', ') + ' og ' + xs[xs.length - 1] : xs.join(''));
+const el = (tag, props, ...kids) => { const e = Object.assign(document.createElement(tag), props || {}); e.append(...kids); return e; };
+const dlRows = (dl, pairs) => dl.replaceChildren(...pairs.flatMap(([k, v]) => [el('dt', { textContent: k }), el('dd', { textContent: v })]));
+// k = games or attempts at the group's average mixed in; pool = a rate whose group mean is over all attempts; mu = fixed mean
+const SF = { usg: { k: 2 }, pts: { k: 2 }, reb: { k: 2 }, ast: { k: 2 }, eff: { k: 15, pool: 1 }, rimFG: { k: 4, pool: 1 },
+  midFG: { k: 10, pool: 1 }, longShare: { k: 15, pool: 1 }, longFG: { k: 15, pool: 1 }, oreb: { k: 6, pool: 1 }, tov: { k: 20, pool: 1 },
+  pullup: { k: 6, pool: 1 }, drive: { k: 6, pool: 1 }, catch: { k: 6, pool: 1 }, putback: { k: 6, pool: 1 }, assisted: { k: 6, pool: 1 },
+  stl: { k: 4 }, blk: { k: 4 }, sast: { k: 4 }, def: { k: 4 }, clutch: { k: 3 }, win: { k: 4, mu: 0.5 }, motor: { k: 20 }, apm: { k: 0 }, pie: { k: 3 } };
+const NBA_F = ['usg', 'pts', 'eff', 'rimFG', 'midFG', 'longShare', 'longFG', 'pullup', 'drive', 'catch', 'putback', 'assisted',
+  'reb', 'oreb', 'ast', 'tov', 'stl', 'blk', 'sast', 'clutch', 'impact', 'win', 'motor'];
+// what a trait says when the player is above / below the group
+const TRAIT = { usg: ['tager mange skud', 'tager få skud'], pts: ['scorer meget', 'scorer lidt'], eff: ['effektiv', 'lav træfsikkerhed'],
+  rimFG: ['sikker ved kurven', 'brænder ved kurven'], midFG: ['stærk i mellemdistancen', 'svag i mellemdistancen'],
+  longShare: ["skyder mange 2'ere", "skyder sjældent 2'ere"], longFG: ['rammer langt fra', 'rammer sjældent langt fra'],
+  pullup: ['pull-ups', 'få pull-ups'], drive: ['drives', 'få drives'], catch: ['catch & shoot', 'lidt catch & shoot'], putback: ['putbacks', 'få putbacks'],
+  assisted: ['scorer på oplæg', 'skaber selv'], reb: ['mange returer', 'få returer'], oreb: ['offensive returer', 'mest defensive returer'],
+  ast: ['afleverer meget', 'afleverer lidt'], tov: ['mister bolden tit', 'mister sjældent bolden'], stl: ['steals', 'få steals'],
+  blk: ['blocks', 'få blocks'], sast: ['screens', 'få screens'], clutch: ['clutch', 'lidt i clutch-tid'], impact: ['stor impact', 'lav impact'],
+  win: ['vinder', 'taber tit'], motor: ['løber meget', 'løber lidt'] };
+// Active NBA players (2025-26 season): name | style | traits on NBA_F against an average NBA player, -2.5..+2.5.
+const NBA = `
+Shai Gilgeous-Alexander|Pull-ups i mellemdistancen, clutch og hænder i forsvaret|usg 1.5 pts 2 eff 1 pullup 2 midFG 1.5 drive 1 clutch 2 stl 1.5 tov -0.5 impact 2 win 1.5 longShare -0.5 ast 0.5
+Jalen Brunson|Clutch-scoreren, der lever af pull-ups og footwork|usg 2 pts 2 pullup 2 midFG 1.5 clutch 2 tov -1 ast 1 stl -0.5 reb -1 impact 1 drive 1
+Luka Dončić|Alt går gennem ham: skud, afleveringer og returer|usg 2 pts 2 ast 2 reb 1.5 longShare 1.5 pullup 1.5 tov 2 assisted -2 clutch 1.5 impact 1.5 motor -1.5
+Stephen Curry|Langskud fra alle vinkler og løber hele tiden uden bold|longShare 2 longFG 2 eff 2 usg 1 pts 1.5 motor 1.5 catch 1 impact 1.5 clutch 1
+Tyrese Haliburton|Afleverer først, mister næsten aldrig bolden og rammer langt fra|ast 2 tov -2 longShare 1.5 longFG 1 usg -0.5 clutch 1.5 eff 1
+Trae Young|Volumen-playmaker: mange skud og afleveringer, gerne langt fra|usg 2 ast 2 longShare 1.5 pullup 1.5 tov 2 eff -0.5 reb -1.5 blk -1 assisted -1.5
+Anthony Edwards|Atletisk scorer, der tager de store skud|usg 2 pts 2 pullup 1.5 drive 1 longShare 1.5 stl 0.5 clutch 1 assisted -1
+Ja Morant|Angriber kurven igen og igen|drive 2 rimFG 1.5 usg 2 pts 1.5 assisted -1.5 tov 1.5 longShare -1 ast 1.5
+De'Aaron Fox|Lynhurtige drives og clutch til sidst|drive 2 usg 1.5 pts 1.5 clutch 1.5 stl 1 assisted -1
+Tyus Jones|Den sikre playmaker, der næsten aldrig mister bolden|ast 1.5 tov -2.5 usg -1 assisted -1 reb -1.5 blk -1 stl -0.5
+T.J. McConnell|Energi, pull-ups i mellemdistancen og afleveringer|pullup 2 midFG 1.5 ast 1.5 stl 1 motor 1 longShare -2 usg -0.5
+Fred VanVleet|Skyder langt og meget, styrer spillet og passer på bolden|longShare 2 eff -1.5 ast 1.5 tov -1.5 stl 1 pullup 1.5
+Jrue Holiday|Tovejs-vinderen: forsvar, mellemdistance og ro på bolden|stl 1.5 impact 1.5 win 2 tov -1 midFG 1 ast 1 eff 0.5 usg -0.5 clutch 1
+Derrick White|Den vindende rollespiller: effektiv, klog og altid det rigtige sted|eff 1.5 tov -1.5 win 2 impact 1.5 usg -1 blk 1 stl 0.5 clutch 1 longShare 1 motor 1
+Alex Caruso|Forsvar og det usynlige arbejde – har sjældent bolden|stl 2 usg -2 sast 1 win 1.5 impact 1 tov -0.5 catch 1 pts -1.5
+Marcus Smart|Hjerte, hustle og afleveringer – og skud, der ikke altid sidder|stl 1.5 ast 1 longShare 1 longFG -1 eff -1 oreb 1 motor 1 usg -0.5
+Klay Thompson|Skytten, der får bolden og skyder med det samme|longShare 2 longFG 1.5 catch 2 assisted 2 ast -1 tov -1 drive -1 reb -0.5
+Dyson Daniels|Steal-maskinen – skuddet er stadig på vej|stl 2.5 eff -1 longFG -1 usg -1 ast 0.5 motor 1
+Josh Giddey|Returtagende playmaker uden stort skud|ast 2 reb 1.5 longShare -0.5 longFG -0.5 tov 0.5
+Donovan Mitchell|Eksplosiv scorer med pull-ups og langskud|usg 2 pts 2 pullup 2 longShare 1.5 drive 1 clutch 1.5 assisted -1.5 stl 0.5
+Devin Booker|Mellemdistance-scorer med silkeblød pull-up|usg 1.5 pts 2 pullup 2 midFG 2 ast 1 assisted -1 tov 0.5
+Tyrese Maxey|Fart, drives og næsten ingen turnovers|drive 1.5 usg 1.5 pts 1.5 tov -1.5 motor 1.5 longShare 1 assisted -1
+Cade Cunningham|Stor playmaker, der styrer alt – også turnovers|usg 2 ast 2 reb 1 tov 1.5 pullup 1.5 midFG 1 assisted -1.5
+Austin Reaves|Snedig: drives, afleveringer og de rigtige valg|drive 1 ast 1 eff 1 tov -0.5 usg 0.5 clutch 0.5
+Tyler Herro|Pull-up-skytte, der gerne tager skuddet selv|pullup 2 usg 1.5 longShare 1.5 assisted -1.5 ast 0.5 reb -0.5 stl -0.5
+Jordan Clarkson|Mikrobølgeovnen: skyder, så snart bolden kommer|usg 2 pullup 1.5 assisted -1.5 eff -1 ast -1 longShare 1
+Josh Hart|Tager returer som en big, afslutter tæt på og vinder|reb 2 oreb -0.5 rimFG 1.5 longFG -1.5 longShare -0.5 tov -0.5 win 1.5 motor 1 impact 1 usg -0.5 ast 1
+Andrew Wiggins|Scorer på andres oplæg, på drives og i mellemdistancen|assisted 2 midFG 0.5 drive 1 eff 0.5 reb -1 ast -1 pts 1 usg 0.5 impact -0.5 win -0.5
+Mikal Bridges|Jernmanden: sikker med bolden og pull-ups i mellemdistancen|tov -1.5 midFG 1 pullup 1 eff 0.5 motor 1 reb -1 stl 0.5
+Michael Porter Jr.|Langskud på oplæg – skyder over alle|assisted 2 longShare 1.5 longFG 1.5 catch 1.5 reb 0.5 ast -1.5 stl -1 impact -0.5 pts 1
+Kevin Durant|Mellemdistance-maestro, der rammer fra alle steder|midFG 2 eff 2 pullup 1.5 pts 2 usg 1.5 longFG 1.5 blk 0.5 clutch 1
+DeMar DeRozan|Mellemdistance og clutch – ingen langskud|pullup 2 midFG 1.5 clutch 2 longShare -2 assisted -1.5 ast 1 tov -1 stl -0.5 usg 1
+Jaylen Brown|Kraftfulde drives og mange point|drive 1.5 pts 1.5 usg 1.5 tov 1 reb 0.5 stl 0.5 assisted -0.5
+Scottie Barnes|Allround-forward: returer, forsvar og afleveringer|reb 1.5 ast 1 stl 1 blk 1 rimFG 1 longFG -1 usg 0.5
+Amen Thompson|Atlet ved kurven med returer og forsvar – skyder sjældent langt|rimFG 2 drive 1.5 reb 1.5 stl 1 longShare -2 longFG -1 motor 1
+Aaron Gordon|Kraftfuld afslutter på oplæg, der får holdet til at vinde|assisted 1.5 rimFG 1.5 reb 1 eff 1 win 1.5 impact 1 usg -0.5
+Herb Jones|Låsen i forsvaret, tager få skud|stl 2 blk 1 usg -1.5 eff -0.5 impact 1
+OG Anunoby|Forsvar og skud på oplæg|stl 1.5 catch 1.5 assisted 1.5 longShare 1 usg -0.5 tov -1 impact 1
+Kentavious Caldwell-Pope|Catch & shoot og forsvar – har sjældent bolden selv|catch 2 assisted 2 longShare 1.5 usg -1.5 tov -1 stl 1 ast -0.5
+Dillon Brooks|Skyder med selvtillid – også når det ikke går|usg 1 eff -1.5 longShare 1.5 longFG -0.5 ast -1.5 stl 0.5 pullup 1
+Ausar Thompson|Forsvar, steals og hustle – skuddet halter|stl 2 reb 1 rimFG 1 longShare -2 longFG -1.5 eff -0.5 motor 1.5 usg -1
+Nikola Jokić|Alt i én: afleveringer, returer og effektivitet|ast 2.5 reb 2 eff 2 impact 2.5 pts 2 usg 1 midFG 1.5 motor -2 stl 1 win 1
+Giannis Antetokounmpo|Kurvejægeren: drives, returer og point ved kurven|rimFG 2 drive 2 reb 2 usg 2 pts 2 longShare -2 ast 1 tov 1.5 blk 1 impact 2
+Bam Adebayo|Anker i forsvaret, screens og skud fra midten|reb 1.5 blk 1 sast 2 stl 0.5 midFG 0.5 pullup 1 win 1 impact 1 ast 0.5 longShare -1
+Julius Randle|Fysisk volumen: drives, pull-ups og masser af returer|usg 1.5 reb 2 drive 1.5 pullup 1 eff -1 tov 1 stl -0.5 impact -0.5 pts 1.5
+Domantas Sabonis|Returkongen med screens og afleveringer|reb 2.5 ast 2 sast 2 eff 1.5 oreb 1 longShare -1.5 usg 0.5
+Victor Wembanyama|Blokerer alt og kan skyde langt|blk 2.5 reb 2 longShare 1 usg 1.5 pts 1.5 stl 0.5 impact 1.5
+Rudy Gobert|Rimbeskytteren: blocks, returer og screens|blk 2 reb 2 sast 2 usg -1.5 rimFG 2 longShare -2 assisted 2 ast -1 impact 1
+Steven Adams|Grovarbejderen: offensive returer, screens og putbacks|oreb 2.5 reb 1.5 sast 2 usg -2 ast 0.5 putback 2 longShare -2 pts -1.5 impact 0.5
+Evan Mobley|Moderne big: blocks, returer og effektivitet|blk 2 reb 1.5 eff 1.5 win 1.5 impact 1 drive 0.5 midFG 0.5
+Karl-Anthony Towns|Skydende big med mange returer|reb 2 longShare 1.5 longFG 1.5 eff 1.5 usg 1 pts 1.5 tov 0.5
+Draymond Green|Hjernen: screens, afleveringer og forsvar – få skud|ast 1.5 sast 1.5 stl 1 blk 1 usg -2 eff -1 longFG -1 win 1.5 impact 1 tov 1
+Jarrett Allen|Effektiv ved kurven: screens, returer og blocks|rimFG 2 eff 2 reb 1.5 sast 1.5 blk 1 usg -1.5 assisted 2 longShare -2 putback 1
+Alperen Şengün|Post-playmaker med returer og fine fødder|reb 1.5 ast 1.5 usg 1.5 pts 1 oreb 1 longShare -1.5 stl 1
+Bobby Portis|Skyder, når bolden kommer, og tager returer|usg 1.5 reb 1.5 ast -1.5 catch 1 pullup 0.5
+Zion Williamson|Bulldozer ved kurven|rimFG 2 drive 2 eff 1.5 usg 1.5 pts 2 longShare -2 reb 0.5
+Brook Lopez|Blocks under egen kurv, langskud i den anden ende|blk 2 longShare 2 catch 1.5 assisted 1.5 usg -0.5 reb -0.5 ast -1
+Mitchell Robinson|Offensive returer og blocks, ingen skud udefra|oreb 2.5 blk 2 reb 2 usg -2 putback 2 longShare -2 ast -1
+Isaiah Hartenstein|Returer, screens og overraskende afleveringer|reb 2 oreb 1.5 ast 1.5 sast 1.5 usg -1 longShare -2 putback 1
+Nikola Vučević|Returer og skud fra mellemdistancen|reb 2 midFG 1 pullup 1 usg 1 longShare 0.5 ast 0.5 impact -0.5 win -0.5 motor -1
+Jaren Jackson Jr.|Blocks og skud fra mange steder|blk 2.5 usg 1 pts 1 reb -0.5 longShare 1 tov 0.5 ast -1
+`.trim().split('\n').map((l) => {
+  const [n, d, t] = l.split('|'), v = t.trim().split(/\s+/), w = {};
+  for (let i = 0; i < v.length; i += 2) w[v[i]] = Number(v[i + 1]);
+  return { n, d, w };
+});
+// profile rows: feature, +1 if more is better (tov: fewer is better), label; short and long value texts
+const SCOUT_BARS = [['pts', 1, 'Scoring'], ['usg', 1, 'Skudvolumen'], ['eff', 1, 'Effektivitet'], ['rimFG', 1, 'Ved kurven'],
+  ['midFG', 1, 'Mellemdistance'], ['longFG', 1, "2'ere"], ['reb', 1, 'Returer'], ['ast', 1, 'Afleveringer'], ['tov', -1, 'Boldsikkerhed'],
+  ['def', 1, 'Steals og blocks'], ['sast', 1, 'Screen assists'], ['clutch', 1, 'Clutch'], ['impact', 1, 'Impact'], ['win', 1, 'Sejre'], ['motor', 1, 'Løb']];
+const SCOUT_LISTN = { rimFG: 4, midFG: 8, longFG: 6 };          // attempts needed before a shot zone is called a strength or weakness
+const SV = { pts: (s) => dk(s.x.pts.v) + '× andel', usg: (s) => dk(s.x.usg.v) + '× andel', eff: (s) => 'TS ' + Math.round(s.ts * 100) + '%',
+  rimFG: (s) => s.rim.m + ' af ' + s.rim.a, midFG: (s) => s.mid.m + ' af ' + s.mid.a, longFG: (s) => s.p2m + ' af ' + s.p2a,
+  reb: (s) => dk(s.x.reb.v) + '× andel', ast: (s) => dk(s.x.ast.v) + '× andel', tov: (s) => s.tov + ' på ' + s.tovG + ' kampe',
+  def: (s) => nOf(s.stl, 'steal', 'steals') + ' · ' + nOf(s.blk, 'block', 'blocks'), sast: (s) => s.sast + ' på ' + s.sastG + ' kampe', clutch: (s) => s.clu + ' point',
+  impact: (s) => sgnDk(s.apm) + (s.pie != null ? ' · PIE ' + Math.round(s.pie) : ''), win: (s) => s.won + '–' + s.lost, motor: (s) => Math.round(s.motor) + ' m/min' };
+const LV = { pts: (s) => dk(s.ppg) + ' point pr. kamp, ' + dk(s.x.pts.v) + ' gange sin andel af holdets point',
+  usg: (s) => dk(s.fgapg) + ' skud pr. kamp, ' + dk(s.x.usg.v) + ' gange sin andel af holdets skud',
+  eff: (s) => 'TS ' + Math.round(s.ts * 100) + '%, og ' + pctTxt(s.fgm, s.fga) + ' af skuddene rammer',
+  rimFG: (s) => s.rim.m + ' af ' + s.rim.a + ' tæt ved kurven (højst 2 m)', midFG: (s) => s.mid.m + ' af ' + s.mid.a + ' fra 2–6 m',
+  longFG: (s) => s.p2m + ' af ' + s.p2a + ' bag buen', reb: (s) => dk(s.rpg) + ' returer pr. kamp, ' + dk(s.x.reb.v) + ' gange sin andel af holdets',
+  ast: (s) => dk(s.apg) + ' assists pr. kamp, ' + dk(s.x.ast.v) + ' gange sin andel af holdets', tov: (s) => nOf(s.tov, 'turnover', 'turnovers') + ' på ' + s.tovG + ' kampe (mod ' + nOf(s.astT, 'assist', 'assists') + ')',
+  def: (s) => nOf(s.stl, 'steal', 'steals') + ' på ' + s.stlG + ' kampe og ' + nOf(s.blk, 'block', 'blocks') + ' på ' + s.blkG + ' kampe', sast: (s) => nOf(s.sast, 'screen assist', 'screen assists') + ' på ' + s.sastG + ' kampe',
+  clutch: (s) => s.clu + ' point, mens det var tæt til sidst' + (s.gw ? ', og ' + s.gw + (s.gw === 1 ? ' vinderkurv' : ' vinderkurve') : ''),
+  impact: (s) => 'justeret +/- ' + sgnDk(s.apm) + ' pr. kamp' + (s.pie != null ? ' og PIE ' + Math.round(s.pie) : ''),
+  win: (s) => s.won + ' sejre og ' + s.lost + ' nederlag', motor: (s) => Math.round(s.motor) + ' meter pr. minut i billedet' };
+function scoutScope() {
+  const G = dash.data('games'), R = dash.data('player_games');
+  if (G.status !== 'ok' || R.status !== 'ok') return null;
+  const games = G.data.filter((g) => SCOUT_FORMATS.includes(g.format)), ids = new Set(games.map((g) => g.game_id));
+  return { p: P(), games, ids, rows: withPer(R.data).filter((r) => ids.has(r.game_id)), allGames: G.data };
+}
+let scoutKey = null, scoutRes = null;
+function scoutAll(scope) {
+  const src = ['player_games', 'games', 'plays', 'events', 'matchups'].map((id) => dash.data(id).data);
+  if (scoutKey && src.every((d, i) => d === scoutKey[i])) return scoutRes;
+  const rows = scope.rows, team = new Map();
+  for (const r of rows) { const k = r.game_id + '|' + r.team; if (!team.has(k)) team.set(k, []); team.get(k).push(r); }
+  const imp = new Map(impactRows(scope).map((x) => [x.player, x]));
+  const plays = playsIn(scope) || [], shots = plays.filter((r) => r.type === 'shot');
+  // running score per game, as in the fun card: clutch points, game-winners, lead baskets, games with a running score
+  const run = new Map(), R = (p) => { if (!run.has(p)) run.set(p, { clu: 0, gw: 0, lead: 0, tg: 0 }); return run.get(p); };
+  const tl = new Map();
+  for (const r of plays) if ((r.type === 'make' || r.type === 'shot') && Number(r.made) && r.tl !== 0) { if (!tl.has(r.game_id)) tl.set(r.game_id, []); tl.get(r.game_id).push(r); }
+  for (const [gid, ms] of tl) {
+    ms.sort((a, b) => a.t - b.t);
+    const fin = { A: 0, B: 0 }; for (const r of ms) fin[r.team] += Number(r.value);
+    const win = fin.A >= fin.B ? 'A' : 'B', tgt = fin[win], sc = { A: 0, B: 0 };
+    for (const r of ms) {
+      const me = r.team, op = me === 'A' ? 'B' : 'A', v = Number(r.value), before = sc[me] - sc[op];
+      if (Math.abs(before) <= 2 && Math.max(sc.A, sc.B) >= tgt - 3) R(r.player).clu += v;
+      sc[me] += v;
+      if (before <= 0 && sc[me] > sc[op]) R(r.player).lead += 1;
+    }
+    if (ms[ms.length - 1].team === win) R(ms[ms.length - 1].player).gw += 1;
+    for (const r of rows) if (r.game_id === gid) R(r.player).tg += 1;
+  }
+  // hot hand: the same player's next attempt in the same game
+  const hh = new Map(), ord = shots.slice().sort((a, b) => a.game_id.localeCompare(b.game_id) || a.player.localeCompare(b.player) || a.t - b.t);
+  for (let i = 1; i < ord.length; i++) {
+    const a = ord[i - 1], b = ord[i]; if (a.game_id !== b.game_id || a.player !== b.player) continue;
+    const h = hh.get(b.player) || { am: 0, an: 0, bm: 0, bn: 0 }; hh.set(b.player, h);
+    if (Number(a.made)) { h.am += Number(b.made); h.an += 1; } else { h.bm += Number(b.made); h.bn += 1; }
+  }
+  // assists given and received (video-checked passes), and the matchups for nemesis
+  const give = new Map(), got = new Map(), inc = (m, a, b) => { if (!m.has(a)) m.set(a, new Map()); m.get(a).set(b, (m.get(a).get(b) || 0) + 1); };
+  const E = dash.data('events');
+  if (E.status === 'ok') for (const e of E.data) if (e.type === 'ast' && e.to && scope.ids.has(e.game_id)) { inc(give, e.player, e.to); inc(got, e.to, e.player); }
+  const most = (m) => { const x = m && [...m].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'da'))[0]; return x ? { who: x[0], n: x[1] } : null; };
+  const M = dash.data('matchups'), pairs = M.status === 'ok' ? nemPairs(M.data.filter((r) => scope.ids.has(r.game_id))) : [];
+  const list = [];
+  for (const p of [...new Set(rows.map((r) => r.player))]) {
+    const rs = rows.filter((r) => r.player === p), x = {};
+    const has = (...fs) => (r) => fs.every((f) => num(r[f]) !== null);
+    const sum = (f, ok) => rs.filter(ok).reduce((t, r) => t + num(r[f]), 0);
+    const rate = (a, b) => ({ v: b > 0 ? a / b : null, n: b });
+    // share of the team's total, x team size (1 = an average teammate), over games where the whole team has the stat
+    const share = (stat, base) => {
+      let s = 0, n = 0;
+      for (const r of rs) {
+        const tm = team.get(r.game_id + '|' + r.team);
+        if (num(r[stat]) === null || tm.some((q) => num(q[stat]) === null || num(q[base]) === null)) continue;
+        const tot = tm.reduce((t, q) => t + num(q[base]), 0);
+        if (tot > 0) { s += (num(r[stat]) / tot) * tm.length; n += 1; }
+      }
+      return { v: n ? s / n : null, n };
+    };
+    const perGame = (...fs) => { const ok = has(...fs), g = rs.filter(ok).length, tot = fs.map((f) => sum(f, ok)); return { v: g ? tot.reduce((a, b) => a + b, 0) / g : null, n: g, tot }; };
+    x.usg = share('FGA', 'FGA'); x.pts = share('PTS', 'PTS'); x.reb = share('REB', 'REB'); x.ast = share('AST', 'AST');
+    const ts = has('tsPts', 'tsAtt');
+    x.eff = { v: sum('tsAtt', ts) > 0 ? sum('tsPts', ts) / sum('tsAtt', ts) : null, n: sum('tsAtt', ts) / 2 };
+    const l2 = has('FGA', 'P2A', 'P2M'), fgaL = sum('FGA', l2), p2a = sum('P2A', l2), p2m = sum('P2M', l2);
+    x.longShare = rate(p2a, fgaL); x.longFG = rate(p2m, p2a);
+    const rb = has('REB', 'OREB'), rebT = sum('REB', rb), orb = sum('OREB', rb);
+    x.oreb = rate(orb, rebT);
+    const tg = has('TOV', 'FGA', 'AST'), tov = sum('TOV', tg), astT = sum('AST', tg);
+    x.tov = rate(tov, sum('FGA', tg) + astT + tov);
+    x.stl = perGame('STL'); x.blk = perGame('BLK'); x.sast = perGame('SAST');
+    x.def = { v: x.stl.v == null ? null : x.stl.v + (x.blk.v || 0), n: x.stl.n };   // blocks aren't counted on every day
+    const won = rs.reduce((t, r) => t + (Number(r.won) || 0), 0);
+    x.win = rate(won, rs.length);
+    const im = imp.get(p) || {};
+    x.apm = { v: im.apm ?? null, n: im.apmGames || 0 }; x.pie = { v: im.pieIdx ?? null, n: im.pien || 0 };
+    const ps = shots.filter((r) => r.player === p), st = styleStats(ps);
+    const zone = (ok) => { const z = ps.filter((r) => r.d != null && ok(r.d)); return { m: z.filter((r) => Number(r.made)).length, a: z.length }; };
+    const rim = zone((d) => d <= 2), z24 = zone((d) => d > 2 && d < 4), z46 = zone((d) => d >= 4 && d < 6), z6 = zone((d) => d >= 6);
+    const mid = { m: z24.m + z46.m, a: z24.a + z46.a };
+    x.rimFG = rate(rim.m, rim.a); x.midFG = rate(mid.m, mid.a);
+    x.pullup = rate(st.pt.pullup.n, st.tfgm); x.drive = rate(st.pt.drive.n + st.pt.cut.n, st.tfgm);
+    x.catch = rate(st.pt.catch.n, st.tfgm); x.putback = rate(st.pt.putback.n, st.tfgm); x.assisted = rate(st.ast, st.astk);
+    const km = plays.filter((r) => r.type === 'km' && r.player === p), mins = km.reduce((a, r) => a + Number(r.min), 0), meters = km.reduce((a, r) => a + Number(r.m), 0);
+    x.motor = { v: mins >= 15 ? meters / mins : null, n: mins };
+    const rr = run.get(p) || { clu: 0, gw: 0, lead: 0, tg: 0 };
+    x.clutch = rate(rr.clu, rr.tg);
+    const box = rs.filter(has('PTS', 'FGA')), avg = (f) => { const ok = has(f), g = rs.filter(ok).length; return g ? sum(f, ok) / g : null; };
+    const perV = rs.reduce((a, r) => a + (r.perVal || 0), 0), perE = rs.reduce((a, r) => a + (r.perExp || 0), 0);
+    const fg = has('FGM', 'FGA'), fgm = sum('FGM', fg), fga = sum('FGA', fg);
+    const dates = [...new Set(rs.map((r) => r.date))].sort(), lastD = dates[dates.length - 1], lastRs = rs.filter((r) => r.date === lastD);
+    const sess = (d) => rs.find((r) => r.date === d).session;
+    const mates = new Map();
+    for (const r of rs) for (const q of team.get(r.game_id + '|' + r.team)) if (q.player !== p) {
+      const m = mates.get(q.player) || { who: q.player, g: 0, w: 0 }; m.g += 1; m.w += Number(r.won) || 0; mates.set(q.player, m);
+    }
+    const nm = pairs.length ? nemesisOf(headToHead(pairs, p)) : { nem: null, fav: null };
+    list.push({ p, x, st, rim, z24, z46, z6, mid, gp: rs.length, box: box.length, won, lost: rs.length - won, days: dates.length,
+      first: sess(dates[0]), last: sess(lastD), ppg: avg('PTS'), rpg: avg('REB'), apg: avg('AST'), fgapg: avg('FGA'), fgm, fga, fgp: fga ? fgm / fga : null,
+      ts: x.eff.v, per: perE > 0 ? (15 * perV) / perE : null, apm: x.apm.v, pie: x.pie.v, p2a, p2m, fgaL, orb, rebT, tov, astT, tovG: rs.filter(tg).length,
+      stl: x.stl.tot[0], stlG: x.stl.n, blk: x.blk.tot[0], blkG: x.blk.n, sast: x.sast.tot[0], sastG: x.sast.n, clu: rr.clu, gw: rr.gw, lead: rr.lead,
+      hh: hh.get(p) || { am: 0, an: 0, bm: 0, bn: 0 }, motor: x.motor.v, meters, giveTop: most(give.get(p)), getTop: most(got.get(p)),
+      mate: [...mates.values()].filter((m) => m.g >= 3).sort((a, b) => b.w / b.g - a.w / a.g || b.g - a.g || a.who.localeCompare(b.who, 'da'))[0] || null,
+      nem: nm.nem, fav: nm.fav, best: box.slice().sort((a, b) => num(b.PTS) - num(a.PTS) || b.game_id.localeCompare(a.game_id))[0] || null,
+      lastDay: { s: sess(lastD), g: lastRs.length, w: lastRs.reduce((t, r) => t + (Number(r.won) || 0), 0),
+        pts: lastRs.some((r) => num(r.PTS) !== null) ? lastRs.reduce((t, r) => t + (num(r.PTS) || 0), 0) : null },
+      q: box.length >= SCOUT_MIN, z: {}, sh: {}, rank: {}, nba: null });
+  }
+  // shrink, then z-scores among the regulars
+  const Q = list.filter((s) => s.q);
+  const stdz = (vals) => {
+    const m = vals.reduce((a, b) => a + b, 0) / vals.length, sd = Math.sqrt(vals.reduce((a, b) => a + (b - m) ** 2, 0) / vals.length) || 1;
+    return (v) => Math.max(-2.5, Math.min(2.5, (v - m) / sd));
+  };
+  for (const [f, o] of Object.entries(SF)) {
+    const have = Q.filter((s) => s.x[f].v != null);
+    if (!have.length) continue;
+    const mu = o.mu ?? (o.pool ? have.reduce((t, s) => t + s.x[f].v * s.x[f].n, 0) / Math.max(1e-9, have.reduce((t, s) => t + s.x[f].n, 0))
+      : have.reduce((t, s) => t + s.x[f].v, 0) / have.length);
+    for (const s of list) { const q = s.x[f]; if (q.v != null) s.sh[f] = q.n + o.k > 0 ? (q.v * q.n + mu * o.k) / (q.n + o.k) : q.v; }
+    const z = stdz(have.map((s) => s.sh[f]));
+    for (const s of list) s.z[f] = s.sh[f] == null ? 0 : z(s.sh[f]);
+  }
+  if (Q.length) {
+    const both = (s) => ((s.z.apm || 0) + (s.z.pie || 0)) / 2, zi = stdz(Q.map(both));
+    for (const s of list) s.sh.impact = s.z.impact = zi(both(s));
+  }
+  for (const [f, sg] of SCOUT_BARS) {
+    const have = Q.filter((s) => s.sh[f] != null), n = have.length;
+    for (const s of have) {
+      const v = sg * s.sh[f], better = have.filter((o) => sg * o.sh[f] > v + 1e-9).length;
+      s.rank[f] = { rank: better + 1, n, tie: have.some((o) => o !== s && Math.abs(sg * o.sh[f] - v) <= 1e-9), pct: (100 * (n - better)) / n, mid: (100 * (n + 1)) / (2 * n) };
+    }
+  }
+  // NBA: cosine between the player's z-scores and each trait vector; best fits first, every NBA player used once
+  const W = NBA.map((c) => NBA_F.map((f) => c.w[f] || 0)), zv = (s) => NBA_F.map((f) => s.z[f] || 0);
+  const cos = (a, b) => { let d = 0, na = 0, nb = 0; a.forEach((v, i) => { d += v * b[i]; na += v * v; nb += b[i] * b[i]; }); return na && nb ? d / Math.sqrt(na * nb) : 0; };
+  const sims = Q.flatMap((s) => { const z = zv(s); return NBA.map((c, i) => ({ s, i, v: cos(z, W[i]) })); })
+    .sort((a, b) => b.v - a.v || a.s.p.localeCompare(b.s.p, 'da') || a.i - b.i);
+  const taken = new Set();
+  for (const o of sims) {
+    if (o.s.nba || taken.has(o.i)) continue;
+    taken.add(o.i); const z = zv(o.s);
+    o.s.nba = { ...NBA[o.i], v: o.v, also: sims.filter((q) => q.s === o.s && q.i !== o.i).slice(0, 3).map((q) => NBA[q.i].n),
+      shared: NBA_F.map((f, j) => ({ f, c: z[j] * W[o.i][j], up: z[j] > 0 })).filter((q) => q.c > 0.3).sort((a, b) => b.c - a.c).slice(0, 3).map((q) => TRAIT[q.f][q.up ? 0 : 1]) };
+  }
+  scoutKey = src; scoutRes = { list, Q, byP: new Map(list.map((s) => [s.p, s])) };
+  return scoutRes;
+}
+// how to defend the player: the strongest patterns first, at most three
+function scoutStop(s) {
+  if (!s.q) return [];
+  const z = s.z, st = s.st, t = [], add = (w, txt) => t.push({ w, txt });
+  const far = { m: s.z46.m + s.z6.m, a: s.z46.a + s.z6.a };
+  if (z.rimFG >= 0.5 && s.rim.a >= 4 && far.a >= 8 && far.m / far.a < 0.3)
+    add(z.rimFG + 0.5, 'Luk vejen til kurven, og lad ' + s.p + ' skyde udefra: ' + s.rim.m + ' af ' + s.rim.a + ' tæt ved kurven, men ' + far.m + ' af ' + far.a + ' fra 4 m og ud.');
+  if (z.pullup >= 0.7) add(z.pullup, 'Gå tæt på i mellemdistancen: pull-ups er ' + pctTxt(st.pt.pullup.n, st.tfgm) + ' af kurvene.');
+  if (z.drive >= 0.7) add(z.drive, 'Hold ' + s.p + ' foran dig: ' + pctTxt(st.pt.drive.n + st.pt.cut.n, st.tfgm) + ' af kurvene kommer på drives og cuts.');
+  if (z.assisted >= 0.7) add(z.assisted, 'Følg ' + s.p + ' uden bold: ' + pctTxt(st.ast, st.astk) + ' af kurvene kommer på en aflevering' + (s.getTop ? ', oftest fra ' + s.getTop.who : '') + '.');
+  if (z.assisted <= -0.7) add(-z.assisted, 'Pres, når ' + s.p + ' har bolden: kun ' + pctTxt(st.ast, st.astk) + ' af kurvene kommer på en aflevering.');
+  if (st.latn >= 8 && st.right / st.latn >= 0.65) add(st.right / st.latn + 0.3, 'Tving ' + s.p + ' til venstre: går til højre før ' + pctTxt(st.right, st.latn) + ' af skuddene.');
+  if (st.latn >= 8 && st.right / st.latn <= 0.35) add(1.3 - st.right / st.latn, 'Tving ' + s.p + ' til højre: går til venstre før ' + pctTxt(st.latn - st.right, st.latn) + ' af skuddene.');
+  if (z.longShare >= 0.7 && z.longFG <= -0.5) add(z.longShare - z.longFG, 'Lad ' + s.p + " skyde 2'ere: " + s.p2m + ' af ' + s.p2a + ' rammer.');
+  if (z.longFG >= 0.8 && s.p2a >= 5) add(z.longFG, 'Gå ud til ' + s.p + ' bag buen: ' + s.p2m + ' af ' + s.p2a + " 2'ere rammer.");
+  const ob = [z.oreb >= 0.8 ? pctTxt(s.orb, s.rebT) + ' af returerne er offensive' : '', z.putback >= 0.8 ? pctTxt(st.pt.putback.n, st.tfgm) + ' af kurvene er putbacks' : ''].filter(Boolean);
+  if (ob.length) add(Math.max(z.oreb, z.putback), 'Box ' + s.p + ' ud: ' + og(ob) + '.');
+  if (z.reb >= 1) add(z.reb, 'Box ud på hvert skud: ' + s.p + ' tager ' + dk(s.x.reb.v) + ' gange sin andel af returerne.');
+  if (z.ast >= 0.8 && s.giveTop) add(z.ast, 'Luk afleveringen til ' + s.giveTop.who + ': ' + s.giveTop.n + ' assists er gået dertil.');
+  if (z.clutch >= 1) add(z.clutch, 'Pas ekstra på til sidst: ' + s.clu + ' clutch-point' + (s.gw ? ' og ' + s.gw + (s.gw === 1 ? ' vinderkurv' : ' vinderkurve') : '') + '.');
+  const h = s.hh;
+  if (h.an >= 8 && h.bn >= 8 && h.am / h.an - h.bm / h.bn >= 0.15) add(1, 'Stop ' + s.p + ' tidligt: ' + pctTxt(h.am, h.an) + ' rammer efter en scoring mod ' + pctTxt(h.bm, h.bn) + ' efter et bom.');
+  if (st.ns >= 10) for (const [k, side] of [['V', 'venstre'], ['H', 'højre']]) if (st.side[k] / st.ns >= 0.4) add(0.6, 'Flest skud kommer fra ' + side + ' side (' + pctTxt(st.side[k], st.ns) + ').');
+  return t.sort((a, b) => b.w - a.w).slice(0, 3).map((o) => o.txt);
+}
+const scoutSel = $('#d9-scout-player'), scoutBars = $('#scout-bars'), scoutTip = makeTip(scoutBars);
+scoutSel.addEventListener('change', () => dash.setParams({ scoutPlayer: scoutSel.value }));
+function drawScout() {
+  const scope = scoutScope(); if (!scope) return;
+  const S = scoutAll(scope); if (!S.list.length) return;
+  const s = S.byP.get(scope.p.scoutPlayer) || S.list.slice().sort((a, b) => b.gp - a.gp || a.p.localeCompare(b.p, 'da'))[0];
+  scoutSel.replaceChildren(...S.list.slice().sort((a, b) => a.p.localeCompare(b.p, 'da')).map((o) => new Option(o.p + ' (' + o.gp + ' kampe)', o.p)));
+  scoutSel.value = s.p;
+  $('#scout-name').textContent = s.p;
+  $('#scout-sub').textContent = s.gp + ' kampe · ' + s.won + (s.won === 1 ? ' sejr' : ' sejre') + ' og ' + s.lost + ' nederlag · ' + s.days
+    + (s.days === 1 ? ' spilledag (' + s.last + ')' : ' spilledage (' + s.first + ' – ' + s.last + ')') + (s.box < s.gp ? ' · ' + s.box + ' med fuld box score' : '');
+  // key numbers (the ranks are in the profile, where point, shots and rebounds are shares of the team's)
+  const tile = (lbl, v, f, sub) => el('div', { className: 'd9-tile' }, el('span', { className: 'lbl', textContent: lbl }),
+    el('span', { className: 'big', textContent: v == null ? '–' : f(v) }), el('span', { className: 'sub', textContent: sub || ' ' }));
+  const perRank = s.q && s.per != null ? 'nr. ' + (1 + S.Q.filter((o) => o.per != null && o.per > s.per + 1e-9).length) + ' af ' + S.Q.filter((o) => o.per != null).length : '';
+  $('#scout-keys').replaceChildren(tile('Point pr. kamp', s.ppg, dk, s.x.pts.v != null ? dk(s.x.pts.v) + '× sin andel' : ''),
+    tile('Returer pr. kamp', s.rpg, dk, s.x.reb.v != null ? dk(s.x.reb.v) + '× sin andel' : ''),
+    tile('Assists pr. kamp', s.apg, dk, s.tovG ? nOf(s.astT, 'assist', 'assists') + ' mod ' + nOf(s.tov, 'turnover', 'turnovers') : ''),
+    tile('Skud-%', s.fgp, (v) => Math.round(v * 100) + '%', s.ts != null ? 'TS ' + Math.round(s.ts * 100) + '%' : ''),
+    tile('PER', s.per, dk, perRank), tile('Justeret +/-', s.apm, sgnDk, s.pie != null ? 'PIE ' + Math.round(s.pie) : ''));
+  // NBA comparison
+  const lbl = el('span', { className: 'lbl', textContent: 'Minder om (aktive NBA-spillere)' });
+  $('#scout-nba').replaceChildren(...(s.nba ? [lbl, el('span', { className: 'big', textContent: s.nba.n }), el('span', { className: 'sub', textContent: s.nba.d + '.' }),
+    ...(s.nba.shared.length ? [el('p', { textContent: 'Fælles: ' + og(s.nba.shared) + '.' })] : []), el('p', { textContent: 'Også lidt: ' + og(s.nba.also) + '.' })]
+    : [lbl, el('span', { className: 'big', textContent: 'Kommer senere' }),
+      el('span', { className: 'sub', textContent: 'Sammenligningen kræver mindst ' + SCOUT_MIN + ' kampe med fuld box score; ' + s.p + ' har ' + s.box + '.' })]));
+  // profile bars
+  $('#scout-dot').style.background = dash.colors[0];
+  if (s.q) hbars(scoutBars, scoutTip, SCOUT_BARS.filter(([f]) => s.rank[f]).map(([f, , label]) => {
+    const r = s.rank[f];
+    return { key: label, v: r.pct, mark: r.mid, txt: 'nr. ' + r.rank + ' · ' + SV[f](s), tip: [label, LV[f](s), (r.tie ? 'Delt nr. ' : 'Nr. ') + r.rank + ' af ' + r.n] };
+  }), 'Profil for ' + s.p, 100);
+  else failLine(scoutBars, 'Placeringerne kræver mindst ' + SCOUT_MIN + ' kampe med fuld box score.');
+  // strengths, weaknesses, how to stop the player, play-style tags
+  const ranked = SCOUT_BARS.filter(([f]) => f !== 'usg' && s.rank[f] && !(s.x[f] && s.x[f].n < (SCOUT_LISTN[f] || 0))).map(([f, sg, label]) => ({ f, label, z: sg * s.z[f] }));
+  const item = (o) => el('li', {}, el('b', { textContent: o.label }), ': ' + LV[o.f](s) + ' – nr. ' + s.rank[o.f].rank + ' af ' + s.rank[o.f].n + '.');
+  const block = (h, lis, none) => [el('h3', { className: 'd9-sub3', textContent: h }), lis.length ? el('ul', { className: 'd9-scout-list' }, ...lis) : el('p', { className: 'd9-note', textContent: none, style: 'margin-bottom:10px' })];
+  const good = ranked.filter((o) => o.z >= 0.6).sort((a, b) => b.z - a.z).slice(0, 3), bad = ranked.filter((o) => o.z <= -0.6).sort((a, b) => a.z - b.z).slice(0, 3);
+  const tags = styleTags(s.st), tagList = el('ul', { className: 'd9-tags' }, ...tags.map((t) => el('li', { textContent: t })));
+  tagList.setAttribute('aria-label', 'Mærker');
+  $('#scout-text').replaceChildren(
+    ...(s.q ? [...block('Styrker', good.map(item), 'Ingen klare styrker endnu: tallene ligger tæt på gruppens midte.'), ...block('Svagheder', bad.map(item), 'Ingen klare svagheder.')] : []),
+    ...block('Sådan stopper du ' + s.p, scoutStop(s).map((t) => el('li', { textContent: t })), s.q ? 'Ingen tydelige mønstre at gå efter endnu.' : 'For få kampe med fuld box score til et mønster endnu.'), ...(tags.length ? [tagList] : []));
+  // shot profile and the rest
+  const st = s.st, zt = (q) => (q.a ? q.m + ' af ' + q.a + ' (' + pctTxt(q.m, q.a) + ')' : '–'), day = s.lastDay;
+  dlRows($('#scout-shots'), [
+    ['Skud fra 28. sep.', st.fga ? st.fga + ', ' + pctTxt(st.fgm, st.fga) + ' rammer' : '–'],
+    ['Tæt ved kurven (højst 2 m)', zt(s.rim)], ['2–4 m', zt(s.z24)], ['4–6 m', zt(s.z46)], ['Over 6 m', zt(s.z6)],
+    ["2'ere (bag den sorte bue)", s.p2a ? s.p2m + ' af ' + s.p2a + ' · ' + pctTxt(s.p2a, s.fgaL) + ' af skuddene' : 'ingen forsøg'],
+    ['Kurvene (fra 17. okt.)', st.tfgm ? PT.filter((t) => st.pt[t.id].n).sort((a, b) => st.pt[b.id].n - st.pt[a.id].n).map((t) => t.label + ' ' + pctTxt(st.pt[t.id].n, st.tfgm)).join(' · ') : '–'],
+    ['Kurve på en aflevering', st.astk ? st.ast + ' af ' + st.astk + ' (' + pctTxt(st.ast, st.astk) + ')' : '–'],
+    ['Skudside V / midt / H', st.ns ? ['V', 'M', 'H'].map((k) => Math.round((st.side[k] / st.ns) * 100)).join(' / ') + ' %' : '–'],
+    ['Til siden før skuddet: H / V', st.latn ? pctTxt(st.right, st.latn) + ' / ' + pctTxt(st.latn - st.right, st.latn) : '–'],
+  ]);
+  dlRows($('#scout-more'), [
+    ['Afleverer mest til', s.giveTop ? s.giveTop.who + ' (' + s.giveTop.n + ')' : '–'],
+    ['Får flest oplæg fra', s.getTop ? s.getTop.who + ' (' + s.getTop.n + ')' : '–'],
+    ['Vinder mest sammen med', s.mate ? s.mate.who + ' (' + s.mate.w + ' af ' + s.mate.g + ')' : '–'],
+    ['Nemesis', s.nem ? duelDk(s.nem) : '–'], ['Yndlingsmodstander', s.fav ? duelDk(s.fav) : '–'],
+    ['Vinderkurve · føringskurve', s.gw + ' · ' + s.lead], ['Clutch-point', String(s.clu)],
+    ['Skud-% efter scoring / bom', s.hh.an && s.hh.bn ? pctTxt(s.hh.am, s.hh.an) + ' / ' + pctTxt(s.hh.bm, s.hh.bn) : '–'],
+    ['Bedste kamp', s.best ? s.best.PTS + ' point · ' + s.best.game : '–'],
+    ['Seneste spilledag', day.s + ': ' + day.g + (day.g === 1 ? ' kamp, ' : ' kampe, ') + day.w + (day.w === 1 ? ' sejr' : ' sejre') + (day.pts != null ? ', ' + day.pts + ' point' : '')],
+    ['Løb', s.motor != null ? Math.round(s.motor) + ' m pr. minut (' + dk(s.meters / 1000) + ' km i alt)' : '–'],
+  ]);
+}
+
 function drawAll() {
   const sel = selection();
   if (!sel) {
@@ -1642,7 +2036,7 @@ function drawAll() {
   Object.assign(vals, drawFun(sel));
   setK(vals);
   $('#ins-wl').hidden = !wl; $('#ins-duo').hidden = !du[0]; $('#ins-twos').hidden = !vals['twos.player'];
-  drawBox(sel); drawHeat(sel); drawStyle(sel); drawNemesis(sel); drawImpact(sel); drawPivot(sel); drawDuos(du); drawGames(sel);
+  drawBox(sel); drawScout(); drawHeat(sel); drawStyle(sel); drawNemesis(sel); drawImpact(sel); drawPivot(sel); drawDuos(du); drawGames(sel);
 }
 dash.onData(drawAll);
 </script>
