@@ -652,6 +652,23 @@ const PAIR_NAMES = { 'Daniel + Faber': 'Rim brothers' };
 const pairName = (k) => (PAIR_NAMES[k] ? PAIR_NAMES[k] + ' (' + k + ')' : k);
 
 const num = (v) => (v === null || v === undefined || v === '' ? null : Number(v));
+// dash.data() hands back a fresh copy on every call, and the dashboard hands a nested value (a game's winners and losers)
+// over as JSON text where the public site keeps the list. dset() gives the lists as lists and the same object for as long
+// as a source is unchanged (status, row count, first and last row), so the caches below that are keyed on the arrays hold
+// across filter changes instead of everything being worked out again on each click.
+const NESTED = { games: ['winners', 'losers'] };
+const asList = (v) => { if (Array.isArray(v)) return v; try { const x = typeof v === 'string' ? JSON.parse(v) : null; return Array.isArray(x) ? x : []; } catch (e) { return []; } };
+const dataMemo = new Map();
+function dset(id) {
+  let d = dash.data(id);
+  const xs = Array.isArray(d.data) ? d.data : [], sig = [d.status, d.refreshing, xs.length, JSON.stringify(xs[0]), JSON.stringify(xs[xs.length - 1])].join('|');
+  const m = dataMemo.get(id);
+  if (m && m.sig === sig) return m.d;
+  const ks = NESTED[id];
+  if (ks && d.status === 'ok') d = { ...d, data: xs.map((r) => { const o = { ...r }; for (const k of ks) o[k] = asList(r[k]); return o; }) };
+  dataMemo.set(id, { sig, d });
+  return d;
+}
 const val = (m, r) => (typeof m.f === 'function' ? m.f(r) : num(r[m.f]));
 const isRate = (m) => !!m.ratio;
 
@@ -737,7 +754,7 @@ function withPer(R) {
 }
 
 function selection() {
-  const p = P(), G = dash.data('games'), R = dash.data('player_games');
+  const p = P(), G = dset('games'), R = dset('player_games');
   if (G.status !== 'ok' || R.status !== 'ok') return null;
   const fm = new Set(p.formats || []), hide = new Set(p.hideDays || []);
   const games = G.data.filter((g) => fm.has(g.format) && !hide.has(g.session) && (!p.completeOnly || g.complete === 'Ja'));
@@ -1154,7 +1171,7 @@ function heatRows(sel, E) {
 }
 
 function drawHeat(sel) {
-  const E = dash.data('events');
+  const E = dset('events');
   if (E.status !== 'ok') { if (E.status === 'error') failLine(heatBox, 'Failed to load'); return; }
   const p = sel.p, m = HEAT.find((x) => x.id === p.heatMetric) || HEAT[0];
   const zonesOnly = m.id === 'fgp' || m.id === 'xfg', view = zonesOnly ? 'zones' : p.heatView === 'zones' ? 'zones' : 'hex';
@@ -1372,7 +1389,7 @@ function nemTable(lines, head, total) {
   return table;
 }
 function drawNemesis(sel) {
-  const M = dash.data('matchups');
+  const M = dset('matchups');
   if (M.status !== 'ok') { if (M.status === 'error') [nemBox, nemOff, nemDef].forEach((el) => failLine(el, 'Failed to load')); return; }
   const ids = new Set(sel.games.map((g) => g.game_id));
   const pairs = nemPairs(M.data.filter((r) => ids.has(r.game_id)));
@@ -1440,7 +1457,7 @@ styleTable.addEventListener('click', (e) => {
 });
 const pctTxt = (a, b) => (b ? Math.round((a / b) * 100) + '%' : '–');
 function playsIn(sel) {
-  const D = dash.data('plays'); if (D.status !== 'ok') return null;
+  const D = dset('plays'); if (D.status !== 'ok') return null;
   const ids = new Set(sel.games.map((g) => g.game_id));
   return D.data.filter((r) => ids.has(r.game_id));
 }
@@ -1514,7 +1531,7 @@ function hbars(box, tipEl, rows, label, fixedHi) {      // fixedHi: fixed end of
 const styleTip = makeTip(styleBars);
 function drawStyle(sel) {
   const plays = playsIn(sel);
-  if (!plays) { if (dash.data('plays').status === 'error') failLine(styleBars, 'Failed to load'); return; }
+  if (!plays) { if (dset('plays').status === 'error') failLine(styleBars, 'Failed to load'); return; }
   const shots = plays.filter((r) => r.type === 'shot');
   const byP = new Map(); for (const r of shots) { if (!byP.has(r.player)) byP.set(r.player, []); byP.get(r.player).push(r); }
   const stats = [...byP.entries()].map(([player, rs]) => ({ player, ...styleStats(rs) })).filter((s) => s.fgm > 0);
@@ -1678,7 +1695,7 @@ function drawImpact(sel) {
 const funTable = $('#fun-table'), FUN_MIN = 3;          // games with a running score needed for a per-game title
 function drawFun(sel) {
   const plays = playsIn(sel), vals = {};
-  if (!plays) { if (dash.data('plays').status === 'error') failLine(funTable, 'Failed to load'); return vals; }
+  if (!plays) { if (dset('plays').status === 'error') failLine(funTable, 'Failed to load'); return vals; }
   const P = new Map(), get = (p) => { if (!P.has(p)) P.set(p, { player: p, gw: 0, clu: 0, lead: 0, m: 0, min: 0, am: 0, an: 0, bm: 0, bn: 0 }); return P.get(p); };
   const G = new Map(sel.games.map((g) => [g.game_id, g]));
   // running score from the verified baskets in order
@@ -1714,7 +1731,7 @@ function drawFun(sel) {
   }
   for (const r of plays) if (r.type === 'km') { const s = get(r.player); s.m += Number(r.m); s.min += Number(r.min); }
   // favourite target for assists (video-checked assists in the heatmap rows)
-  const E = dash.data('events'), fav = new Map();
+  const E = dset('events'), fav = new Map();
   if (E.status === 'ok') {
     const ids = new Set(sel.games.map((g) => g.game_id)), cnt = new Map();
     for (const e of E.data) if (e.type === 'ast' && ids.has(e.game_id) && e.to) { const k = e.player + '|' + e.to; cnt.set(k, (cnt.get(k) || 0) + 1); }
@@ -1887,14 +1904,14 @@ const LV = { pts: (s) => dk(s.ppg) + ' point pr. kamp, ' + dk(s.x.pts.v) + ' gan
   impact: (s) => 'justeret +/- ' + sgnDk(s.apm) + ' pr. kamp' + (s.pie != null ? ' og PIE ' + Math.round(s.pie) : ''),
   win: (s) => s.won + ' sejre og ' + s.lost + ' nederlag', motor: (s) => Math.round(s.motor) + ' meter pr. minut i billedet' };
 function scoutScope() {
-  const G = dash.data('games'), R = dash.data('player_games');
+  const G = dset('games'), R = dset('player_games');
   if (G.status !== 'ok' || R.status !== 'ok') return null;
   const games = G.data.filter((g) => SCOUT_FORMATS.includes(g.format)), ids = new Set(games.map((g) => g.game_id));
   return { p: P(), games, ids, rows: withPer(R.data).filter((r) => ids.has(r.game_id)), allGames: G.data };
 }
 let scoutKey = null, scoutRes = null;
 function scoutAll(scope) {
-  const src = ['player_games', 'games', 'plays', 'events', 'matchups'].map((id) => dash.data(id).data);
+  const src = ['player_games', 'games', 'plays', 'events', 'matchups'].map((id) => dset(id).data);
   if (scoutKey && src.every((d, i) => d === scoutKey[i])) return scoutRes;
   const rows = scope.rows, team = new Map();
   for (const r of rows) { const k = r.game_id + '|' + r.team; if (!team.has(k)) team.set(k, []); team.get(k).push(r); }
@@ -1926,10 +1943,10 @@ function scoutAll(scope) {
   }
   // assists given and received (video-checked passes), and the matchups for nemesis
   const give = new Map(), got = new Map(), inc = (m, a, b) => { if (!m.has(a)) m.set(a, new Map()); m.get(a).set(b, (m.get(a).get(b) || 0) + 1); };
-  const E = dash.data('events');
+  const E = dset('events');
   if (E.status === 'ok') for (const e of E.data) if (e.type === 'ast' && e.to && scope.ids.has(e.game_id)) { inc(give, e.player, e.to); inc(got, e.to, e.player); }
   const most = (m) => { const x = m && [...m].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'da'))[0]; return x ? { who: x[0], n: x[1] } : null; };
-  const M = dash.data('matchups'), pairs = M.status === 'ok' ? nemPairs(M.data.filter((r) => scope.ids.has(r.game_id))) : [];
+  const M = dset('matchups'), pairs = M.status === 'ok' ? nemPairs(M.data.filter((r) => scope.ids.has(r.game_id))) : [];
   const tgAll = rows.filter((r) => ['TOV', 'AST'].every((f) => num(r[f]) !== null));
   const astoR = tgAll.reduce((t, r) => t + num(r.AST), 0) / Math.max(1, tgAll.reduce((t, r) => t + num(r.TOV), 0));
   const list = [];
@@ -2075,7 +2092,6 @@ function scoutStop(s) {
   return t.sort((a, b) => b.w - a.w).slice(0, 3);
 }
 const scoutSel = $('#d9-scout-player'), scoutBars = $('#scout-bars'), scoutTip = makeTip(scoutBars);
-const CLIP_OF = {}; const scoutClips = () => ({}); const showClip = () => {}; const clipReset = () => {};
 scoutSel.addEventListener('change', () => dash.setParams({ scoutPlayer: scoutSel.value }));
 function drawScout() {
   const scope = scoutScope(); if (!scope) return;
@@ -2084,7 +2100,6 @@ function drawScout() {
   scoutSel.replaceChildren(...S.list.slice().sort((a, b) => a.p.localeCompare(b.p, 'da')).map((o) => new Option(o.p + ' (' + o.gp + ' kampe)', o.p)));
   scoutSel.value = s.p;
   $('#scout-name').textContent = s.p;
-  clipReset(s.p);
   $('#scout-sub').textContent = s.gp + ' kampe · ' + s.won + (s.won === 1 ? ' sejr' : ' sejre') + ' og ' + s.lost + ' nederlag · ' + s.days
     + (s.days === 1 ? ' spilledag (' + s.last + ')' : ' spilledage (' + s.first + ' – ' + s.last + ')') + (s.box < s.gp ? ' · ' + s.box + ' med fuld box score' : '');
   // key numbers (the ranks are in the profile, where point, shots and rebounds are shares of the team's)
@@ -2111,17 +2126,17 @@ function drawScout() {
   else failLine(scoutBars, 'Placeringerne kræver mindst ' + SCOUT_MIN + ' kampe med fuld box score.');
   // strengths, weaknesses, how to stop the player, play-style tags
   const ranked = SCOUT_BARS.filter(([f]) => f !== 'usg' && s.rank[f] && !(s.x[f] && s.x[f].n < (SCOUT_LISTN[f] || 0))).map(([f, sg, label]) => ({ f, label, z: sg * s.z[f] }));
-  const withClip = (li) => li;
-  const item = (o, clip) => withClip(el('li', {}, el('b', { textContent: o.label }), ': ' + LV[o.f](s) + ' – nr. ' + s.rank[o.f].rank + ' af ' + s.rank[o.f].n + '.'), clip && CLIP_OF[o.f]);
+  const attach = (li) => li;
+  const item = (o, extra) => attach(el('li', {}, el('b', { textContent: o.label }), ': ' + LV[o.f](s) + ' – nr. ' + s.rank[o.f].rank + ' af ' + s.rank[o.f].n + '.'), extra && o.f);
   const block = (h, lis, none) => [el('h3', { className: 'd9-sub3', textContent: h }), lis.length ? el('ul', { className: 'd9-scout-list' }, ...lis) : el('p', { className: 'd9-note', textContent: none, style: 'margin-bottom:10px' })];
   const good = ranked.filter((o) => o.z >= 0.6).sort((a, b) => b.z - a.z).slice(0, 3), bad = ranked.filter((o) => o.z <= -0.6).sort((a, b) => a.z - b.z).slice(0, 3);
   const tags = styleTags(s.st), tagList = el('ul', { className: 'd9-tags' }, ...tags.map((t) => el('li', { textContent: t })));
   tagList.setAttribute('aria-label', 'Mærker');
   $('#scout-text').replaceChildren(
     ...(s.q ? [...block('Styrker', good.map((o) => item(o, true)), 'Ingen klare styrker endnu: tallene ligger tæt på gruppens midte.'), ...block('Svagheder', bad.map((o) => item(o, false)), 'Ingen klare svagheder.')] : []),
-    ...block('Sådan stopper du ' + s.p, scoutStop(s).map((o) => withClip(el('li', { textContent: o.txt }), o.cat)), s.q ? 'Ingen tydelige mønstre at gå efter endnu.' : 'For få kampe med fuld box score til et mønster endnu.'), ...(tags.length ? [tagList] : []));
+    ...block('Sådan stopper du ' + s.p, scoutStop(s).map((o) => attach(el('li', { textContent: o.txt }), null, o.cat)), s.q ? 'Ingen tydelige mønstre at gå efter endnu.' : 'For få kampe med fuld box score til et mønster endnu.'), ...(tags.length ? [tagList] : []));
   // shot profile and the rest
-  const ev = dash.data('events'), Gl = new Map(scope.games.map((g) => [g.game_id, g.game]));
+  const ev = dset('events'), Gl = new Map(scope.games.map((g) => [g.game_id, g.game]));
   const mine = ev.status === 'ok' ? ev.data.filter((e) => e.type === 'shot' && e.player === s.p && e.u != null && Gl.has(e.game_id)).map((e) => ({ ...e, game: Gl.get(e.game_id) })) : [];
   if (mine.length) shotCourt($('#scout-court'), mine, s.p); else failLine($('#scout-court'), 'Ingen skud med plads endnu.');
   const leg = $('#scout-court-leg'); leg.innerHTML = '<span class="dot" style="background:' + dash.colors[0] + '"></span>kurv &nbsp; <span class="dot" style="border:1px solid var(--color-fg-muted)"></span>bom';
@@ -2175,7 +2190,7 @@ function timelines(plays) {
   return tl;
 }
 function wpaOf(plays) {
-  const every = [...timelines(dash.data('plays').data).values()].flat();
+  const every = [...timelines(dset('plays').data).values()].flat();
   const q = Math.round((every.filter((r) => Number(r.value) === 2).length / Math.max(1, every.length)) * 100) / 100, out = [];
   for (const [gid, ms] of timelines(plays)) {
     const fin = { A: 0, B: 0 }; for (const r of ms) fin[r.team] += Number(r.value);
@@ -2192,7 +2207,7 @@ function wpaOf(plays) {
 // all games, so the model doesn't move with the filters.
 let xfgKey = null, xfgFn = null;
 function xfgModel() {
-  const D = dash.data('plays'); if (D.status !== 'ok') return null;
+  const D = dset('plays'); if (D.status !== 'ok') return null;
   if (D.data === xfgKey) return xfgFn;
   const rows = D.data.filter((r) => r.type === 'shot' && r.d != null);
   let a = 0, b = 0;
@@ -2270,7 +2285,7 @@ function plainTable(box, head, rows) {
 const advChart = $('#adv-chart'), advTip = makeTip(advChart);
 function drawAdv(sel) {
   const plays = playsIn(sel);
-  if (!plays) { if (dash.data('plays').status === 'error') failLine(advChart, 'Failed to load'); return; }
+  if (!plays) { if (dset('plays').status === 'error') failLine(advChart, 'Failed to load'); return; }
   const G = new Map(sel.allGames.map((g) => [g.game_id, g])), fx = xfgModel(), bs = wpaOf(plays), tlIds = new Set(bs.map((b) => b.gid)), st = new Map();
   const get = (p) => { if (!st.has(p)) st.set(p, { p, gp: 0, wpa: 0, tg: 0, gs: 0, gsn: 0, potg: 0, potgG: 0, n: 0, m: 0, x: 0, pts: 0, xpts: 0, sg: new Set() }); return st.get(p); };
   for (const r of sel.rows) { const s = get(r.player); s.gp += 1; if (tlIds.has(r.game_id)) s.tg += 1; if (fullBox(r)) { s.gs += gmsc(r); s.gsn += 1; } }
@@ -2372,7 +2387,7 @@ function eloRun(scope) {
 }
 let seasonKey = null, seasonRes = null;
 function seasonAll(scope) {
-  const src = ['player_games', 'games', 'plays'].map((id) => dash.data(id).data);
+  const src = ['player_games', 'games', 'plays'].map((id) => dset(id).data);
   if (seasonKey && src.every((d, i) => d === seasonKey[i])) return seasonRes;
   const plays = playsIn(scope) || [], bs = wpaOf(plays), wpa = new Map(), potg = new Map(), xf = new Map(), fx = xfgModel();
   for (const b of bs) wpa.set(b.r.player, (wpa.get(b.r.player) || 0) + b.d);
@@ -2558,7 +2573,7 @@ function drawSeasonCards() {
 function drawAll() {
   const sel = selection();
   if (!sel) {
-    const G = dash.data('games'), R = dash.data('player_games');
+    const G = dset('games'), R = dset('player_games');
     if (G.status === 'error' || R.status === 'error') [tableBox, boxTable, $('#duos'), nemBox].forEach((el) => failLine(el, 'Failed to load'));
     return;
   }
