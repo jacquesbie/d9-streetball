@@ -147,6 +147,10 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .d9-scout-nba p { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
 .d9-scout-list { margin: 0 0 var(--cds-gap-sm); padding-left: 1.1rem; display: grid; gap: 5px; font-size: var(--cds-font-size-body); line-height: 1.45; }
 .d9-scout-list b { font-weight: 600; }
+.d9-clip { display: grid; gap: var(--cds-gap-sm); max-width: 44rem; }
+.d9-clip-head { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; justify-content: space-between; font-size: var(--cds-font-size-body); }
+.d9-clip video { width: 100%; aspect-ratio: 16 / 9; border-radius: var(--cds-radius); background: #000; }
+.d9-cliplink { font-size: var(--cds-font-size-caption); margin-left: 4px; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -207,7 +211,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 
   <section class="d9-card" id="scout-card" aria-labelledby="scout-h">
     <div><h2 id="scout-h">Scouting report</h2>
-      <p class="d9-note">Én rapport pr. spiller, regnet på alle 3v3- og 4v4-kampe. Filtrene øverst gælder ikke her, så rapporten følger selv med, når nye kampe kommer ind. Placeringerne er blandt spillerne med mindst 4 kampe med fuld box score, og små stikprøver trækkes mod gruppens snit, før der rangeres, så 2 af 2 ikke topper en liste. Point, skud, rebounds og assists er målt som andel af holdets, hvor 1,0 er en ligelig fordeling, så 3v3 og 4v4 kan sammenlignes. Afstande er sporingens. NBA-sammenligningen er den aktive NBA-spiller (listen er fra 2026), hvis styrker og svagheder ligner mest ud fra de samme tal; hver NBA-spiller bruges kun én gang.</p></div>
+      <p class="d9-note">Én rapport pr. spiller, regnet på alle 3v3- og 4v4-kampe. Filtrene øverst gælder ikke her, så rapporten følger selv med, når nye kampe kommer ind. Placeringerne er blandt spillerne med mindst 4 kampe med fuld box score, og små stikprøver trækkes mod gruppens snit, før der rangeres, så 2 af 2 ikke topper en liste. Point, skud, rebounds og assists er målt som andel af holdets, hvor 1,0 er en ligelig fordeling, så 3v3 og 4v4 kan sammenlignes. Afstande er sporingens. NBA-sammenligningen er den aktive NBA-spiller (listen er fra 2026), hvis styrker og svagheder ligner mest ud fra de samme tal; hver NBA-spiller bruges kun én gang. I den private udgave har styrker og tips et videoklip, hvor der står ▶ Se klip.</p></div>
     <div class="d9-controls">
       <label class="d9-field" for="d9-scout-player">Spiller<select id="d9-scout-player"></select></label>
     </div>
@@ -226,6 +230,11 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
         <div class="d9-legend"><span><span class="dot" id="scout-dot"></span>Længst = nr. 1</span><span><span class="tick"></span>Midten af gruppen</span></div>
       </div>
       <div style="min-width:0" id="scout-text" data-source="player_games plays"></div>
+    </div>
+    <div class="d9-clip" id="scout-clip" hidden>
+      <div class="d9-clip-head"><b id="scout-clip-cap">—</b>
+        <span class="d9-chips"><button class="d9-chip" id="scout-clip-prev">Forrige</button><button class="d9-chip" id="scout-clip-next">Næste</button><button class="d9-chip" id="scout-clip-close">Luk</button></span></div>
+      <video id="scout-clip-video" controls muted playsinline preload="metadata"></video>
     </div>
     <div class="d9-grid2" style="min-width:0">
       <div style="min-width:0"><h3 class="d9-sub3">Skudprofil</h3><div class="d9-court" id="scout-court" data-source="events" style="max-width:26rem"></div><div class="d9-legend" id="scout-court-leg" style="margin:6px 0 10px"></div><dl class="d9-heat-stats" id="scout-shots" data-source="plays"></dl></div>
@@ -2052,29 +2061,58 @@ function scoutAll(scope) {
 // how to defend the player: the strongest patterns first, at most three
 function scoutStop(s) {
   if (!s.q) return [];
-  const z = s.z, st = s.st, t = [], add = (w, txt) => t.push({ w, txt });
+  const z = s.z, st = s.st, t = [], add = (w, txt, cat) => t.push({ w, txt, cat });
   const far = { m: s.z46.m + s.z6.m, a: s.z46.a + s.z6.a };
   if (z.rimFG >= 0.5 && s.rim.a >= 4 && far.a >= 8 && far.m / far.a < 0.3)
-    add(z.rimFG + 0.5, 'Luk vejen til kurven, og lad ' + s.p + ' skyde udefra: ' + s.rim.m + ' af ' + s.rim.a + ' tæt ved kurven, men ' + far.m + ' af ' + far.a + ' fra 4 m og ud.');
-  if (z.pullup >= 0.7) add(z.pullup, 'Gå tæt på i mellemdistancen: pull-ups er ' + pctTxt(st.pt.pullup.n, st.tfgm) + ' af kurvene.');
-  if (z.drive >= 0.7) add(z.drive, 'Hold ' + s.p + ' foran dig: ' + pctTxt(st.pt.drive.n + st.pt.cut.n, st.tfgm) + ' af kurvene kommer på drives og cuts.');
-  if (z.assisted >= 0.7) add(z.assisted, 'Følg ' + s.p + ' uden bold: ' + pctTxt(st.ast, st.astk) + ' af kurvene kommer på en aflevering' + (s.getTop ? ', oftest fra ' + s.getTop.who : '') + '.');
-  if (z.assisted <= -0.7) add(-z.assisted, 'Pres, når ' + s.p + ' har bolden: kun ' + pctTxt(st.ast, st.astk) + ' af kurvene kommer på en aflevering.');
+    add(z.rimFG + 0.5, 'Luk vejen til kurven, og lad ' + s.p + ' skyde udefra: ' + s.rim.m + ' af ' + s.rim.a + ' tæt ved kurven, men ' + far.m + ' af ' + far.a + ' fra 4 m og ud.', 'rim');
+  if (z.pullup >= 0.7) add(z.pullup, 'Gå tæt på i mellemdistancen: pull-ups er ' + pctTxt(st.pt.pullup.n, st.tfgm) + ' af kurvene.', 'pullup');
+  if (z.drive >= 0.7) add(z.drive, 'Hold ' + s.p + ' foran dig: ' + pctTxt(st.pt.drive.n + st.pt.cut.n, st.tfgm) + ' af kurvene kommer på drives og cuts.', 'drive');
+  if (z.assisted >= 0.7) add(z.assisted, 'Følg ' + s.p + ' uden bold: ' + pctTxt(st.ast, st.astk) + ' af kurvene kommer på en aflevering' + (s.getTop ? ', oftest fra ' + s.getTop.who : '') + '.', 'assisted');
+  if (z.assisted <= -0.7) add(-z.assisted, 'Pres, når ' + s.p + ' har bolden: kun ' + pctTxt(st.ast, st.astk) + ' af kurvene kommer på en aflevering.', 'self');
   if (st.latn >= 8 && st.right / st.latn >= 0.65) add(st.right / st.latn + 0.3, 'Tving ' + s.p + ' til venstre: går til højre før ' + pctTxt(st.right, st.latn) + ' af skuddene.');
   if (st.latn >= 8 && st.right / st.latn <= 0.35) add(1.3 - st.right / st.latn, 'Tving ' + s.p + ' til højre: går til venstre før ' + pctTxt(st.latn - st.right, st.latn) + ' af skuddene.');
   if (z.longShare >= 0.7 && z.longFG <= -0.5) add(z.longShare - z.longFG, 'Lad ' + s.p + " skyde 2'ere: " + s.p2m + ' af ' + s.p2a + ' rammer.');
-  if (z.longFG >= 0.8 && s.p2a >= 5) add(z.longFG, 'Gå ud til ' + s.p + ' bag buen: ' + s.p2m + ' af ' + s.p2a + " 2'ere rammer.");
+  if (z.longFG >= 0.8 && s.p2a >= 5) add(z.longFG, 'Gå ud til ' + s.p + ' bag buen: ' + s.p2m + ' af ' + s.p2a + " 2'ere rammer.", 'two');
   const ob = [z.oreb >= 0.8 ? pctTxt(s.orb, s.rebT) + ' offensive rebounds' : '', z.putback >= 0.8 ? pctTxt(st.pt.putback.n, st.tfgm) + ' af kurvene er putbacks' : ''].filter(Boolean);
-  if (ob.length) add(Math.max(z.oreb, z.putback), 'Box ' + s.p + ' ud: ' + og(ob) + '.');
-  if (z.reb >= 1) add(z.reb, 'Box ud på hvert skud: ' + s.p + ' tager ' + dk(s.x.reb.v) + ' gange sin andel af holdets rebounds.');
-  if (z.ast >= 0.8 && s.giveTop) add(z.ast, 'Luk afleveringen til ' + s.giveTop.who + ': ' + s.giveTop.n + ' assists er gået dertil.');
-  if (z.clutch >= 1) add(z.clutch, 'Pas ekstra på til sidst: ' + dk(s.x.clutch.v, 2) + ' clutch-point pr. kamp (' + s.clu + ' i alt' + (s.gw ? ', ' + nOf(s.gw, 'vinderkurv', 'vinderkurve') : '') + ').');
+  if (ob.length) add(Math.max(z.oreb, z.putback), 'Box ' + s.p + ' ud: ' + og(ob) + '.', z.oreb >= 0.8 ? 'oreb' : 'putback');
+  if (z.reb >= 1) add(z.reb, 'Box ud på hvert skud: ' + s.p + ' tager ' + dk(s.x.reb.v) + ' gange sin andel af holdets rebounds.', 'reb');
+  if (z.ast >= 0.8 && s.giveTop) add(z.ast, 'Luk afleveringen til ' + s.giveTop.who + ': ' + s.giveTop.n + ' assists er gået dertil.', 'ast');
+  if (z.clutch >= 1) add(z.clutch, 'Pas ekstra på til sidst: ' + dk(s.x.clutch.v, 2) + ' clutch-point pr. kamp (' + s.clu + ' i alt' + (s.gw ? ', ' + nOf(s.gw, 'vinderkurv', 'vinderkurve') : '') + ').', 'clutch');
   const h = s.hh;
   if (h.an >= 8 && h.bn >= 8 && h.am / h.an - h.bm / h.bn >= 0.15) add(1, 'Stop ' + s.p + ' tidligt: ' + pctTxt(h.am, h.an) + ' rammer efter en scoring mod ' + pctTxt(h.bm, h.bn) + ' efter et bom.');
   if (st.ns >= 10) for (const [k, side] of [['V', 'venstre'], ['H', 'højre']]) if (st.side[k] / st.ns >= 0.4) add(0.6, 'Flest skud kommer fra ' + side + ' side (' + pctTxt(st.side[k], st.ns) + ').');
-  return t.sort((a, b) => b.w - a.w).slice(0, 3).map((o) => o.txt);
+  return t.sort((a, b) => b.w - a.w).slice(0, 3);
 }
 const scoutSel = $('#d9-scout-player'), scoutBars = $('#scout-bars'), scoutTip = makeTip(scoutBars);
+// video clips of the highlights (dataset 'clips': the private artifact only; the public site has none and shows no buttons):
+// one video per player, a clip = start..end seconds in it; the strength or tip a clip shows is its category
+const CLIP_OF = { rimFG: 'rim', midFG: 'mid', longFG: 'two', reb: 'reb', ast: 'ast', asto: 'ast', stl: 'stl', blk: 'blk', sast: 'sast', clutch: 'clutch' };
+const clipBox = $('#scout-clip'), clipVid = $('#scout-clip-video'), clipCap = $('#scout-clip-cap');
+let clipState = null;
+function scoutClips(player) {
+  const D = dash.data('clips'), by = {};
+  if (D.status === 'ok') for (const c of D.data) if (c.player === player) (by[c.cat] ||= []).push(c);
+  return by;
+}
+function showClip(player, list, i, scroll) {
+  clipState = { player, list, i }; const c = list[i];
+  clipBox.hidden = false;
+  clipCap.textContent = c.label + ' · ' + c.game + (list.length > 1 ? ' (' + (i + 1) + ' af ' + list.length + ')' : '');
+  $('#scout-clip-prev').disabled = i === 0; $('#scout-clip-next').disabled = i === list.length - 1;
+  const go = () => { clipVid.currentTime = c.start + 0.05; const pr = clipVid.play(); if (pr) pr.catch(() => {}); };
+  if (clipVid.getAttribute('src') !== c.src) { clipVid.src = c.src; clipVid.addEventListener('loadedmetadata', go, { once: true }); } else go();
+  if (scroll) clipBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+const clipNow = () => clipState && clipState.list[clipState.i];
+clipVid.addEventListener('timeupdate', () => {          // stop at the clip's end; seek again if a seek didn't take (video not loaded yet)
+  const c = clipNow(); if (!c) return;
+  if (clipVid.currentTime < c.start - 0.3) clipVid.currentTime = c.start + 0.05;
+  else if (clipVid.currentTime >= c.end - 0.08) clipVid.pause();
+});
+clipVid.addEventListener('play', () => { const c = clipNow(); if (c && (clipVid.currentTime < c.start || clipVid.currentTime >= c.end - 0.1)) clipVid.currentTime = c.start + 0.05; });
+$('#scout-clip-prev').addEventListener('click', () => { if (clipState && clipState.i > 0) showClip(clipState.player, clipState.list, clipState.i - 1, false); });
+$('#scout-clip-next').addEventListener('click', () => { if (clipState && clipState.i < clipState.list.length - 1) showClip(clipState.player, clipState.list, clipState.i + 1, false); });
+$('#scout-clip-close').addEventListener('click', () => { clipState = null; clipVid.pause(); clipBox.hidden = true; });
 scoutSel.addEventListener('change', () => dash.setParams({ scoutPlayer: scoutSel.value }));
 function drawScout() {
   const scope = scoutScope(); if (!scope) return;
@@ -2083,6 +2121,7 @@ function drawScout() {
   scoutSel.replaceChildren(...S.list.slice().sort((a, b) => a.p.localeCompare(b.p, 'da')).map((o) => new Option(o.p + ' (' + o.gp + ' kampe)', o.p)));
   scoutSel.value = s.p;
   $('#scout-name').textContent = s.p;
+  if (clipState && clipState.player !== s.p) { clipState = null; clipVid.pause(); clipBox.hidden = true; }
   $('#scout-sub').textContent = s.gp + ' kampe · ' + s.won + (s.won === 1 ? ' sejr' : ' sejre') + ' og ' + s.lost + ' nederlag · ' + s.days
     + (s.days === 1 ? ' spilledag (' + s.last + ')' : ' spilledage (' + s.first + ' – ' + s.last + ')') + (s.box < s.gp ? ' · ' + s.box + ' med fuld box score' : '');
   // key numbers (the ranks are in the profile, where point, shots and rebounds are shares of the team's)
@@ -2109,14 +2148,19 @@ function drawScout() {
   else failLine(scoutBars, 'Placeringerne kræver mindst ' + SCOUT_MIN + ' kampe med fuld box score.');
   // strengths, weaknesses, how to stop the player, play-style tags
   const ranked = SCOUT_BARS.filter(([f]) => f !== 'usg' && s.rank[f] && !(s.x[f] && s.x[f].n < (SCOUT_LISTN[f] || 0))).map(([f, sg, label]) => ({ f, label, z: sg * s.z[f] }));
-  const item = (o) => el('li', {}, el('b', { textContent: o.label }), ': ' + LV[o.f](s) + ' – nr. ' + s.rank[o.f].rank + ' af ' + s.rank[o.f].n + '.');
+  const CL = scoutClips(s.p), withClip = (li, cat) => {
+    const xs = cat && CL[cat]; if (!xs || !xs.length) return li;
+    const b = el('button', { className: 'd9-link d9-cliplink', textContent: '▶ Se klip' + (xs.length > 1 ? ' (' + xs.length + ')' : '') });
+    b.addEventListener('click', () => showClip(s.p, xs, 0, true)); li.append(' ', b); return li;
+  };
+  const item = (o, clip) => withClip(el('li', {}, el('b', { textContent: o.label }), ': ' + LV[o.f](s) + ' – nr. ' + s.rank[o.f].rank + ' af ' + s.rank[o.f].n + '.'), clip && CLIP_OF[o.f]);
   const block = (h, lis, none) => [el('h3', { className: 'd9-sub3', textContent: h }), lis.length ? el('ul', { className: 'd9-scout-list' }, ...lis) : el('p', { className: 'd9-note', textContent: none, style: 'margin-bottom:10px' })];
   const good = ranked.filter((o) => o.z >= 0.6).sort((a, b) => b.z - a.z).slice(0, 3), bad = ranked.filter((o) => o.z <= -0.6).sort((a, b) => a.z - b.z).slice(0, 3);
   const tags = styleTags(s.st), tagList = el('ul', { className: 'd9-tags' }, ...tags.map((t) => el('li', { textContent: t })));
   tagList.setAttribute('aria-label', 'Mærker');
   $('#scout-text').replaceChildren(
-    ...(s.q ? [...block('Styrker', good.map(item), 'Ingen klare styrker endnu: tallene ligger tæt på gruppens midte.'), ...block('Svagheder', bad.map(item), 'Ingen klare svagheder.')] : []),
-    ...block('Sådan stopper du ' + s.p, scoutStop(s).map((t) => el('li', { textContent: t })), s.q ? 'Ingen tydelige mønstre at gå efter endnu.' : 'For få kampe med fuld box score til et mønster endnu.'), ...(tags.length ? [tagList] : []));
+    ...(s.q ? [...block('Styrker', good.map((o) => item(o, true)), 'Ingen klare styrker endnu: tallene ligger tæt på gruppens midte.'), ...block('Svagheder', bad.map((o) => item(o, false)), 'Ingen klare svagheder.')] : []),
+    ...block('Sådan stopper du ' + s.p, scoutStop(s).map((o) => withClip(el('li', { textContent: o.txt }), o.cat)), s.q ? 'Ingen tydelige mønstre at gå efter endnu.' : 'For få kampe med fuld box score til et mønster endnu.'), ...(tags.length ? [tagList] : []));
   // shot profile and the rest
   const ev = dash.data('events'), Gl = new Map(scope.games.map((g) => [g.game_id, g.game]));
   const mine = ev.status === 'ok' ? ev.data.filter((e) => e.type === 'shot' && e.player === s.p && e.u != null && Gl.has(e.game_id)).map((e) => ({ ...e, game: Gl.get(e.game_id) })) : [];
