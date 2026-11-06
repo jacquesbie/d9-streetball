@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>D9 Streetball Stats</title>
-<meta name="description" content="Stats fra vores pickup-kampe: box scores, scouting reports, heatmaps, spillestil, impact, nemesis-tabel, pivot og makkerpar.">
+<meta name="description" content="Stats fra vores pickup-kampe: box scores, scouting reports, sæsonens priser og rekorder, Elo, WPA, heatmaps, spillestil, impact, nemesis-tabel, pivot og makkerpar.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500&display=swap">
@@ -228,8 +228,29 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       <div style="min-width:0" id="scout-text" data-source="player_games plays"></div>
     </div>
     <div class="d9-grid2" style="min-width:0">
-      <div style="min-width:0"><h3 class="d9-sub3">Skudprofil</h3><dl class="d9-heat-stats" id="scout-shots" data-source="plays"></dl></div>
+      <div style="min-width:0"><h3 class="d9-sub3">Skudprofil</h3><div class="d9-court" id="scout-court" data-source="events" style="max-width:26rem"></div><div class="d9-legend" id="scout-court-leg" style="margin:6px 0 10px"></div><dl class="d9-heat-stats" id="scout-shots" data-source="plays"></dl></div>
       <div style="min-width:0"><h3 class="d9-sub3">Makkere, modstandere og sjove tal</h3><dl class="d9-heat-stats" id="scout-more" data-source="plays"></dl></div>
+    </div>
+  </section>
+
+  <section class="d9-card" id="season-card" aria-labelledby="season-h">
+    <div><h2 id="season-h">Sæsonens priser og rekorder</h2>
+      <p class="d9-note">Regnet på alle 3v3- og 4v4-kampe; filtrene øverst gælder ikke her, så tallene følger selv med, når nye kampe kommer ind. Priserne bruger de samme tal som scouting-rapporten og kræver mindst 4 kampe med fuld box score. Hvordan hver pris findes, står under "Sådan tælles det".</p></div>
+    <div class="d9-fun-tiles" id="awards" data-source="player_games plays"></div>
+    <div class="d9-grid2" style="min-width:0">
+      <div style="min-width:0"><h3 class="d9-sub3">Rekordbog</h3><div class="d9-scroll" id="records-table" data-source="player_games plays"></div></div>
+      <div style="min-width:0"><h3 class="d9-sub3">Stimer</h3><div class="d9-scroll" id="streaks-table" data-source="player_games plays"></div></div>
+    </div>
+  </section>
+
+  <section class="d9-card" id="elo-card" aria-labelledby="elo-h">
+    <div><h2 id="elo-h">Elo-rating</h2>
+      <p class="d9-note">Som i skak: alle starter på 1500, og efter hver kamp flytter vinderne point fra taberne. Hvor mange afhænger af, hvor stærke holdene var på forhånd (holdets snit), hvor stor sejren var, og hvor meget af kampen man spillede. Alle 3v3- og 4v4-kampe i rækkefølge; filtrene gælder ikke.</p></div>
+    <div class="d9-controls"><label class="d9-field" for="d9-elo-player">Fremhæv<select id="d9-elo-player"></select></label></div>
+    <div class="d9-grid2" style="min-width:0">
+      <div style="min-width:0"><h3 class="d9-sub3" id="elo-chart-h">—</h3><div class="d9-chart" id="elo-chart" data-source="player_games games"></div>
+        <div class="d9-legend"><span><span class="dot" id="elo-dot-w"></span>sejr</span><span><span class="dot" id="elo-dot-l"></span>nederlag</span><span>Grå linjer: de andre spillere · stiplet: 1500</span></div></div>
+      <div class="d9-scroll" id="elo-table" data-source="player_games games" style="min-width:0"></div>
     </div>
   </section>
 
@@ -296,6 +317,28 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
         <div class="d9-chart" id="imp-chart" data-source="player_games"></div>
       </div>
       <div class="d9-scroll" id="imp-table" data-source="player_games" style="min-width:0"></div>
+    </div>
+  </section>
+
+  <section class="d9-card" id="adv-card" aria-labelledby="adv-h">
+    <div><h2 id="adv-h">Avancerede tal: vinderchance, skudkvalitet og Game Score</h2>
+      <p class="d9-note">WPA (Win Probability Added) er, hvor meget hver kurv øgede holdets chance for at vinde ud fra stillingen; 1,0 svarer til en hel kamp. Det findes for kampe, hvor kurvenes rækkefølge kendes (28. sep. kamp 1–2, 12. okt. og fra 17. okt.). Skudkvalitet sammenligner skud-% med det forventede ud fra afstanden alene (xFG%): over forventet = rammer svære skud, høj xFG% = tager tætte skud. Bommenes plads er sporingens. Game Score er John Hollingers tal for én kamp, og Kampens spiller har kampens højeste. Følger filtrene øverst.</p></div>
+    <div class="d9-grid2" style="min-width:0">
+      <div style="min-width:0"><h3 class="d9-sub3">WPA pr. kamp: vinderchance tilføjet med egne kurve</h3><div class="d9-chart" id="adv-chart" data-source="plays"></div></div>
+      <div class="d9-scroll" id="adv-table" data-source="plays player_games" style="min-width:0"></div>
+    </div>
+    <div class="d9-grid2" style="min-width:0">
+      <div style="min-width:0"><h3 class="d9-sub3">De største kurve (WPA)</h3><div class="d9-scroll" id="adv-big" data-source="plays"></div></div>
+      <div style="min-width:0"><h3 class="d9-sub3">Kampens spiller</h3><div class="d9-scroll" id="adv-potg" data-source="player_games"></div></div>
+    </div>
+  </section>
+
+  <section class="d9-card" id="trio-card" aria-labelledby="trio-h">
+    <div><h2 id="trio-h">Trioer og on/off</h2>
+      <p class="d9-note">En trio er tre spillere på samme hold i samme kamp; i 3v3 er det hele holdet. On/off er holdets point minus modstandernes pr. 10 minutter med spilleren på banen og på bænken. Det findes kun i kampe, hvor holdet havde en udskifter, og hvor kurvenes rækkefølge kendes. Følger filtrene øverst.</p></div>
+    <div class="d9-grid2" style="min-width:0">
+      <div style="min-width:0"><h3 class="d9-sub3">Trioer (mindst 3 kampe sammen)</h3><div class="d9-scroll" id="trio-table" data-source="player_games"></div></div>
+      <div style="min-width:0"><h3 class="d9-sub3">On/off (mindst 5 min på bænken)</h3><div class="d9-scroll" id="onoff-table" data-source="player_games games"></div></div>
     </div>
   </section>
 
@@ -480,6 +523,25 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
         <li>Juli og 10. aug. er ikke med. Fra juli findes kun den gamle metodes kurveliste, og den summerer ikke til jeres resultater (fx 11–6 mod 12–10), så rækkefølgen kan ikke bruges. 10. aug. kender ikke holdet bag alle kurve, og skytten kun ved under halvdelen, så stillingen undervejs kan ikke regnes ud.</li>
         <li>Løbekonge: meter pr. minut, mens spilleren er i kameraets billede. Sporingen er glattet over 1 s, og spring over 8 m/s er sorteret fra. Langt fra kameraet er positionen usikker, så tallet er kun til sammenligning. Løbekongen skal have mindst 40 minutter i billedet.</li>
         <li>Afleverer mest til: flest assists til samme holdkammerat (assists talt i videoen, 28. sep.–2. nov.).</li>
+      </ul></div>
+      <div class="d9-rule"><h3>Scouting report</h3><ul>
+        <li>Regnes på alle 3v3- og 4v4-kampe, uanset filtrene, og følger selv med, når nye kampe kommer ind.</li>
+        <li>Placeringer er blandt spillere med mindst 4 kampe med fuld box score. Små stikprøver blandes med gruppens snit, før der rangeres (fx svarende til 4 skud ved kurven eller 2 kampe for andele af holdets tal).</li>
+        <li>NBA-sammenligningen: spillerens tal laves om til afstande fra gruppens snit (z-værdier) på 23 områder, og hver aktiv NBA-spiller har en profil på de samme områder. Den profil, der peger mest i samme retning (cosinus-lighed), vælges; de bedste match placeres først, og hver NBA-spiller bruges kun én gang.</li>
+      </ul></div>
+      <div class="d9-rule"><h3>Avancerede tal</h3><ul>
+        <li>WPA: vinderchancen regnes ud fra stillingen, som om hver kurv var et møntkast mellem holdene (med sæsonens andel af 2'ere), indtil et hold når vindernes slutscore. En kurvs WPA er holdets chance efter minus før og tilskrives skytten; 1,0 = en hel kamp.</li>
+        <li>Skudkvalitet: forventet skud-% (xFG%) ud fra afstanden alene, fundet med logistisk regression på alle skud med en plads. "Over forventet" = skud-% minus xFG%.</li>
+        <li>Game Score: point + 0,4 × kurve − 0,7 × skud + 0,7 × offensive returer + 0,3 × defensive returer + steals + 0,7 × assists + 0,7 × blocks − turnovers (der er ingen straffekast eller fejl). Kampens spiller har kampens højeste, i kampe hvor alle har fuld box score; ved lighed vinder vinderholdet.</li>
+      </ul></div>
+      <div class="d9-rule"><h3>Elo, priser og rekorder</h3><ul>
+        <li>Elo: alle starter på 1500. Efter hver kamp får hver spiller 32 × M × (resultat − forventet) × andel af spilletiden, hvor forventet = 1 / (1 + 10^((modstandernes snit − holdets snit) / 400)) og M = ln(margin + 1) / ln 3 (1, når stillingen mangler).</li>
+        <li>MVP: PER, impact (justeret +/- og PIE) og sejre. Årets forsvarsspiller: steals og blocks pr. kamp plus, hvor få point de direkte modstandere scorede i Nemesis-tabellen i forhold til deres snit. Clutch Player: flest clutch-point (ved lighed vinderkurve). Most Improved: størst stigning i PER fra første til anden halvdel af kampene (mindst 6 med fuld box score). Årets makkerpar: bedste sejrsprocent med mindst 4 kampe sammen.</li>
+        <li>Rekorder og stimer går over alle 3v3- og 4v4-kampe; sejrsstimer går på tværs af spilledage. Kurve i træk tæller inden for én kamp.</li>
+      </ul></div>
+      <div class="d9-rule"><h3>Trioer og on/off</h3><ul>
+        <li>En trio er tre spillere på samme hold i samme kamp.</li>
+        <li>On/off: +/- pr. 10 minutter med spilleren på banen og på bænken. Bænktiden kommer fra udskiftningerne i +/- (der skiftes kun ved kurve).</li>
       </ul></div>
       <div class="d9-rule"><h3>Spillere og minutter</h3><ul>
         <li>I navngiver selv spillerne på billeder fra hver kamp. Sporingen genkender dem derefter på tøj og udseende.</li>
@@ -1671,7 +1733,8 @@ const dlRows = (dl, pairs) => dl.replaceChildren(...pairs.flatMap(([k, v]) => [e
 const SF = { usg: { k: 2 }, pts: { k: 2 }, reb: { k: 2 }, ast: { k: 2 }, eff: { k: 15, pool: 1 }, rimFG: { k: 4, pool: 1 },
   midFG: { k: 10, pool: 1 }, longShare: { k: 15, pool: 1 }, longFG: { k: 15, pool: 1 }, oreb: { k: 6, pool: 1 }, tov: { k: 20, pool: 1 },
   pullup: { k: 6, pool: 1 }, drive: { k: 6, pool: 1 }, catch: { k: 6, pool: 1 }, putback: { k: 6, pool: 1 }, assisted: { k: 6, pool: 1 },
-  stl: { k: 4 }, blk: { k: 4 }, sast: { k: 4 }, def: { k: 4 }, clutch: { k: 3 }, win: { k: 4, mu: 0.5 }, motor: { k: 20 }, apm: { k: 0 }, pie: { k: 3 } };
+  stl: { k: 4 }, blk: { k: 4 }, sast: { k: 4 }, def: { k: 4 }, clutch: { k: 3 }, win: { k: 4, mu: 0.5 }, motor: { k: 20 }, apm: { k: 0 }, pie: { k: 3 },
+  per: { k: 2 }, dmatch: { k: 0 } };
 const NBA_F = ['usg', 'pts', 'eff', 'rimFG', 'midFG', 'longShare', 'longFG', 'pullup', 'drive', 'catch', 'putback', 'assisted',
   'reb', 'oreb', 'ast', 'tov', 'stl', 'blk', 'sast', 'clutch', 'impact', 'win', 'motor'];
 // what a trait says when the player is above / below the group
@@ -1868,6 +1931,16 @@ function scoutAll(scope) {
     for (const r of rs) for (const q of team.get(r.game_id + '|' + r.team)) if (q.player !== p) {
       const m = mates.get(q.player) || { who: q.player, g: 0, w: 0 }; m.g += 1; m.w += Number(r.won) || 0; mates.set(q.player, m);
     }
+    x.per = { v: perE > 0 ? (15 * perV) / perE : null, n: box.length };
+    // defence in the matchups: points the direct opponents scored against the player, against what the same attackers
+    // scored on everybody else, per 10 minutes and pulled towards 0 with 10 minutes at 'average'
+    let dsec = 0, dact = 0, dexp = 0;
+    for (const q of pairs.filter((o) => o.def === p)) {
+      const oth = pairs.filter((o) => o.att === q.att && o.def !== p), os = oth.reduce((t, o) => t + o.sec, 0);
+      if (!os) continue;
+      dsec += q.sec; dact += q.pts; dexp += (oth.reduce((t, o) => t + o.pts, 0) / os) * q.sec;
+    }
+    x.dmatch = { v: dsec ? (((dexp - dact) / dsec) * 600 * dsec) / (dsec + 600) : null, n: dsec };
     const nm = pairs.length ? nemesisOf(headToHead(pairs, p)) : { nem: null, fav: null };
     list.push({ p, x, st, rim, z24, z46, z6, mid, gp: rs.length, box: box.length, won, lost: rs.length - won, days: dates.length,
       first: sess(dates[0]), last: sess(lastD), ppg: avg('PTS'), rpg: avg('REB'), apg: avg('AST'), fgapg: avg('FGA'), fgm, fga, fgp: fga ? fgm / fga : null,
@@ -1875,7 +1948,7 @@ function scoutAll(scope) {
       stl: x.stl.tot[0], stlG: x.stl.n, blk: x.blk.tot[0], blkG: x.blk.n, sast: x.sast.tot[0], sastG: x.sast.n, clu: rr.clu, gw: rr.gw, lead: rr.lead,
       hh: hh.get(p) || { am: 0, an: 0, bm: 0, bn: 0 }, motor: x.motor.v, meters, giveTop: most(give.get(p)), getTop: most(got.get(p)),
       mate: [...mates.values()].filter((m) => m.g >= 3).sort((a, b) => b.w / b.g - a.w / a.g || b.g - a.g || a.who.localeCompare(b.who, 'da'))[0] || null,
-      nem: nm.nem, fav: nm.fav, best: box.slice().sort((a, b) => num(b.PTS) - num(a.PTS) || b.game_id.localeCompare(a.game_id))[0] || null,
+      dsec, dact, dexp, nem: nm.nem, fav: nm.fav, best: box.slice().sort((a, b) => num(b.PTS) - num(a.PTS) || b.game_id.localeCompare(a.game_id))[0] || null,
       lastDay: { s: sess(lastD), g: lastRs.length, w: lastRs.reduce((t, r) => t + (Number(r.won) || 0), 0),
         pts: lastRs.some((r) => num(r.PTS) !== null) ? lastRs.reduce((t, r) => t + (num(r.PTS) || 0), 0) : null },
       q: box.length >= SCOUT_MIN, z: {}, sh: {}, rank: {}, nba: null });
@@ -1990,6 +2063,12 @@ function drawScout() {
     ...(s.q ? [...block('Styrker', good.map(item), 'Ingen klare styrker endnu: tallene ligger tæt på gruppens midte.'), ...block('Svagheder', bad.map(item), 'Ingen klare svagheder.')] : []),
     ...block('Sådan stopper du ' + s.p, scoutStop(s).map((t) => el('li', { textContent: t })), s.q ? 'Ingen tydelige mønstre at gå efter endnu.' : 'For få kampe med fuld box score til et mønster endnu.'), ...(tags.length ? [tagList] : []));
   // shot profile and the rest
+  const ev = dash.data('events'), Gl = new Map(scope.games.map((g) => [g.game_id, g.game]));
+  const mine = ev.status === 'ok' ? ev.data.filter((e) => e.type === 'shot' && e.player === s.p && e.u != null && Gl.has(e.game_id)).map((e) => ({ ...e, game: Gl.get(e.game_id) })) : [];
+  if (mine.length) shotCourt($('#scout-court'), mine, s.p); else failLine($('#scout-court'), 'Ingen skud med plads endnu.');
+  const leg = $('#scout-court-leg'); leg.innerHTML = '<span class="dot" style="background:' + dash.colors[0] + '"></span>kurv &nbsp; <span class="dot" style="border:1px solid var(--color-fg-muted)"></span>bom';
+  leg.append(' · ' + mine.length + ' skud med plads (bommenes er sporingens)');
+  const X = seasonAll(scope), xf = X.xf.get(s.p), er = X.elo.R.get(s.p);
   const st = s.st, zt = (q) => (q.a ? q.m + ' af ' + q.a + ' (' + pctTxt(q.m, q.a) + ')' : '–'), day = s.lastDay;
   dlRows($('#scout-shots'), [
     ['Skud fra 28. sep.', st.fga ? st.fga + ', ' + pctTxt(st.fgm, st.fga) + ' rammer' : '–'],
@@ -1999,8 +2078,12 @@ function drawScout() {
     ['Kurve på en aflevering', st.astk ? st.ast + ' af ' + st.astk + ' (' + pctTxt(st.ast, st.astk) + ')' : '–'],
     ['Skudside V / midt / H', st.ns ? ['V', 'M', 'H'].map((k) => Math.round((st.side[k] / st.ns) * 100)).join(' / ') + ' %' : '–'],
     ['Til siden før skuddet: H / V', st.latn ? pctTxt(st.right, st.latn) + ' / ' + pctTxt(st.latn - st.right, st.latn) : '–'],
+    ['Skud-% mod forventet (xFG)', xf && xf.n ? pctTxt(xf.m, xf.n) + ' mod ' + Math.round((100 * xf.x) / xf.n) + '% (' + pp((xf.m - xf.x) / xf.n) + ')' : '–'],
   ]);
   dlRows($('#scout-more'), [
+    ['Elo', er != null ? Math.round(er) + ' (nr. ' + (X.rank.indexOf(s.p) + 1) + ' af ' + X.rank.length + ')' : '–'],
+    ['WPA (vinderchance tilføjet)', X.wpa.has(s.p) ? '+' + dk(X.wpa.get(s.p), 2) + ' kampe' : '–'],
+    ['Kampens spiller', String(X.potg.get(s.p) || 0)],
     ['Afleverer mest til', s.giveTop ? s.giveTop.who + ' (' + s.giveTop.n + ')' : '–'],
     ['Får flest oplæg fra', s.getTop ? s.getTop.who + ' (' + s.getTop.n + ')' : '–'],
     ['Vinder mest sammen med', s.mate ? s.mate.who + ' (' + s.mate.w + ' af ' + s.mate.g + ')' : '–'],
@@ -2011,6 +2094,402 @@ function drawScout() {
     ['Seneste spilledag', day.s + ': ' + day.g + (day.g === 1 ? ' kamp, ' : ' kampe, ') + day.w + (day.w === 1 ? ' sejr' : ' sejre') + (day.pts != null ? ', ' + day.pts + ' point' : '')],
     ['Løb', s.motor != null ? Math.round(s.motor) + ' m pr. minut (' + dk(s.meters / 1000) + ' km i alt)' : '–'],
   ]);
+}
+
+// ---------- win probability added, shot quality, Game Score ----------
+// Win probability: the next basket goes to either team with even odds and is a 2 with the season's share of 2'ere;
+// the game ends when a team reaches the winners' final score (as for clutch). A basket's WPA is the scoring team's
+// chance after it minus before, credited to the scorer; 1.0 = a whole game.
+const wpMemo = new Map();
+function winProb(a, b, T, q) {
+  if (a >= T) return 1;
+  if (b >= T) return 0;
+  const k = a + '|' + b + '|' + T + '|' + q;
+  if (!wpMemo.has(k)) wpMemo.set(k, 0.5 * ((1 - q) * winProb(a + 1, b, T, q) + q * winProb(a + 2, b, T, q)) + 0.5 * ((1 - q) * winProb(a, b + 1, T, q) + q * winProb(a, b + 2, T, q)));
+  return wpMemo.get(k);
+}
+// verified baskets in order per game (tl = 0 rows stay out of the running score, as in the fun card)
+function timelines(plays) {
+  const tl = new Map();
+  for (const r of plays) if ((r.type === 'make' || r.type === 'shot') && Number(r.made) && r.tl !== 0) { if (!tl.has(r.game_id)) tl.set(r.game_id, []); tl.get(r.game_id).push(r); }
+  for (const ms of tl.values()) ms.sort((a, b) => a.t - b.t);
+  return tl;
+}
+function wpaOf(plays) {
+  const every = [...timelines(dash.data('plays').data).values()].flat();
+  const q = Math.round((every.filter((r) => Number(r.value) === 2).length / Math.max(1, every.length)) * 100) / 100, out = [];
+  for (const [gid, ms] of timelines(plays)) {
+    const fin = { A: 0, B: 0 }; for (const r of ms) fin[r.team] += Number(r.value);
+    const T = Math.max(fin.A, fin.B), sc = { A: 0, B: 0 };
+    for (const r of ms) {
+      const me = r.team, op = me === 'A' ? 'B' : 'A', v = Number(r.value), before = winProb(sc[me], sc[op], T, q);
+      sc[me] += v;
+      out.push({ r, gid, d: winProb(sc[me], sc[op], T, q) - before, from: sc[me] - v + '–' + sc[op], to: sc[me] + '–' + sc[op] });
+    }
+  }
+  return out;
+}
+// Shot quality: expected FG% from the distance alone, a logistic fit (Newton steps) on every attempt with a spot in
+// all games, so the model doesn't move with the filters.
+let xfgKey = null, xfgFn = null;
+function xfgModel() {
+  const D = dash.data('plays'); if (D.status !== 'ok') return null;
+  if (D.data === xfgKey) return xfgFn;
+  const rows = D.data.filter((r) => r.type === 'shot' && r.d != null);
+  let a = 0, b = 0;
+  for (let it = 0; it < 30; it++) {
+    let ga = 0, gb = 0, haa = 0, hab = 0, hbb = 0;
+    for (const r of rows) {
+      const p = 1 / (1 + Math.exp(-(a + b * r.d))), e = Number(r.made) - p, w = p * (1 - p);
+      ga += e; gb += e * r.d; haa += w; hab += w * r.d; hbb += w * r.d * r.d;
+    }
+    const det = haa * hbb - hab * hab; if (!det) break;
+    a += (hbb * ga - hab * gb) / det; b += (haa * gb - hab * ga) / det;
+  }
+  xfgKey = D.data; xfgFn = (d) => 1 / (1 + Math.exp(-(a + b * d)));
+  return xfgFn;
+}
+// Game Score (John Hollinger) without free throws and fouls; Kampens spiller = the game's highest, in games where every
+// player has a full box score (ties: the winners, then points).
+const gmsc = (r) => {
+  const n = (k) => num(r[k]) || 0, dreb = r.DREB != null ? n('DREB') : n('REB') - n('OREB');
+  return n('PTS') + 0.4 * n('FGM') - 0.7 * n('FGA') + 0.7 * n('OREB') + 0.3 * dreb + n('STL') + 0.7 * n('AST') + 0.7 * n('BLK') - n('TOV');
+};
+const fullBox = (r) => ['PTS', 'FGA', 'FGM', 'REB', 'AST'].every((k) => num(r[k]) !== null);
+function potgOf(rows) {
+  const by = new Map(); for (const r of rows) { if (!by.has(r.game_id)) by.set(r.game_id, []); by.get(r.game_id).push(r); }
+  const out = [];
+  for (const [gid, rs] of by) if (rs.every(fullBox)) {
+    const g10 = (r) => Math.round(gmsc(r) * 10), best = rs.slice().sort((a, b) => g10(b) - g10(a) || Number(b.won) - Number(a.won) || num(b.PTS) - num(a.PTS))[0];
+    out.push({ gid, r: best, g: gmsc(best) });
+  }
+  return out;
+}
+const statLine = (r) => [nOf(num(r.PTS), 'point', 'point'), nOf(num(r.REB), 'retur', 'returer'), nOf(num(r.AST), 'assist', 'assists'),
+  ...(num(r.STL) ? [nOf(num(r.STL), 'steal', 'steals')] : []), ...(num(r.BLK) ? [nOf(num(r.BLK), 'block', 'blocks')] : [])].join(', ');
+const pp = (x) => { const v = Math.round(100 * x); return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v) + ' %-point'; };
+const byDate = (a, b) => a.date.localeCompare(b.date) || num(a.game_no) - num(b.game_no);
+// small sortable table: cols [{ id, label, v: row -> sort value, f: row -> text, left }], the first column is the row header
+const tSort = {};
+function sortTable(box, id, rows, cols, def) {
+  const so = tSort[id] || def, c = cols.find((x) => x.id === so.col) || cols[0];
+  const list = rows.slice().sort((a, b) => {
+    const x = c.v(a), y = c.v(b); if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
+    return (typeof x === 'string' ? x.localeCompare(y, 'da') : x - y) * so.dir;
+  });
+  const table = el('table'), hr = table.createTHead().insertRow();
+  for (const col of cols) {
+    const th = el('th', { scope: 'col' }), b = el('button', { textContent: col.label }); b.dataset.col = col.id; th.append(b);
+    if (col.id === so.col) th.setAttribute('aria-sort', so.dir > 0 ? 'ascending' : 'descending');
+    if (col.left) th.style.textAlign = 'left';
+    hr.append(th);
+  }
+  const tb = table.createTBody();
+  for (const r of list) {
+    const tr = tb.insertRow();
+    cols.forEach((col, i) => {
+      const td = i ? tr.insertCell() : el('th', { scope: 'row' }); if (!i) tr.append(td);
+      td.textContent = col.f(r); if (td.textContent === '–') td.className = 'na'; if (col.left) { td.style.textAlign = 'left'; td.style.whiteSpace = 'normal'; }
+    });
+  }
+  box.replaceChildren(table);
+  box.onclick = (e) => {
+    const b = e.target.closest('th button[data-col]'); if (!b) return;
+    const k = b.dataset.col, cur = tSort[id] || def; tSort[id] = cur.col === k ? { col: k, dir: -cur.dir } : { col: k, dir: k === cols[0].id ? 1 : -1 }; drawAll();
+  };
+}
+function plainTable(box, head, rows) {
+  const table = el('table'), hr = table.createTHead().insertRow();
+  head.forEach((h, i) => { const th = el('th', { scope: 'col', textContent: h }); if (i) th.style.textAlign = 'left'; hr.append(th); });
+  const tb = table.createTBody();
+  for (const r of rows) {
+    const tr = tb.insertRow();
+    r.forEach((v, i) => { const td = i ? tr.insertCell() : el('th', { scope: 'row' }); if (!i) tr.append(td); td.textContent = v; if (i) td.style.textAlign = 'left'; if (i === r.length - 1) td.style.whiteSpace = 'normal'; });
+  }
+  box.replaceChildren(table);
+}
+const advChart = $('#adv-chart'), advTip = makeTip(advChart);
+function drawAdv(sel) {
+  const plays = playsIn(sel);
+  if (!plays) { if (dash.data('plays').status === 'error') failLine(advChart, 'Failed to load'); return; }
+  const G = new Map(sel.allGames.map((g) => [g.game_id, g])), fx = xfgModel(), bs = wpaOf(plays), tlIds = new Set(bs.map((b) => b.gid)), st = new Map();
+  const get = (p) => { if (!st.has(p)) st.set(p, { p, gp: 0, wpa: 0, tg: 0, gs: 0, gsn: 0, potg: 0, n: 0, m: 0, x: 0, pts: 0, xpts: 0 }); return st.get(p); };
+  for (const r of sel.rows) { const s = get(r.player); s.gp += 1; if (tlIds.has(r.game_id)) s.tg += 1; if (fullBox(r)) { s.gs += gmsc(r); s.gsn += 1; } }
+  for (const b of bs) get(b.r.player).wpa += b.d;
+  const potg = potgOf(sel.rows); for (const o of potg) get(o.r.player).potg += 1;
+  if (fx) for (const r of plays) if (r.type === 'shot' && r.d != null) {
+    const s = get(r.player), p = fx(r.d); s.n += 1; s.m += Number(r.made); s.x += p; s.pts += Number(r.made) * Number(r.value); s.xpts += p * Number(r.value);
+  }
+  const list = [...st.values()].filter((s) => s.gp >= 2);
+  const bars = list.filter((s) => s.tg >= 2).sort((a, b) => b.wpa / b.tg - a.wpa / a.tg || a.p.localeCompare(b.p, 'da'));
+  if (bars.length) hbars(advChart, advTip, bars.map((s) => ({ key: s.p, v: s.wpa / s.tg, txt: '+' + dk(s.wpa / s.tg, 2),
+    tip: [s.p, 'WPA i alt: +' + dk(s.wpa, 2) + ' på ' + s.tg + ' kampe', 'Pr. kamp: +' + dk(s.wpa / s.tg, 2)] })), 'WPA pr. kamp');
+  else failLine(advChart, 'Ingen kampe med kurvenes rækkefølge i de valgte kampe.');
+  sortTable($('#adv-table'), 'adv', list, [
+    { id: 'p', label: 'Spiller', v: (s) => s.p, f: (s) => s.p },
+    { id: 'wpa', label: 'WPA', v: (s) => (s.tg ? s.wpa : null), f: (s) => (s.tg ? '+' + dk(s.wpa, 2) : '–') },
+    { id: 'wpag', label: 'WPA pr. kamp', v: (s) => (s.tg ? s.wpa / s.tg : null), f: (s) => (s.tg ? '+' + dk(s.wpa / s.tg, 2) : '–') },
+    { id: 'gs', label: 'Game Score pr. kamp', v: (s) => (s.gsn ? s.gs / s.gsn : null), f: (s) => (s.gsn ? dk(s.gs / s.gsn) : '–') },
+    { id: 'potg', label: 'Kampens spiller', v: (s) => s.potg, f: (s) => String(s.potg) },
+    { id: 'fg', label: 'Skud-% (med plads)', v: (s) => (s.n ? s.m / s.n : null), f: (s) => (s.n ? pctTxt(s.m, s.n) + ' af ' + s.n : '–') },
+    { id: 'xfg', label: 'xFG%', v: (s) => (s.n ? s.x / s.n : null), f: (s) => (s.n ? Math.round((100 * s.x) / s.n) + '%' : '–') },
+    { id: 'over', label: 'Over forventet', v: (s) => (s.n ? (s.m - s.x) / s.n : null), f: (s) => (s.n ? pp((s.m - s.x) / s.n) : '–') },
+    { id: 'xpts', label: 'Point over forventet', v: (s) => (s.n ? s.pts - s.xpts : null), f: (s) => (s.n ? sgnDk(s.pts - s.xpts) : '–') },
+  ], { col: 'wpag', dir: -1 });
+  // the biggest baskets and every game's player of the game
+  const lbl = (gid) => (G.get(gid) ? G.get(gid).game : gid);
+  plainTable($('#adv-big'), ['WPA', 'Hvem', 'Stilling', 'Kamp'], bs.slice().sort((a, b) => b.d - a.d).slice(0, 8)
+    .map((b) => ['+' + dk(b.d, 2), b.r.player + (Number(b.r.value) === 2 ? " (2'er)" : ''), b.from + ' → ' + b.to, lbl(b.gid)]));
+  if (!bs.length) failLine($('#adv-big'), 'Ingen kampe med kurvenes rækkefølge i de valgte kampe.');
+  const pg = potg.slice().sort((a, b) => byDate(G.get(b.gid), G.get(a.gid)));
+  plainTable($('#adv-potg'), ['Kamp', 'Kampens spiller', 'Game Score', 'Linje'], pg.map((o) => [lbl(o.gid), o.r.player + (Number(o.r.won) ? '' : ' (tabte)'), dk(o.g), statLine(o.r)]));
+  if (!pg.length) failLine($('#adv-potg'), 'Ingen kampe med fuld box score i de valgte kampe.');
+}
+function drawTrios(sel) {
+  const teams = new Map();
+  for (const r of sel.rows) { const k = r.game_id + '|' + r.team; if (!teams.has(k)) teams.set(k, []); teams.get(k).push(r); }
+  const tri = new Map();
+  for (const rs of teams.values()) {
+    const names = rs.map((r) => r.player).sort((a, b) => a.localeCompare(b, 'da')), won = Number(rs[0].won) || 0;
+    const mar = rs[0].team_pts != null && rs[0].opp_pts != null ? num(rs[0].team_pts) - num(rs[0].opp_pts) : null;
+    for (let i = 0; i < names.length; i++) for (let j = i + 1; j < names.length; j++) for (let k = j + 1; k < names.length; k++) {
+      const key = names[i] + ', ' + names[j] + ' og ' + names[k], t = tri.get(key) || { key, g: 0, w: 0, mar: 0, mn: 0 };
+      t.g += 1; t.w += won; if (mar !== null) { t.mar += mar; t.mn += 1; }
+      tri.set(key, t);
+    }
+  }
+  const trios = [...tri.values()].filter((t) => t.g >= 3);
+  if (trios.length) sortTable($('#trio-table'), 'trio', trios, [
+    { id: 'key', label: 'Trio', v: (t) => t.key, f: (t) => t.key, left: true },
+    { id: 'g', label: 'Kampe', v: (t) => t.g, f: (t) => String(t.g) },
+    { id: 'wl', label: 'Sejre–nederlag', v: (t) => t.w / t.g + t.g / 1000, f: (t) => t.w + '–' + (t.g - t.w) },
+    { id: 'mar', label: '± pr. kamp', v: (t) => (t.mn ? t.mar / t.mn : null), f: (t) => (t.mn ? sgnDk(t.mar / t.mn) : '–') },
+  ], { col: 'wl', dir: -1 });
+  else failLine($('#trio-table'), 'Ingen trio har 3 kampe sammen i de valgte kampe.');
+  // on/off: on the court = the player's +/-, on the bench = the team's margin minus it
+  // only games whose +/- follows the line-up basket by basket (the games with a running score)
+  const G = new Map(sel.games.map((g) => [g.game_id, g])), oo = new Map(), lineup = new Set(timelines(playsIn(sel) || []).keys());
+  for (const r of sel.rows) {
+    const g = G.get(r.game_id), L = g && num(g.length_min);
+    if (!L || !lineup.has(r.game_id) || r.PM == null || r.MIN == null || r.team_pts == null || r.opp_pts == null) continue;
+    const on = Math.min(L, num(r.MIN)), off = L - on, s = oo.get(r.player) || { p: r.player, on: 0, onPm: 0, off: 0, offPm: 0 };
+    s.on += on; s.onPm += num(r.PM);
+    if (off > 0.05) { s.off += off; s.offPm += num(r.team_pts) - num(r.opp_pts) - num(r.PM); }
+    oo.set(r.player, s);
+  }
+  const oos = [...oo.values()].filter((s) => s.off >= 5 && s.on > 0), r10 = (pm, m) => (pm / m) * 10;
+  if (oos.length) sortTable($('#onoff-table'), 'onoff', oos, [
+    { id: 'p', label: 'Spiller', v: (s) => s.p, f: (s) => s.p },
+    { id: 'on', label: 'Min på banen', v: (s) => s.on, f: (s) => dk(s.on, 0) },
+    { id: 'off', label: 'Min på bænken', v: (s) => s.off, f: (s) => dk(s.off, 0) },
+    { id: 'on10', label: '± på banen pr. 10 min', v: (s) => r10(s.onPm, s.on), f: (s) => sgnDk(r10(s.onPm, s.on)) },
+    { id: 'off10', label: '± på bænken pr. 10 min', v: (s) => r10(s.offPm, s.off), f: (s) => sgnDk(r10(s.offPm, s.off)) },
+    { id: 'net', label: 'Forskel', v: (s) => r10(s.onPm, s.on) - r10(s.offPm, s.off), f: (s) => sgnDk(r10(s.onPm, s.on) - r10(s.offPm, s.off)) },
+  ], { col: 'net', dir: -1 });
+  else failLine($('#onoff-table'), 'Ingen spiller har 5 minutter på bænken i de valgte kampe.');
+}
+
+// ---------- the season (all 3v3 and 4v4 games): Elo, awards, records ----------
+// Elo: everybody starts at 1500; after each game every player moves 32 x M x (result - expected) x share of the game,
+// expected from the two teams' average ratings, M = ln(margin + 1) / ln 3 (1 when the score is unknown).
+function eloRun(scope) {
+  const games = scope.games.slice().sort(byDate), R = new Map(), series = new Map();
+  games.forEach((g, i) => {
+    const rs = scope.rows.filter((r) => r.game_id === g.game_id), A = rs.filter((r) => r.team === 'A'), B = rs.filter((r) => r.team === 'B');
+    if (!A.length || !B.length) return;
+    const avg = (xs) => xs.reduce((t, r) => t + (R.get(r.player) ?? 1500), 0) / xs.length, L = num(g.length_min);
+    const ea = 1 / (1 + 10 ** ((avg(B) - avg(A)) / 400)), sa = Number(A[0].won) ? 1 : 0;
+    const mult = g.score_w != null && g.score_l != null ? Math.log(num(g.score_w) - num(g.score_l) + 1) / Math.log(3) : 1;
+    const before = new Map(rs.map((r) => [r.player, R.get(r.player) ?? 1500]));
+    for (const r of rs) {
+      const share = L && r.MIN != null ? Math.min(1, num(r.MIN) / L) : 1, s = r.team === 'A' ? sa - ea : ea - sa;
+      const nr = before.get(r.player) + 32 * mult * s * share;
+      if (!series.has(r.player)) series.set(r.player, [{ i: i - 0.5, r: 1500, start: true }]);
+      series.get(r.player).push({ i, g, r: nr, won: Number(r.won) || 0 }); R.set(r.player, nr);
+    }
+  });
+  return { games, R, series };
+}
+let seasonKey = null, seasonRes = null;
+function seasonAll(scope) {
+  const src = ['player_games', 'games', 'plays'].map((id) => dash.data(id).data);
+  if (seasonKey && src.every((d, i) => d === seasonKey[i])) return seasonRes;
+  const plays = playsIn(scope) || [], bs = wpaOf(plays), wpa = new Map(), potg = new Map(), xf = new Map(), fx = xfgModel();
+  for (const b of bs) wpa.set(b.r.player, (wpa.get(b.r.player) || 0) + b.d);
+  for (const o of potgOf(scope.rows)) potg.set(o.r.player, (potg.get(o.r.player) || 0) + 1);
+  if (fx) for (const r of plays) if (r.type === 'shot' && r.d != null) { const s = xf.get(r.player) || { n: 0, m: 0, x: 0 }; s.n += 1; s.m += Number(r.made); s.x += fx(r.d); xf.set(r.player, s); }
+  const elo = eloRun(scope), rank = [...elo.R].sort((a, b) => b[1] - a[1]).map(([p]) => p);
+  seasonKey = src; seasonRes = { bs, wpa, potg, xf, elo, rank, book: recordBook(scope, plays) };
+  return seasonRes;
+}
+function recordBook(scope, plays) {
+  const rows = scope.rows, G = new Map(scope.games.map((g) => [g.game_id, g])), recs = [], streaks = [];
+  const lbl = (gid) => G.get(gid).game;
+  const best = (list, f, title, unit, min) => {
+    const xs = list.filter((o) => f(o) != null), top = Math.max(-Infinity, ...xs.map(f));
+    if (!(top >= min)) return;
+    const who = new Map();
+    for (const o of xs.filter((q) => Math.abs(f(q) - top) < 1e-9)) { if (!who.has(o.player)) who.set(o.player, []); who.get(o.player).push(lbl(o.game_id)); }
+    recs.push([title, unit(top), [...who].map(([pl, gs]) => pl + ' (' + gs.join(', ') + ')').join(' · ')]);
+  };
+  best(rows, (r) => num(r.PTS), 'Flest point i en kamp', (v) => nOf(v, 'point', 'point'), 1);
+  best(rows, (r) => num(r.REB), 'Flest returer i en kamp', (v) => nOf(v, 'retur', 'returer'), 1);
+  best(rows, (r) => num(r.AST), 'Flest assists i en kamp', (v) => nOf(v, 'assist', 'assists'), 1);
+  best(rows, (r) => num(r.STL), 'Flest steals i en kamp', (v) => nOf(v, 'steal', 'steals'), 2);
+  best(rows, (r) => num(r.P2M), "Flest 2'ere i en kamp", (v) => v + " 2'ere", 2);
+  best(rows, (r) => (fullBox(r) ? Math.round(gmsc(r) * 10) / 10 : null), 'Højeste Game Score', (v) => dk(v), 0);
+  const margins = scope.games.filter((g) => g.score_w != null && g.score_l != null);
+  if (margins.length) {
+    const top = Math.max(...margins.map((g) => g.score_w - g.score_l)), gs = margins.filter((g) => g.score_w - g.score_l === top);
+    recs.push(['Største sejr', top + ' point', gs.map((g) => g.score_w + '–' + g.score_l + ' til ' + og(g.winners.slice().sort((a, b) => a.localeCompare(b, 'da'))) + ' (' + g.game + ')').join(' · ')]);
+  }
+  // streaks over the games in order: wins, games without a win, and the active ones
+  const order = scope.games.slice().sort(byDate), ws = new Map();
+  for (const g of order) for (const r of rows.filter((q) => q.game_id === g.game_id)) {
+    const s = ws.get(r.player) || { p: r.player, w: 0, l: 0, bw: 0, bl: 0, wFrom: null, lFrom: null, bwSpan: '', blSpan: '', last: '' };
+    s.last = g.game;
+    if (Number(r.won)) { if (!s.w) s.wFrom = g; s.w += 1; s.l = 0; if (s.w > s.bw) { s.bw = s.w; s.bwSpan = s.wFrom.game + ' – ' + g.game; } }
+    else { if (!s.l) s.lFrom = g; s.l += 1; s.w = 0; if (s.l > s.bl) { s.bl = s.l; s.blSpan = s.lFrom.game + ' – ' + g.game; } }
+    ws.set(r.player, s);
+  }
+  const all = [...ws.values()], longest = (k, span) => { const top = Math.max(0, ...all.map((s) => s[k])); return { top, who: all.filter((s) => s[k] === top && top > 0).sort((a, b) => a.p.localeCompare(b.p, 'da')), span }; };
+  const lw = longest('bw'), ll = longest('bl');
+  if (lw.top) streaks.push(['Længste sejrsstime', nOf(lw.top, 'sejr', 'sejre') + ' i træk', lw.who.map((s) => s.p + ' (' + s.bwSpan + ')').join(' · ')]);
+  for (const n of [...new Set(all.filter((s) => s.w >= 2).map((s) => s.w))].sort((a, b) => b - a))
+    streaks.push(['Aktiv sejrsstime', n + ' sejre i træk', all.filter((s) => s.w === n).sort((a, b) => a.p.localeCompare(b.p, 'da')).map((s) => s.p + ' (seneste kamp ' + s.last + ')').join(' · ')]);
+  if (ll.top) streaks.push(['Længste stime uden sejr', nOf(ll.top, 'kamp', 'kampe') + ' i træk', ll.who.map((s) => s.p + ' (' + s.blSpan + ')').join(' · ')]);
+  // on fire: baskets in a row by one player in one game (misses break it)
+  const shots = plays.filter((r) => r.type === 'shot').sort((a, b) => a.game_id.localeCompare(b.game_id) || a.player.localeCompare(b.player) || a.t - b.t);
+  let fire = { n: 0, who: [] }, run = 0;
+  shots.forEach((r, i) => {
+    const prev = shots[i - 1]; if (!prev || prev.game_id !== r.game_id || prev.player !== r.player) run = 0;
+    run = Number(r.made) ? run + 1 : 0;
+    if (run > fire.n) fire = { n: run, who: [r] }; else if (run === fire.n && run > 0) fire.who.push(r);
+  });
+  if (fire.n >= 2) streaks.push(['Flest kurve i træk (on fire)', nOf(fire.n, 'kurv', 'kurve'), [...new Set(fire.who.map((r) => r.player + ' (' + lbl(r.game_id) + ')'))].join(' · ')]);
+  return { recs, streaks };
+}
+function drawSeason(scope) {
+  const S = scoutAll(scope), X = seasonAll(scope), Q = S.Q, z = (s, f) => s.z[f] || 0;
+  const rankBy = (score, ok = () => true) => Q.filter(ok).map((s) => ({ s, v: score(s) })).sort((a, b) => b.v - a.v || a.s.p.localeCompare(b.s.p, 'da'));
+  const tiles = [];
+  const tile = (lbl, big, sub, more) => tiles.push(el('div', { className: 'd9-tile' }, el('span', { className: 'lbl', textContent: lbl }), el('span', { className: 'big', textContent: big }),
+    el('span', { className: 'sub', textContent: sub }), ...(more ? [el('span', { className: 'sub', textContent: more })] : [])));
+  const next = (xs) => (xs.length > 1 ? 'Nr. 2: ' + xs[1].s.p + (xs[2] ? ' · nr. 3: ' + xs[2].s.p : '') : '');
+  const mvp = rankBy((s) => z(s, 'impact') + z(s, 'per') + 0.5 * z(s, 'win'));
+  if (mvp.length) { const s = mvp[0].s; tile('MVP', s.p, 'PER ' + dk(s.per) + ' · justeret +/- ' + sgnDk(s.apm) + ' · ' + s.won + '–' + s.lost, next(mvp)); }
+  const dpoy = rankBy((s) => z(s, 'def') + 0.5 * z(s, 'dmatch'), (s) => s.stlG > 0);
+  if (dpoy.length) {
+    const s = dpoy[0].s;
+    tile('Årets forsvarsspiller', s.p, nOf(s.stl, 'steal', 'steals') + ' og ' + nOf(s.blk, 'block', 'blocks') + ' på ' + s.stlG + ' kampe'
+      + (s.dsec >= 180 ? ' · direkte modstandere ' + sgnDk(((s.dexp - s.dact) / s.dsec) * 600) + ' point under deres snit pr. 10 min' : ''), next(dpoy));
+  }
+  const clutch = rankBy((s) => s.clu + s.gw / 100, (s) => s.clu > 0);
+  if (clutch.length) { const s = clutch[0].s; tile('Clutch Player', s.p, s.clu + ' clutch-point og ' + nOf(s.gw, 'vinderkurv', 'vinderkurve'), next(clutch)); }
+  const mip = [];
+  for (const s of Q) {
+    const rs = scope.rows.filter((r) => r.player === s.p && r.perExp > 0).sort(byDate);
+    if (rs.length < 6) continue;
+    const h = Math.floor(rs.length / 2), per = (xs) => (15 * xs.reduce((t, r) => t + r.perVal, 0)) / xs.reduce((t, r) => t + r.perExp, 0);
+    const a = per(rs.slice(0, h)), b = per(rs.slice(rs.length - h));
+    mip.push({ s, v: b - a, a, b });
+  }
+  mip.sort((x, y) => y.v - x.v);
+  if (mip.length && mip[0].v > 0) tile('Most Improved', mip[0].s.p, 'PER fra ' + dk(mip[0].a) + ' til ' + dk(mip[0].b) + ' (første og anden halvdel af kampene)', next(mip));
+  const duo = duos(scope.rows).filter((q) => q.games >= 4).sort((a, b) => b.winpct - a.winpct || b.games - a.games || a.pair.localeCompare(b.pair, 'da'));
+  const tied = duo.filter((q, i) => i && q.winpct === duo[0].winpct && q.games === duo[0].games);
+  if (duo.length) tile('Årets makkerpar', duo[0].pair, duo[0].wins + ' sejre i ' + duo[0].games + ' kampe sammen',
+    tied.length ? 'Delt med ' + og(tied.map((q) => q.pair)) : duo[1] ? 'Nr. 2: ' + duo[1].pair + ' (' + duo[1].wins + ' af ' + duo[1].games + ')' : '');
+  $('#awards').replaceChildren(...tiles);
+  plainTable($('#records-table'), ['Rekord', 'Værdi', 'Hvem og hvornår'], X.book.recs);
+  plainTable($('#streaks-table'), ['Stime', 'Længde', 'Hvem og hvornår'], X.book.streaks);
+}
+const eloSel = $('#d9-elo-player'), eloChart = $('#elo-chart'), eloTip = makeTip(eloChart);
+eloSel.addEventListener('change', () => dash.setParams({ eloPlayer: eloSel.value }));
+function drawElo(scope) {
+  const X = seasonAll(scope), E = X.elo; if (!E.games.length) return;
+  const players = X.rank, x = players.includes(scope.p.eloPlayer) ? scope.p.eloPlayer : players[0];
+  eloSel.replaceChildren(...players.slice().sort((a, b) => a.localeCompare(b, 'da')).map((p) => new Option(p, p))); eloSel.value = x;
+  // table: now, best, change on the player's latest day
+  const rows = players.map((p) => {
+    const ser = E.series.get(p).filter((o) => !o.start), last = ser[ser.length - 1], day = last.g.date, first = ser.find((o) => o.g.date === day);
+    const prev = E.series.get(p)[E.series.get(p).indexOf(first) - 1];
+    return { p, r: last.r, peak: Math.max(...ser.map((o) => o.r)), chg: last.r - prev.r, day: last.g.session, n: ser.length };
+  });
+  sortTable($('#elo-table'), 'elo', rows, [
+    { id: 'p', label: 'Spiller', v: (o) => o.p, f: (o) => o.p },
+    { id: 'r', label: 'Elo', v: (o) => o.r, f: (o) => String(Math.round(o.r)) },
+    { id: 'peak', label: 'Højeste', v: (o) => o.peak, f: (o) => String(Math.round(o.peak)) },
+    { id: 'chg', label: 'Seneste spilledag', v: (o) => o.chg, f: (o) => (Math.round(o.chg) > 0 ? '+' : Math.round(o.chg) < 0 ? '−' : '') + Math.abs(Math.round(o.chg)) + ' (' + o.day + ')' },
+    { id: 'n', label: 'Kampe', v: (o) => o.n, f: (o) => String(o.n) },
+  ], { col: 'r', dir: -1 });
+  // chart: everybody in grey, the chosen player in the accent colour
+  const hs = E.series.get(x), now = hs[hs.length - 1];
+  $('#elo-dot-w').style.background = dash.colors[0]; $('#elo-dot-l').style.border = '1.5px solid ' + dash.colors[0];
+  $('#elo-chart-h').textContent = 'Elo gennem sæsonen: ' + x + ' (' + Math.round(now.r) + ', nr. ' + (players.indexOf(x) + 1) + ' af ' + players.length + ')';
+  eloChart.querySelectorAll('svg, .d9-fail').forEach((n) => n.remove()); if (!eloChart.contains(eloTip)) eloChart.append(eloTip);
+  const W = Math.max(280, eloChart.clientWidth || 400), H = 250, m = { l: 40, r: 16, t: 12, b: 28 }, N = E.games.length, ACC = dash.colors[0];
+  const vals = [...E.series.values()].flat().map((o) => o.r);
+  const xs = d3.scaleLinear([-0.5, N - 1], [m.l, W - m.r]), ys = d3.scaleLinear([Math.min(...vals), Math.max(...vals)], [H - m.b, m.t]).nice();
+  const svg = d3.select(eloChart).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Elo gennem sæsonen, ' + x + ' fremhævet');
+  for (const t of ys.ticks(5)) {
+    svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', ys(t)).attr('y2', ys(t)).attr('stroke', 'var(--color-border-line)').attr('stroke-dasharray', t === 1500 ? '4 3' : null);
+    svg.append('text').attr('x', m.l - 6).attr('y', ys(t)).attr('dy', '0.35em').attr('text-anchor', 'end').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text(t);
+  }
+  let lastX = -Infinity;
+  E.games.forEach((g, i) => {
+    if (i && g.date === E.games[i - 1].date) return;
+    svg.append('line').attr('x1', xs(i - 0.5)).attr('x2', xs(i - 0.5)).attr('y1', H - m.b).attr('y2', H - m.b + 4).attr('stroke', 'var(--cds-chart-axis)');
+    if (xs(i - 0.5) - lastX < 44) return; lastX = xs(i - 0.5);
+    svg.append('text').attr('x', xs(i - 0.5) + 2).attr('y', H - 8).attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text(g.session);
+  });
+  const line = d3.line().x((o) => xs(o.i)).y((o) => ys(o.r));
+  for (const [p, ser] of E.series) if (p !== x) svg.append('path').attr('d', line(ser)).attr('fill', 'none').attr('stroke', 'var(--color-fg-muted)').attr('stroke-opacity', 0.35).attr('stroke-width', 1.25);
+  svg.append('path').attr('d', line(hs)).attr('fill', 'none').attr('stroke', ACC).attr('stroke-width', 2);
+  svg.selectAll('circle.pt').data(hs.filter((o) => !o.start)).join('circle').attr('class', 'pt').attr('cx', (o) => xs(o.i)).attr('cy', (o) => ys(o.r)).attr('r', 3.5)
+    .attr('fill', (o) => (o.won ? ACC : 'var(--color-panel)')).attr('stroke', ACC).attr('stroke-width', 1.5);
+  const vline = svg.append('line').attr('y1', m.t).attr('y2', H - m.b).attr('stroke', 'var(--color-fg-muted)').style('opacity', 0);
+  svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', W - m.l - m.r).attr('height', H - m.t - m.b).attr('fill', 'transparent')
+    .on('mousemove', (ev) => {
+      const [mx] = d3.pointer(ev), i = Math.max(0, Math.min(N - 1, Math.round(xs.invert(mx)))), g = E.games[i], o = hs.filter((q) => q.i <= i).pop();
+      vline.attr('x1', xs(i)).attr('x2', xs(i)).style('opacity', 1);
+      const top = [...E.series].map(([p, ser]) => [p, ser.filter((q) => q.i <= i).pop()]).filter(([, q]) => q).sort((a, b) => b[1].r - a[1].r).slice(0, 3);
+      const lines = [g.game, x + ': ' + Math.round(o.r) + (o.i === i ? (o.won ? ', vandt' : ', tabte') : o.start ? ', ikke startet endnu' : ', spillede ikke'),
+        'Top 3: ' + top.map(([p, q]) => p + ' ' + Math.round(q.r)).join(', ')];
+      eloTip.replaceChildren(...lines.map((t, k) => el('div', { className: k ? '' : 'k', textContent: t })));
+      eloTip.hidden = false;
+      const [px, py] = d3.pointer(ev, eloChart);
+      eloTip.style.left = Math.min(eloChart.clientWidth - eloTip.offsetWidth - 4, Math.max(4, px + 12)) + 'px';
+      eloTip.style.top = Math.max(0, py - 10) + 'px';
+    })
+    .on('mouseleave', () => { eloTip.hidden = true; vline.style('opacity', 0); });
+}
+// the player's own shots on the court (scouting report): makes filled, misses open, as in the heatmap's dots
+function shotCourt(box, shots, who) {
+  box.replaceChildren();
+  const ACC = dash.colors[0], vmax = Math.min(V_MAX, Math.max(8.5, ...shots.map((e) => e.v + 0.6)));
+  const svg = d3.select(box).append('svg').attr('viewBox', `${-U_MAX - 0.25} -0.35 ${2 * U_MAX + 0.5} ${vmax + 0.5}`).attr('role', 'img').attr('aria-label', 'Skud for ' + who);
+  svg.append('rect').attr('class', 'floor').attr('x', -U_MAX).attr('y', 0).attr('width', 2 * U_MAX).attr('height', vmax);
+  const L = svg.append('g').attr('class', 'line');
+  L.append('path').attr('d', `M${-U_MAX},${vmax}V0H${U_MAX}V${vmax}`);
+  L.append('rect').attr('x', -2.45).attr('y', 0).attr('width', 4.9).attr('height', 5.8);
+  L.append('circle').attr('cx', 0).attr('cy', 5.8).attr('r', 1.8);
+  const ax = Math.sqrt(ARC_R * ARC_R - HOOP_V * HOOP_V);
+  L.append('path').attr('d', `M${-ax},0A${ARC_R},${ARC_R} 0 1,0 ${ax},0`);
+  L.append('path').attr('d', `M-1.25,${HOOP_V}A1.25,1.25 0 0,0 1.25,${HOOP_V}`);
+  L.append('line').attr('x1', -0.9).attr('x2', 0.9).attr('y1', 1.2).attr('y2', 1.2).style('stroke-width', 0.12);
+  L.append('circle').attr('cx', 0).attr('cy', HOOP_V).attr('r', 0.225).style('stroke', ACC).style('stroke-width', 0.08);
+  const D = svg.append('g');
+  for (const e of shots.slice().sort((a, b) => a.made - b.made)) {
+    D.append('circle').attr('cx', e.u).attr('cy', e.v).attr('r', 0.2)
+      .style('fill', e.made ? ACC : 'var(--color-panel)').style('stroke', e.made ? 'var(--color-panel)' : 'var(--color-fg-muted)').style('stroke-width', 0.06)
+      .append('title').text((e.made ? (Number(e.value) === 2 ? "2'er" : 'Kurv') : 'Bom') + ' · ' + e.game);
+  }
+}
+function drawSeasonCards() {
+  const scope = scoutScope(); if (!scope) return;
+  if (!scoutAll(scope).list.length) return;
+  drawSeason(scope); drawElo(scope);
 }
 
 function drawAll() {
@@ -2036,7 +2515,7 @@ function drawAll() {
   Object.assign(vals, drawFun(sel));
   setK(vals);
   $('#ins-wl').hidden = !wl; $('#ins-duo').hidden = !du[0]; $('#ins-twos').hidden = !vals['twos.player'];
-  drawBox(sel); drawScout(); drawHeat(sel); drawStyle(sel); drawNemesis(sel); drawImpact(sel); drawPivot(sel); drawDuos(du); drawGames(sel);
+  drawBox(sel); drawScout(); drawSeasonCards(); drawHeat(sel); drawStyle(sel); drawNemesis(sel); drawImpact(sel); drawAdv(sel); drawTrios(sel); drawPivot(sel); drawDuos(du); drawGames(sel);
 }
 dash.onData(drawAll);
 </script>
