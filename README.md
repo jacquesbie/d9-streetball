@@ -7,7 +7,7 @@ Stats fra vores pickup-kampe: box scores, Nemesis-tabellen, en pivot til selv at
 Én selvstændig side (`index.html`) med data bagt ind. Bygges fra HoopStats-dashboardet med
 `python3 ~/HoopStatsLocal/dashboard/build_site.py` og udgives med `./deploy.sh`.
 
-**Forsiden** har en knap til fantasy-spillet øverst. Den ligger i `forside.js`, fordi `build_site.py` skriver `index.html` forfra; `./deploy.sh` sætter linket til `forside.js?v=...` ind igen, hvis det mangler (ret `?v=`, når filen ændres). **PER, AST/TO og TS%** (sidst i box score og i pivotens "Tal") er siden 6. nov. en del af forsiden selv, så artifacten også har dem. PER er Hollingers model tilpasset D9 (15 er snittet i hver kamp), TS% regnes på NBA-skalaen ud fra 2'ere og skud indenfor, og AST/TO vises, når turnovers registreres (feltet `TOV`).
+**Forsiden** har knapper til holdgeneratoren og fantasy-spillet øverst. Den ligger i `forside.js`, fordi `build_site.py` skriver `index.html` forfra; `./deploy.sh` sætter linket til `forside.js?v=...` ind igen, hvis det mangler (ret `?v=`, når filen ændres). **PER, AST/TO og TS%** (sidst i box score og i pivotens "Tal") er siden 6. nov. en del af forsiden selv, så artifacten også har dem. PER er Hollingers model tilpasset D9 (15 er snittet i hver kamp), TS% regnes på NBA-skalaen ud fra 2'ere og skud indenfor, og AST/TO vises, når turnovers registreres (feltet `TOV`).
 
 **Nemesis-tabellen:** hvem dækker hvem. Den, der står over for en spiller ved check ball (i midten lige uden for toppen af
 den sorte bue), er hans direkte modstander resten af sekvensen, til bolden er død igen. Tabellen viser hver spillers
@@ -21,6 +21,17 @@ hvor færrest turnovers vinder) og en player rater med z-score pr. kategori og s
 sit eget hold. Fra start vises 3v3 og 4v4 med tal pr. kamp. Perioden kan justeres, og visningen kan deles som link. Siden henter tallene fra `index.html`, hver gang den
 åbnes, så den følger med efter `./deploy.sh`. Steals, blocks og turnovers kommer med af sig selv, når `player_games` får
 felterne `STL`, `BLK` og `TOV`.
+
+**Holdgenerator:** https://jacquesbie.github.io/d9-streetball/hold/ laver to hold af dem, der er mødt op: tilfældigt eller
+så lige som muligt efter Elo pr. kamp. Man trykker på spillerne eller skriver navne (nye spillere regnes som 1500; Bie,
+Schjødt og Jonas finder Jacob, Thomas og Nicehair). Lige hold prøver alle delinger (op til 20 spillere, ellers søgning) og
+trækker lod mellem dem, der højst er 4 Elo-point fra den mest lige; tryk igen for et nyt bud. Vinderchancen er Elo-formlen.
+Siden henter tallene fra `index.html`, hver gang den åbnes, ligesom fantasy. `eloPerGame()` i `hold/index.html` er en tvilling
+af `eloRun()` i dashboardets `index.html`, så ret begge, hvis Elo-reglen ændres. Valget huskes i browseren (localStorage).
+
+**Elo pr. kamp** (fra 12. nov.): hver kamp giver det sædvanlige Elo-skridt, 32 × M × (resultat − forventet) × andel af
+spilletiden, og ratingen er 1500 + 10 × gennemsnittet af skridtene pr. kamp (mindst 3 i nævneren). Antallet af kampe trækker
+derfor ikke op. Forventet regnes ud fra holdenes Elo pr. kamp før kampen.
 
 **Highlights:** `highlights/make_highlights.py` klipper en video på højst 5 minutter ud af kampoptagelserne, med alle
 spillere mindst én gang. Se [highlights/README.md](highlights/README.md).
