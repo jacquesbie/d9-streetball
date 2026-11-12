@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D9 Holdgenerator</title>
+<meta name="description" content="Vælg hvem der er mødt op, og lav to hold: tilfældigt eller så lige som muligt efter Elo pr. kamp fra D9 Streetball-stats.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500&display=swap">
+<style>/* Same court-blue neutrals and orange accent as the stats page; team 1 orange, team 2 blue. */
+:root {
+  --color-bg: #eef2f6; --color-panel: #ffffff; --color-fg: #18212b; --color-fg-muted: #5a6676;
+  --color-border-line: #d9e0e8; --color-bad: #c0392b;
+  --d9-accent: #c95b1e; --team1: #c95b1e; --team2: #2a78d6; --team1-soft: #f7e6dc; --team2-soft: #dde9f8;
+  --font-sans: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --font-cond: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+  --gap-xs: 4px; --gap-sm: 8px; --gap-md: 14px; --gap-lg: 22px;
+  --pad-md: 12px; --pad-lg: 18px;
+  --fs-caption: 0.8rem; --fs-body: 0.95rem; --fs-heading: 1.1rem; --fs-title: 2rem;
+  --radius: 10px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --color-bg: #10151b; --color-panel: #18202a; --color-fg: #e6ebf1; --color-fg-muted: #98a4b3;
+  --color-border-line: #2a3442; --color-bad: #ef6a5a;
+  --d9-accent: #f0894a; --team1: #f0894a; --team2: #3987e5; --team1-soft: #3a2a20; --team2-soft: #1d2d42; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --color-bg: #10151b; --color-panel: #18202a; --color-fg: #e6ebf1; --color-fg-muted: #98a4b3;
+  --color-border-line: #2a3442; --color-bad: #ef6a5a;
+  --d9-accent: #f0894a; --team1: #f0894a; --team2: #3987e5; --team1-soft: #3a2a20; --team2-soft: #1d2d42; color-scheme: dark; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-sans); font-size: 15px; line-height: 1.45;
+  padding-inline: 16px; padding-block: 24px 48px; }
+@media (min-width: 900px) { body { padding-inline: 32px; } }
+.d9-page { max-width: 980px; margin-inline: auto; }
+.d9 { display: grid; gap: var(--gap-lg); }
+.d9 h1, .d9 h2, .d9 h3 { margin: 0; text-wrap: balance; }
+.d9-back { color: var(--color-fg-muted); font-size: var(--fs-caption); text-decoration: none; }
+.d9-back:hover { color: var(--color-fg); text-decoration: underline; }
+.d9-title { font-family: var(--font-cond); font-weight: 400; font-size: var(--fs-title); }
+.d9-title span { color: var(--d9-accent); }
+.d9-take { margin: var(--gap-xs) 0 0; color: var(--color-fg-muted); font-size: var(--fs-body); max-width: 75ch; }
+.d9-take b { font-weight: 600; color: var(--color-fg); }
+.d9-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--radius);
+  padding: var(--pad-lg); display: grid; gap: var(--gap-md); min-width: 0; }
+.d9-card h2 { font-size: var(--fs-heading); font-weight: 600; }
+.d9-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--gap-xs) var(--gap-md); }
+.d9-note { margin: 0; color: var(--color-fg-muted); font-size: var(--fs-caption); max-width: 85ch; }
+.d9-note:empty { display: none; }
+.d9-count { color: var(--color-fg-muted); font-size: var(--fs-body); font-variant-numeric: tabular-nums; }
+.d9-count b { color: var(--color-fg); font-weight: 600; }
+.d9-chips { display: flex; flex-wrap: wrap; gap: var(--gap-sm); }
+.d9-chip { font: inherit; font-size: var(--fs-body); cursor: pointer; border: 1px solid var(--color-border-line); background: var(--color-bg);
+  color: var(--color-fg); border-radius: 999px; padding: 8px 16px; min-height: 40px; display: inline-flex; align-items: center; gap: 6px; }
+.d9-chip:hover { border-color: var(--color-fg-muted); }
+.d9-chip[aria-pressed=true] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+.d9-chip .tag { font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; opacity: .75; }
+.d9-guest { position: relative; display: inline-flex; }
+.d9-guest .d9-chip { padding-right: 40px; }
+.d9-chip-x { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); font: inherit; font-size: 1.1rem; line-height: 1;
+  cursor: pointer; border: 0; background: none; color: var(--color-fg-muted); width: 32px; height: 32px; border-radius: 999px; }
+.d9-chip[aria-pressed=true] + .d9-chip-x { color: var(--color-bg); }
+.d9-chip-x:hover { background: color-mix(in srgb, currentColor 18%, transparent); }
+.d9-row { display: flex; flex-wrap: wrap; gap: var(--gap-sm); align-items: center; }
+.d9-add { display: flex; flex-wrap: wrap; gap: var(--gap-sm); align-items: end; }
+.d9-field { display: grid; gap: 4px; font-size: var(--fs-caption); color: var(--color-fg-muted); flex: 1 1 14rem; min-width: 0; }
+.d9-field input { font: inherit; font-size: var(--fs-body); color: var(--color-fg); background: var(--color-bg);
+  border: 1px solid var(--color-border-line); border-radius: var(--radius); padding: 8px 10px; min-height: 40px; width: 100%; }
+.d9-btn { font: inherit; font-size: var(--fs-body); font-weight: 600; cursor: pointer; border-radius: 999px; padding: 10px 20px; min-height: 44px;
+  border: 1px solid var(--color-border-line); background: var(--color-panel); color: var(--color-fg); }
+.d9-btn:hover { border-color: var(--color-fg-muted); }
+.d9-btn.main { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+.d9-btn.main:hover { box-shadow: 0 0 0 3px var(--d9-accent); }
+.d9-btn.small { font-weight: 500; font-size: var(--fs-caption); padding: 6px 14px; min-height: 36px; }
+.d9-btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+.d9-chip:focus-visible, .d9-btn:focus-visible, .d9-chip-x:focus-visible, .d9-how summary:focus-visible, .d9-field input:focus-visible {
+  outline: 2px solid var(--color-fg); outline-offset: 2px; }
+.d9-actions { display: flex; flex-wrap: wrap; gap: var(--gap-sm); }
+.d9-actions .d9-btn { flex: 1 1 10rem; }
+.d9-teams { display: grid; gap: var(--gap-md); grid-template-columns: 1fr; }
+@media (min-width: 600px) { .d9-teams { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.d9-team { border: 1px solid var(--color-border-line); border-top: 4px solid var(--tc); border-radius: var(--radius);
+  padding: var(--pad-md) var(--pad-lg); display: grid; gap: var(--gap-sm); align-content: start; min-width: 0; }
+.d9-team.t1 { --tc: var(--team1); } .d9-team.t2 { --tc: var(--team2); }
+.d9-team h3 { font-family: var(--font-cond); font-weight: 400; font-size: 1.6rem; line-height: 1.1; display: flex; align-items: baseline; gap: 10px; }
+.d9-team h3 small { font-family: var(--font-sans); font-size: var(--fs-caption); color: var(--color-fg-muted); }
+.d9-team ol { list-style: none; margin: 0; padding: 0; display: grid; }
+.d9-team li { display: flex; justify-content: space-between; gap: var(--gap-md); padding: 7px 0; border-bottom: 1px solid var(--color-border-line);
+  font-size: 1.05rem; min-width: 0; }
+.d9-team li:last-child { border-bottom: 0; }
+.d9-team li span:first-child { overflow-wrap: anywhere; }
+.d9-team li .r { color: var(--color-fg-muted); font-variant-numeric: tabular-nums; white-space: nowrap; font-size: var(--fs-body); }
+.d9-team .avg { color: var(--color-fg-muted); font-size: var(--fs-caption); font-variant-numeric: tabular-nums; }
+.d9-team .avg b { color: var(--color-fg); font-weight: 600; }
+.d9-odds { display: grid; gap: 6px; }
+.d9-odds-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--color-border-line); }
+.d9-odds-bar i { display: block; height: 100%; }
+.d9-odds-bar i.t1 { background: var(--team1); } .d9-odds-bar i.t2 { background: var(--team2); }
+.d9-odds-bar i + i { border-left: 2px solid var(--color-panel); }
+.d9-odds-lbl { display: flex; justify-content: space-between; gap: var(--gap-md); font-size: var(--fs-body); font-variant-numeric: tabular-nums; }
+.d9-odds-lbl b { font-weight: 600; }
+.d9-verdict { font-size: var(--fs-body); margin: 0; }
+.d9-verdict b { font-weight: 600; }
+.d9-copied { color: var(--color-fg-muted); font-size: var(--fs-caption); }
+.d9-fail { display: block; color: var(--color-fg-muted); font-size: var(--fs-caption); }
+.d9-fail::before { content: ""; display: inline-block; width: .4rem; height: .4rem; margin-right: 8px; border-radius: 50%; background: var(--color-bad); vertical-align: middle; }
+.d9-how summary { cursor: pointer; font-size: var(--fs-heading); font-weight: 600; }
+.d9-how ul { margin: 0; padding-left: 1.1rem; display: grid; gap: var(--gap-sm); max-width: 85ch; font-size: var(--fs-body); }
+.d9-foot { margin: 0; color: var(--color-fg-muted); font-size: var(--fs-caption); }
+</style>
+</head>
+<body>
+<div class="d9-page">
+<div class="d9">
+  <header>
+    <a class="d9-back" href="../">← D9 Streetball Stats</a>
+    <h1 class="d9-title">D9 <span>Holdgenerator</span></h1>
+    <p class="d9-take" id="take">Henter Elo pr. kamp fra stats-siden …</p>
+  </header>
+
+  <section class="d9-card" id="who-card" aria-labelledby="who-h" hidden>
+    <div class="d9-head"><h2 id="who-h">Hvem er mødt op?</h2><span class="d9-count" id="count" aria-live="polite"></span></div>
+    <div class="d9-chips" id="players" role="group" aria-label="Spillere"></div>
+    <div class="d9-row">
+      <button class="d9-btn small" id="all" type="button">Vælg alle</button>
+      <button class="d9-btn small" id="none" type="button">Ryd</button>
+    </div>
+    <div class="d9-add">
+      <label class="d9-field" for="add-name">Skriv navne (flere med komma). Nye spillere regnes som 1500.<input id="add-name" type="text" autocomplete="off" enterkeyhint="done" placeholder="fx Faber, Jacob, Ole"></label>
+      <button class="d9-btn small" id="add" type="button">Tilføj</button>
+    </div>
+    <p class="d9-note" id="add-msg" aria-live="polite"></p>
+  </section>
+
+  <div class="d9-actions" id="actions" hidden>
+    <button class="d9-btn main" id="even" type="button">Lige hold</button>
+    <button class="d9-btn" id="random" type="button">Tilfældige hold</button>
+  </div>
+
+  <section class="d9-card" id="result" aria-labelledby="result-h" aria-live="polite" hidden>
+    <div class="d9-head"><h2 id="result-h">Holdene</h2><span class="d9-count" id="result-sub"></span></div>
+    <div class="d9-teams" id="teams"></div>
+    <div class="d9-odds" id="odds"></div>
+    <p class="d9-verdict" id="verdict"></p>
+    <div class="d9-row"><button class="d9-btn small" id="again" type="button">Nyt bud</button><button class="d9-btn small" id="copy" type="button">Kopiér holdene</button><span class="d9-copied" id="copied" aria-live="polite"></span></div>
+  </section>
+
+  <details class="d9-card d9-how" id="how" hidden>
+    <summary>Sådan laves holdene</summary>
+    <ul>
+      <li><b>Lige hold:</b> siden prøver alle måder at dele de valgte i to hold (8 spillere kan deles på 35 måder) og vælger den,
+        hvor de to holds snit af Elo pr. kamp ligger tættest. Delinger, der højst er 4 Elo-point fra den mest lige, er lige gode, og
+        der trækkes lod mellem dem. Tryk igen for et nyt bud. Når de lige gode er brugt, kommer de næstmest lige.</li>
+      <li><b>Tilfældige hold:</b> ren lodtrækning. Vinderchancen vises også her, så man kan se, hvor skævt det blev.</li>
+      <li><b>Vinderchance:</b> Elo-formlen, 1 / (1 + 10^((modstandernes snit − holdets snit) / 400)). Det er den samme formel, som
+        Elo-ratingen selv bruger.</li>
+      <li><b>Elo pr. kamp</b> kommer fra stats-siden og følger med, når nye kampe kommer ind. Den er 1500 + 10 × ens gennemsnitlige
+        Elo-gevinst pr. kamp, så den ikke vokser af at spille mange kampe. Under 3 kampe deles der med 3. Kun 3v3- og 4v4-kampe tæller.</li>
+      <li><b>Ulige antal:</b> det ene hold får en ekstra spiller, som skifter ind og ud. Holdet regnes med sit snit.</li>
+      <li><b>Nye spillere</b>, som ikke er i stats endnu, regnes som 1500. De og de valgte huskes på denne telefon eller computer til næste gang.</li>
+    </ul>
+  </details>
+
+  <p class="d9-foot" id="foot"></p>
+</div>
+</div>
+
+<script>
+// Team maker for D9 Streetball. Reads window.D9_DATA out of the stats page (../index.html) on every load, like the
+// fantasy page, so a new ./deploy.sh is all it takes. Strength = Elo per game, worked out here by eloPerGame(), the
+// twin of eloRun() in the stats page (~/HoopStatsLocal/dashboard/index.html): the two must give the same numbers.
+(function () {
+  'use strict';
+
+  const FORMATS = ['3v3', '4v4'];              // the games the stats page's Elo card uses
+  const ELO_K = 32, ELO_N = 10, ELO_MIN = 3;   // as in eloRun() on the stats page
+  const NEW_ELO = 1500;                        // players not in the stats yet
+  const TOL = 4;                               // Elo points: splits this close to the most even one are just as even
+  const MAX_EXACT = 2e5;                       // above this many splits (over 20 players), search instead of trying them all
+  const STORE = 'd9-hold-v1';
+  const ALIAS = { bie: 'Jacob', 'schjødt': 'Thomas', schjoedt: 'Thomas', jonas: 'Nicehair' }; // merged in the stats
+
+  const $ = (s) => document.querySelector(s);
+  const el = (tag, props = {}, kids = []) => { const n = Object.assign(document.createElement(tag), props); n.append(...kids); return n; };
+  const num = (v) => (v === null || v === undefined || v === '' ? null : Number(v));
+  const byDate = (a, b) => a.date.localeCompare(b.date) || num(a.game_no) - num(b.game_no);
+  const pct = (x) => Math.round(100 * x) + ' %';
+  const winA = (a, b) => 1 / (1 + 10 ** ((b - a) / 400));
+  const key = (s) => s.trim().toLocaleLowerCase('da');
+  const sortDa = (a, b) => a.localeCompare(b, 'da');
+
+  // ---------- Elo per game (twin of eloRun() in the stats page) ----------
+  // Each game gives every player 32 x M x (result - expected) x share of the game, M = ln(margin + 1) / ln 3 (1 when the
+  // score is unknown), expected from the two teams' average rating before the game. Rating = 1500 + 10 x the average step
+  // per game, with at least 3 games in the divisor.
+  function eloPerGame(games, rows) {
+    const S = new Map(), N = new Map();
+    const rate = (p) => 1500 + (ELO_N * (S.get(p) || 0)) / Math.max(N.get(p) || 0, ELO_MIN);
+    for (const g of games.slice().sort(byDate)) {
+      const rs = rows.filter((r) => r.game_id === g.game_id), A = rs.filter((r) => r.team === 'A'), B = rs.filter((r) => r.team === 'B');
+      if (!A.length || !B.length) continue;
+      const avg = (xs) => xs.reduce((t, r) => t + rate(r.player), 0) / xs.length, L = num(g.length_min);
+      const ea = 1 / (1 + 10 ** ((avg(B) - avg(A)) / 400)), sa = Number(A[0].won) ? 1 : 0;
+      const mult = g.score_w != null && g.score_l != null ? Math.log(num(g.score_w) - num(g.score_l) + 1) / Math.log(3) : 1;
+      const steps = rs.map((r) => {
+        const share = L && r.MIN != null ? Math.min(1, num(r.MIN) / L) : 1, s = r.team === 'A' ? sa - ea : ea - sa;
+        return [r.player, ELO_K * mult * s * share];
+      });
+      for (const [p, d] of steps) { S.set(p, (S.get(p) || 0) + d); N.set(p, (N.get(p) || 0) + 1); }
+    }
+    return new Map([...N.keys()].map((p) => [p, { elo: rate(p), n: N.get(p) }]));
+  }
+
+  // ---------- state ----------
+  let ELO = new Map(), KNOWN = [], UPDATED = '', GAMES = 0;
+  const S = { sel: new Set(), guests: [], mode: null, queue: [], qi: 0, total: 0, teams: null };
+
+  function save() {
+    try { localStorage.setItem(STORE, JSON.stringify({ sel: [...S.sel], guests: S.guests })); } catch (e) { /* private window: just don't remember */ }
+  }
+  function restore() {
+    try {
+      const o = JSON.parse(localStorage.getItem(STORE) || 'null');
+      if (!o) return;
+      S.guests = (o.guests || []).filter((g) => typeof g === 'string' && g.trim() && !KNOWN.some((k) => key(k) === key(g)));
+      for (const p of o.sel || []) if (KNOWN.includes(p) || S.guests.includes(p)) S.sel.add(p);
+    } catch (e) { /* nothing remembered */ }
+  }
+  const rating = (p) => (ELO.has(p) ? ELO.get(p).elo : NEW_ELO);
+  const chosen = () => [...S.sel].sort(sortDa);
+
+  // ---------- loading ----------
+  function fail(msg, link) {
+    const t = $('#take'); t.replaceChildren(el('span', { className: 'd9-fail', textContent: msg }));
+    if (link) t.append(' ', el('a', { href: link, textContent: 'Prøv på den offentlige side' }), '.');
+  }
+  async function load() {
+    let html;
+    try {
+      const res = await fetch('../index.html', { cache: 'no-cache' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      html = await res.text();
+    } catch (e) {
+      return fail('Kunne ikke hente stats fra forsiden (' + e.message + ').', 'https://jacquesbie.github.io/d9-streetball/hold/');
+    }
+    const m = html.match(/window\.D9_DATA\s*=\s*(\{[\s\S]*?\});\s*<\/script>/);
+    let data;
+    try {
+      if (!m) throw new Error('window.D9_DATA mangler');
+      data = JSON.parse(m[1]);
+    } catch (e) {
+      return fail('Fandt ikke tallene på forsiden (' + e.message + ').');
+    }
+    const u = html.match(/Opdateret\s+([^·<]+?)\s*[·<]/);
+    UPDATED = u ? u[1] : '';
+    const games = (data.games || []).filter((g) => FORMATS.includes(g.format)), ids = new Set(games.map((g) => g.game_id));
+    const rows = (data.player_games || []).filter((r) => ids.has(r.game_id));
+    ELO = eloPerGame(games, rows); GAMES = games.length;
+    KNOWN = [...new Set((data.player_games || []).map((r) => r.player).filter(Boolean))].sort(sortDa);
+    if (!KNOWN.length) return fail('Der er ingen spillere i stats endnu.');
+    restore();
+    setup();
+  }
+
+  // ---------- picking players ----------
+  function drawPlayers() {
+    const box = $('#players');
+    const chips = KNOWN.map((p) => {
+      const b = el('button', { className: 'd9-chip', type: 'button', textContent: p });
+      b.dataset.p = p; b.setAttribute('aria-pressed', String(S.sel.has(p)));
+      return b;
+    });
+    for (const g of S.guests) {
+      const b = el('button', { className: 'd9-chip', type: 'button' }, [g, el('span', { className: 'tag', textContent: 'ny' })]);
+      b.dataset.p = g; b.setAttribute('aria-pressed', String(S.sel.has(g)));
+      const x = el('button', { className: 'd9-chip-x', type: 'button', textContent: '×', title: 'Fjern ' + g });
+      x.setAttribute('aria-label', 'Fjern ' + g); x.dataset.drop = g;
+      chips.push(el('span', { className: 'd9-guest' }, [b, x]));
+    }
+    box.replaceChildren(...chips);
+    const n = S.sel.size, a = Math.floor(n / 2);
+    $('#count').replaceChildren(...(n < 2 ? [n === 1 ? '1 valgt · vælg mindst 2' : 'Vælg mindst 2']
+      : [el('b', { textContent: String(n) }), ' valgt · ' + (n - a) + ' mod ' + a + (n % 2 ? ' (én skifter ind og ud)' : '')]));
+    $('#even').disabled = $('#random').disabled = n < 2;
+  }
+  function selectionChanged() {
+    S.queue = []; S.mode = null; S.teams = null; $('#result').hidden = true;
+    save(); drawPlayers();
+  }
+  function addNames() {
+    const input = $('#add-name'), names = input.value.split(/[,;\n]+/).map((s) => s.trim().replace(/\s+/g, ' ')).filter(Boolean);
+    if (!names.length) return;
+    const msg = [];
+    for (const raw of names) {
+      const k = key(raw), alias = KNOWN.includes(ALIAS[k]) ? ALIAS[k] : null;
+      const hit = KNOWN.find((p) => key(p) === k) || alias || S.guests.find((g) => key(g) === k);
+      if (hit) { S.sel.add(hit); msg.push(hit + (key(hit) !== k ? ' (' + raw + ')' : '') + ' er valgt'); continue; }
+      const name = raw.charAt(0).toLocaleUpperCase('da') + raw.slice(1);
+      S.guests.push(name); S.sel.add(name); msg.push(name + ' er tilføjet som ny (1500)');
+    }
+    input.value = '';
+    $('#add-msg').textContent = msg.join(' · ') + '.';
+    selectionChanged();
+  }
+
+  // ---------- splitting ----------
+  // Every split of the chosen players into two teams of floor(n/2) and ceil(n/2), each once, scored by the gap between
+  // the two teams' average Elo. Returns them most even first.
+  function allSplits(ps) {
+    const n = ps.length, a = Math.floor(n / 2), b = n - a, r = ps.map(rating), tot = r.reduce((s, x) => s + x, 0), out = [];
+    const same = a === b;
+    const rec = (start, left, mask, sum) => {
+      if (!left) { const d = Math.abs(sum / a - (tot - sum) / b); out.push({ mask, d }); return; }
+      for (let i = start; i <= n - left; i++) {
+        if (same && mask === 0 && i > 0) break;           // keep player 0 on the first team when sizes match: no mirror images
+        rec(i + 1, left - 1, mask | (1 << i), sum + r[i]);
+      }
+    };
+    rec(0, a, 0, 0);
+    return out.sort((x, y) => x.d - y.d);
+  }
+  // For very many players: start from random splits and swap pairs while it gets more even.
+  function searchSplits(ps) {
+    const n = ps.length, a = Math.floor(n / 2), b = n - a, r = ps.map(rating), seen = new Map();
+    const tot = r.reduce((s, x) => s + x, 0), gap = (s) => Math.abs(s / a - (tot - s) / b);
+    for (let t = 0; t < 400; t++) {
+      let on = new Set(shuffle([...Array(n).keys()]).slice(0, a)), sum = [...on].reduce((s, i) => s + r[i], 0);
+      for (let better = true; better;) {
+        better = false;
+        for (const i of [...on]) for (let j = 0; j < n; j++) {
+          if (on.has(j) || !on.has(i)) continue;
+          const s2 = sum - r[i] + r[j];
+          if (gap(s2) + 1e-9 < gap(sum)) { on.delete(i); on.add(j); sum = s2; better = true; }
+        }
+      }
+      if (a === b && !on.has(0)) { on = new Set([...Array(n).keys()].filter((i) => !on.has(i))); sum = tot - sum; } // no mirror images
+      seen.set([...on].sort((x, y) => x - y).join(','), { set: on, d: gap(sum) });
+    }
+    return [...seen.values()].sort((x, y) => x.d - y.d);
+  }
+  function teamsOf(ps, split) {
+    const one = split.set ? (i) => split.set.has(i) : (i) => (split.mask >> i) & 1;
+    const t1 = ps.filter((_, i) => one(i)), t2 = ps.filter((_, i) => !one(i));
+    return t1.length >= t2.length ? [t1, t2] : [t2, t1];
+  }
+  function shuffle(xs) {
+    for (let i = xs.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [xs[i], xs[j]] = [xs[j], xs[i]]; }
+    return xs;
+  }
+  function combos(n, k) { let c = 1; for (let i = 1; i <= k; i++) c = (c * (n - k + i)) / i; return Math.round(c); }
+
+  function makeEven() {
+    const ps = chosen(), n = ps.length;
+    if (n < 2) return;
+    if (S.mode !== 'even' || !S.queue.length) {
+      const a = Math.floor(n / 2), count = a === n - a ? combos(n, a) / 2 : combos(n, a);
+      const list = count <= MAX_EXACT ? allSplits(ps) : searchSplits(ps), best = list[0].d;
+      const top = shuffle(list.filter((s) => s.d <= best + TOL)), rest = list.filter((s) => s.d > best + TOL).slice(0, Math.max(0, 12 - top.length));
+      S.queue = [...top, ...rest].map((s) => ({ teams: teamsOf(ps, s), d: s.d, tie: s.d <= best + TOL }));
+      S.qi = 0; S.total = count; S.exact = count <= MAX_EXACT; S.nTop = top.length; S.mode = 'even';
+    } else S.qi = (S.qi + 1) % S.queue.length;
+    S.teams = S.queue[S.qi].teams;
+    drawResult();
+  }
+  function makeRandom() {
+    const ps = shuffle(chosen()), a = Math.ceil(ps.length / 2);
+    if (ps.length < 2) return;
+    S.mode = 'random'; S.queue = [];
+    S.teams = [ps.slice(0, a), ps.slice(a)];
+    drawResult();
+  }
+
+  // ---------- showing the teams ----------
+  const avgOf = (t) => t.reduce((s, p) => s + rating(p), 0) / t.length;
+  const strongFirst = (t) => t.slice().sort((x, y) => rating(y) - rating(x) || sortDa(x, y));
+  function drawResult() {
+    const [t1, t2] = S.teams, a1 = avgOf(t1), a2 = avgOf(t2), w1 = winA(a1, a2), gap = Math.abs(a1 - a2);
+    const team = (t, i, avg, w) => el('div', { className: 'd9-team t' + i }, [
+      el('h3', {}, ['Hold ' + i, el('small', { textContent: t.length + ' spillere' })]),
+      el('ol', {}, strongFirst(t).map((p) => el('li', {}, [
+        el('span', { textContent: p }),
+        el('span', { className: 'r', textContent: ELO.has(p) ? Math.round(rating(p)) + (ELO.get(p).n < ELO_MIN ? ' · få kampe' : '') : 'ny · ' + NEW_ELO }),
+      ]))),
+      el('div', { className: 'avg' }, ['Snit ', el('b', { textContent: String(Math.round(avg)) }), ' · Elo giver ' + pct(w)]),
+    ]);
+    $('#teams').replaceChildren(team(t1, 1, a1, w1), team(t2, 2, a2, 1 - w1));
+    const bar = el('div', { className: 'd9-odds-bar', role: 'img' });
+    bar.setAttribute('aria-label', 'Vinderchance: Hold 1 ' + pct(w1) + ', Hold 2 ' + pct(1 - w1));
+    const i1 = el('i', { className: 't1' }), i2 = el('i', { className: 't2' });
+    i1.style.width = 100 * w1 + '%'; i2.style.width = 100 * (1 - w1) + '%'; bar.append(i1, i2);
+    $('#odds').replaceChildren(bar, el('div', { className: 'd9-odds-lbl' }, [
+      el('span', {}, ['Hold 1 ', el('b', { textContent: pct(w1) })]), el('span', {}, ['Hold 2 ', el('b', { textContent: pct(1 - w1) })]),
+    ]));
+    const gapTxt = Math.round(gap) + ' Elo-point i snit';
+    if (S.mode === 'even') {
+      const q = S.queue[S.qi], many = S.queue.length > 1, total = S.total.toLocaleString('da-DK');
+      $('#result-h').textContent = 'Lige hold';
+      $('#result-sub').textContent = many ? 'Bud ' + (S.qi + 1) + ' af ' + S.queue.length : '';
+      const first = S.total === 1 ? 'Der er kun én måde at dele dem på' : !q.tie ? 'Lidt mindre lige end de bedste'
+        : S.nTop > 1 ? 'Én af de ' + S.nTop + ' mest lige delinger ud af ' + total
+        : S.exact ? 'Den mest lige af ' + total + ' mulige delinger' : 'Den mest lige, søgningen fandt blandt ' + total + ' mulige delinger';
+      let next = S.total === 1 ? '' : ' Ingen andre delinger er lige så lige.';
+      if (many) {
+        const n2 = (S.qi + 1) % S.queue.length;
+        next = n2 === 0 ? ' Tryk "Lige hold" igen for at starte forfra.' : S.queue[n2].tie ? ' Tryk "Lige hold" igen for et andet, lige så lige bud.'
+          : q.tie ? ' Tryk "Lige hold" igen for det næstmest lige bud.' : ' Tryk "Lige hold" igen for næste bud.';
+      }
+      $('#verdict').replaceChildren(first + ': forskel ', el('b', { textContent: gapTxt }), '.' + next);
+    } else {
+      $('#result-h').textContent = 'Tilfældige hold';
+      $('#result-sub').textContent = '';
+      $('#verdict').replaceChildren('Ren lodtrækning: forskel ', el('b', { textContent: gapTxt }),
+        gap <= TOL ? ' – det blev faktisk lige.' : '. Tryk igen for en ny lodtrækning.');
+    }
+    $('#again').textContent = S.mode === 'even' ? 'Nyt lige bud' : 'Ny lodtrækning';
+    $('#again').hidden = S.mode === 'even' && S.queue.length < 2;
+    $('#copied').textContent = '';
+    const box = $('#result'), was = box.hidden;
+    box.hidden = false;
+    // on a phone the teams land below the buttons: bring them up the first time they appear
+    if (was && box.getBoundingClientRect().top > window.innerHeight * 0.6) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  async function copyTeams() {
+    const [t1, t2] = S.teams, w1 = winA(avgOf(t1), avgOf(t2));
+    const text = 'Hold 1 (' + pct(w1) + '): ' + strongFirst(t1).join(', ') + '\nHold 2 (' + pct(1 - w1) + '): ' + strongFirst(t2).join(', ');
+    let ok = false;
+    try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {
+      const ta = el('textarea', { value: text }); ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.append(ta); ta.select();
+      try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
+      ta.remove();
+    }
+    $('#copied').textContent = ok ? 'Kopieret – sæt det ind i gruppechatten.' : 'Kunne ikke kopiere: ' + text.replace('\n', ' · ');
+  }
+
+  // ---------- wiring ----------
+  function setup() {
+    const known = KNOWN.filter((p) => ELO.has(p)).length;
+    $('#take').replaceChildren('Vælg hvem der er mødt op, og lav to hold: ', el('b', { textContent: 'tilfældigt' }), ' eller ',
+      el('b', { textContent: 'så lige som muligt' }), ' efter Elo pr. kamp (' + known + ' spillere, ' + GAMES + ' kampe).');
+    $('#players').addEventListener('click', (e) => {
+      const drop = e.target.closest('[data-drop]');
+      if (drop) { const g = drop.dataset.drop; S.guests = S.guests.filter((x) => x !== g); S.sel.delete(g); return selectionChanged(); }
+      const b = e.target.closest('button[data-p]'); if (!b) return;
+      const p = b.dataset.p; if (S.sel.has(p)) S.sel.delete(p); else S.sel.add(p);
+      selectionChanged();
+    });
+    $('#all').addEventListener('click', () => { for (const p of [...KNOWN, ...S.guests]) S.sel.add(p); selectionChanged(); });
+    $('#none').addEventListener('click', () => { S.sel.clear(); $('#add-msg').textContent = ''; selectionChanged(); });
+    $('#add').addEventListener('click', addNames);
+    $('#add-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addNames(); } });
+    $('#even').addEventListener('click', makeEven);
+    $('#random').addEventListener('click', makeRandom);
+    $('#copy').addEventListener('click', copyTeams);
+    $('#again').addEventListener('click', () => (S.mode === 'even' ? makeEven() : makeRandom()));
+    for (const id of ['who-card', 'actions', 'how']) $('#' + id).hidden = false;
+    $('#foot').textContent = 'Elo pr. kamp fra stats-siden' + (UPDATED ? ' (opdateret ' + UPDATED + ')' : '') + ', hentet kl. '
+      + new Date().toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' }) + '.';
+    drawPlayers();
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>
