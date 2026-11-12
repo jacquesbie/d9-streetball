@@ -25,7 +25,9 @@ felterne `STL`, `BLK` og `TOV`.
 **Holdgenerator:** https://jacquesbie.github.io/d9-streetball/hold/ laver to hold af dem, der er mødt op: tilfældigt eller
 så lige som muligt efter Elo pr. kamp. Man trykker på spillerne eller skriver navne (nye spillere regnes som 1500; Bie,
 Schjødt og Jonas finder Jacob, Thomas og Nicehair). Lige hold prøver alle delinger (op til 20 spillere, ellers søgning) og
-trækker lod mellem dem, der højst er 4 Elo-point fra den mest lige; tryk igen for et nyt bud. Vinderchancen er Elo-formlen.
+trækker lod mellem dem, hvis vinderchance højst er 2 procentpoint fra den mest lige; tryk igen for et nyt bud. Hvert bud viser
+vinderchancen (win probability) for begge hold: Elo-formlen med forskellen i holdenes snit ganget med β, som siden selv
+fitter på de spillede kampe (hver spilledag forudsagt ud fra de andre; 12. nov.: β = 2,75, favoritten vandt 12 af 18).
 Siden henter tallene fra `index.html`, hver gang den åbnes, ligesom fantasy. `eloPerGame()` i `hold/index.html` er en tvilling
 af `eloRun()` i dashboardets `index.html`, så ret begge, hvis Elo-reglen ændres. Valget huskes i browseren (localStorage).
 
