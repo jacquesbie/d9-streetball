@@ -109,6 +109,15 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .d9-odds-bar i.t1 { background: var(--team1); } .d9-odds-bar i.t2 { background: var(--team2); }
 .d9-odds-bar i + i { border-left: 2px solid var(--color-bg); }
 .d9-odds-txt { margin: 0; font-size: var(--fs-body); }
+.d9-bo3 { display: grid; gap: 6px; border-top: 1px solid var(--color-border-line); padding-top: 10px; margin-top: 4px; }
+.d9-bo3-t { width: 100%; max-width: 27rem; border-collapse: collapse; font-size: var(--fs-body); font-variant-numeric: tabular-nums; }
+.d9-bo3-t th, .d9-bo3-t td { padding: 6px 0; text-align: right; font-weight: 400; border-bottom: 1px solid var(--color-border-line); }
+.d9-bo3-t tbody th { text-align: left; color: var(--color-fg-muted); }
+.d9-bo3-t thead th, .d9-bo3-t thead td { font-size: var(--fs-caption); font-weight: 600; border-bottom: 0; padding: 0; }
+.d9-bo3-t thead .t1 { color: var(--team1); } .d9-bo3-t thead .t2 { color: var(--team2); }
+.d9-bo3-t tbody td, .d9-bo3-t thead th { width: 3.7em; }
+.d9-bo3-t tr.tot th, .d9-bo3-t tr.tot td { font-weight: 600; color: var(--color-fg); }
+.d9-bo3-t tbody tr:last-child th, .d9-bo3-t tbody tr:last-child td { border-bottom: 0; }
 .d9-verdict { font-size: var(--fs-body); margin: 0; }
 .d9-verdict b { font-weight: 600; }
 .d9-copied { color: var(--color-fg-muted); font-size: var(--fs-caption); }
@@ -150,10 +159,15 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   <section class="d9-card" id="result" aria-labelledby="result-h" aria-live="polite" hidden>
     <div class="d9-head"><h2 id="result-h">Holdene</h2><span class="d9-count" id="result-sub"></span></div>
     <div class="d9-odds" id="odds">
-      <h3 class="d9-odds-h">Vinderchance <span>(win probability)</span></h3>
+      <h3 class="d9-odds-h">Vinderchance pr. kamp <span>(win probability)</span></h3>
       <div class="d9-odds-big" id="odds-big"></div>
       <div class="d9-odds-bar" id="odds-bar" role="img"></div>
       <p class="d9-odds-txt" id="odds-txt"></p>
+      <div class="d9-bo3">
+        <h3 class="d9-odds-h">Bedst af 3 kampe</h3>
+        <table class="d9-bo3-t" id="bo3-t"></table>
+        <p class="d9-odds-txt" id="bo3-txt"></p>
+      </div>
     </div>
     <div class="d9-teams" id="teams"></div>
     <p class="d9-verdict" id="verdict"></p>
@@ -170,6 +184,9 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       <li><b>Vinderchance (win probability)</b> for hvert bud: Elo-formlen 1 / (1 + 10^(−β × forskel / 400)), hvor forskel er
         forskellen på de to holds snit af Elo pr. kamp. Elo pr. kamp er presset sammen (den svarer til 10 kampe), så den rene
         formel er for forsigtig. Derfor ganges forskellen med β = <span id="beta">3</span>. <span id="beta-how"></span></li>
+      <li><b>Bedst af 3:</b> vi spiller altid bedst af 3, så siden viser også, hvordan serien kan ende. Med vinderchancen p pr. kamp
+        er 2–0 lig p × p, og 2–1 er 2 × p × p × (1 − p): to sejre og ét nederlag, hvor nederlaget ikke er den sidste kamp. Hver kamp
+        regnes for sig selv med samme chance. Er et hold i virkeligheden stærkere end sin Elo, bliver 2–0 mere sandsynligt end vist.</li>
       <li><b>Elo pr. kamp</b> kommer fra stats-siden og følger med, når nye kampe kommer ind. Den er 1500 + 10 × ens gennemsnitlige
         Elo-gevinst pr. kamp, så den ikke vokser af at spille mange kampe. Under 3 kampe deles der med 3. Kun 3v3- og 4v4-kampe tæller.</li>
       <li><b>Ulige antal:</b> det ene hold får en ekstra spiller, som skifter ind og ud. Holdet regnes med sit snit.</li>
@@ -421,6 +438,24 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   const strongFirst = (t) => t.slice().sort((x, y) => rating(y) - rating(x) || sortDa(x, y));
   // the two win chances as whole percents that add up to 100
   const chances = (t1, t2) => { const p1 = Math.round(100 * winA(avgOf(t1), avgOf(t2))); return [p1, 100 - p1]; };
+  // Best of 3 (the group always plays first to two wins): the four ways the series can end, from Hold 1's chance p1 (whole
+  // percent, as shown) of winning one game, every game on its own with that same chance. 2-0 is p x p, 2-1 is 2 x p x p x (1 - p).
+  // Whole percents that add up to 100 (largest remainders), so each team's two ways add up to its chance of the series.
+  const bestOf3 = (p1) => {
+    const p = p1 / 100, q = 1 - p, raw = [p * p, 2 * p * p * q, 2 * q * q * p, q * q].map((x) => 100 * x), out = raw.map(Math.floor);
+    // how far a team's two ways still are below its chance of the series: settles a tie (2-0 for one and 0-2 for the other
+    // always have the same remainder) the same way whichever team is called Hold 1
+    const short = (i) => (i < 2 ? raw[0] + raw[1] - out[0] - out[1] : raw[2] + raw[3] - out[2] - out[3]);
+    for (let left = 100 - out.reduce((t, x) => t + x, 0); left > 0; left -= 1) {
+      let best = 0;
+      for (let i = 1; i < 4; i += 1) {
+        const d = raw[i] - out[i] - (raw[best] - out[best]);
+        if (d > 1e-9 || (Math.abs(d) <= 1e-9 && short(i) > short(best) + 1e-9)) best = i;
+      }
+      out[best] += 1;
+    }
+    return { w20: out[0], w21: out[1], l21: out[2], l20: out[3], s1: out[0] + out[1], s2: out[2] + out[3], third: out[1] + out[2] };
+  };
   function drawResult() {
     const [t1, t2] = S.teams, a1 = avgOf(t1), a2 = avgOf(t2), w1 = winA(a1, a2), gap = Math.abs(a1 - a2), [p1, p2] = chances(t1, t2);
     const team = (t, i, avg, p) => el('div', { className: 'd9-team t' + i }, [
@@ -436,12 +471,19 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     const side = (i, p) => el('div', { className: 't' + i }, [el('small', { textContent: 'Hold ' + i }), el('b', { textContent: p + ' %' })]);
     $('#odds-big').replaceChildren(side(1, p1), side(2, p2));
     const bar = $('#odds-bar'), i1 = el('i', { className: 't1' }), i2 = el('i', { className: 't2' });
-    bar.setAttribute('aria-label', 'Vinderchance: Hold 1 ' + p1 + ' %, Hold 2 ' + p2 + ' %');
+    bar.setAttribute('aria-label', 'Vinderchance pr. kamp: Hold 1 ' + p1 + ' %, Hold 2 ' + p2 + ' %');
     i1.style.width = 100 * w1 + '%'; i2.style.width = 100 * (1 - w1) + '%'; bar.replaceChildren(i1, i2);
     const fav = p1 > p2 ? 1 : 2, pf = Math.max(p1, p2);
     $('#odds-txt').textContent = p1 === p2 ? 'Helt lige: hvert hold vinder ca. 50 af 100 kampe.'
       : pf <= 52 ? 'Næsten helt lige: Hold ' + fav + ' vinder ca. ' + pf + ' af 100 kampe.'
       : 'Hold ' + fav + ' er favorit og vinder ca. ' + pf + ' af 100 kampe mod Hold ' + (3 - fav) + '.';
+    // best of 3: who takes the series, and whether it takes two games or three
+    const b3 = bestOf3(p1), pct = (x) => x + ' %';
+    const row = (cls, label, x, y) => el('tr', { className: cls }, [el('th', { scope: 'row', textContent: label }), el('td', { textContent: pct(x) }), el('td', { textContent: pct(y) })]);
+    $('#bo3-t').replaceChildren(
+      el('thead', {}, [el('tr', {}, [el('td'), el('th', { scope: 'col', className: 't1', textContent: 'Hold 1' }), el('th', { scope: 'col', className: 't2', textContent: 'Hold 2' })])]),
+      el('tbody', {}, [row('tot', 'Vinder bedst af 3', b3.s1, b3.s2), row('', 'i 2 kampe (2–0)', b3.w20, b3.l20), row('', 'i 3 kampe (2–1)', b3.w21, b3.l21)]));
+    $('#bo3-txt').textContent = 'Chancen for, at det går til en tredje kamp, er ca. ' + b3.third + ' %.';
     const gapTxt = Math.round(gap) + ' Elo-point i snit';
     if (S.mode === 'even') {
       const q = S.queue[S.qi], many = S.queue.length > 1, total = S.total.toLocaleString('da-DK');
@@ -472,8 +514,9 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     if (was && box.getBoundingClientRect().top > window.innerHeight * 0.6) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   async function copyTeams() {
-    const [t1, t2] = S.teams, [p1, p2] = chances(t1, t2);
-    const text = 'Hold 1 (vinderchance ' + p1 + ' %): ' + strongFirst(t1).join(', ') + '\nHold 2 (vinderchance ' + p2 + ' %): ' + strongFirst(t2).join(', ');
+    const [t1, t2] = S.teams, [p1, p2] = chances(t1, t2), b3 = bestOf3(p1);
+    const text = 'Hold 1 (vinderchance ' + p1 + ' %): ' + strongFirst(t1).join(', ') + '\nHold 2 (vinderchance ' + p2 + ' %): ' + strongFirst(t2).join(', ')
+      + '\nBedst af 3: Hold 1 ' + b3.s1 + ' % (2–0: ' + b3.w20 + ' %, 2–1: ' + b3.w21 + ' %) · Hold 2 ' + b3.s2 + ' % (2–0: ' + b3.l20 + ' %, 2–1: ' + b3.l21 + ' %)';
     let ok = false;
     try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {
       const ta = el('textarea', { value: text }); ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
@@ -481,7 +524,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
       ta.remove();
     }
-    $('#copied').textContent = ok ? 'Kopieret – sæt det ind i gruppechatten.' : 'Kunne ikke kopiere: ' + text.replace('\n', ' · ');
+    $('#copied').textContent = ok ? 'Kopieret – sæt det ind i gruppechatten.' : 'Kunne ikke kopiere: ' + text.replace(/\n/g, ' · ');
   }
 
   // ---------- wiring ----------
