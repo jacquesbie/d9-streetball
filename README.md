@@ -28,6 +28,9 @@ Schjødt og Jonas finder Jacob, Thomas og Nicehair). Lige hold prøver alle deli
 trækker lod mellem dem, hvis vinderchance højst er 2 procentpoint fra den mest lige; tryk igen for et nyt bud. Hvert bud viser
 vinderchancen (win probability) for begge hold: Elo-formlen med forskellen i holdenes snit ganget med β, som siden selv
 fitter på de spillede kampe (hver spilledag forudsagt ud fra de andre; 12. nov.: β = 2,75, favoritten vandt 12 af 18).
+Under vinderchancen pr. kamp står **bedst af 3** (12. nov.; vi spiller altid bedst af 3): chancen for at hvert hold vinder
+serien, delt i 2–0 og 2–1, og chancen for en tredje kamp. Det regnes ud fra chancen pr. kamp (2–0 er p × p, 2–1 er
+2 × p × p × (1 − p)), hver kamp for sig; `bestOf3()` afrunder, så de fire udfald giver 100. Det står også i den kopierede tekst.
 Siden henter tallene fra `index.html`, hver gang den åbnes, ligesom fantasy. `eloPerGame()` i `hold/index.html` er en tvilling
 af `eloRun()` i dashboardets `index.html`, så ret begge, hvis Elo-reglen ændres. Valget huskes i browseren (localStorage).
 
