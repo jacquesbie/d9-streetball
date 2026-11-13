@@ -7,6 +7,7 @@ cd "$(dirname "$0")"
 grep -q 'src="forside.js' index.html || perl -0pi -e 's#</body>#<script src="forside.js?v=20261112"></script>\n</body>#' index.html
 git add -A
 if git diff --cached --quiet; then echo "Ingen ændringer at udgive."; exit 0; fi
-git commit -m "Opdatér stats ($(date +%Y-%m-%d))" -m "Co-Authored-By: Claude <noreply@anthropic.com>"
+# Medforfatter-linjen kommer fra D9_COAUTHOR, så den passer til den session, der udgiver (fx "Claude Fable 5.2 <noreply@anthropic.com>").
+git commit -m "Opdatér stats ($(date +%Y-%m-%d))" -m "Co-Authored-By: ${D9_COAUTHOR:-Claude <noreply@anthropic.com>}"
 git push
 echo "Udgivet: https://jacquesbie.github.io/d9-streetball/"
