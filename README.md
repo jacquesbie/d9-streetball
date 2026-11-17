@@ -7,6 +7,12 @@ Stats fra vores pickup-kampe: box scores, Nemesis-tabellen, en pivot til selv at
 Én selvstændig side (`index.html`) med data bagt ind. Bygges fra HoopStats-dashboardet med
 `python3 ~/HoopStatsLocal/dashboard/build_site.py` og udgives med `./deploy.sh`.
 
+**Udeladte spilledage:** 6. jul. og 10. aug. er taget ud af dataene (17. nov.), fordi tallene derfra var for usikre og trak de
+samlede stats skævt. `build_site.py` skriver dem stadig i `index.html`, så `./deploy.sh` kører `fjern-kampe.py`, der fjerner
+dem igen før hver udgivelse. Datoerne står øverst i `fjern-kampe.py`.
+Sikkerhedskopi: hele den gamle side med de to dage er commit `0439fd4` i git-historikken (`git show 0439fd4:index.html`);
+den ligger ikke på hjemmesiden. Skal dagene med igen: slet datoerne i `fjern-kampe.py`, byg og udgiv.
+
 **Forsiden** har knapper til holdgeneratoren og fantasy-spillet øverst. Den ligger i `forside.js`, fordi `build_site.py` skriver `index.html` forfra; `./deploy.sh` sætter linket til `forside.js?v=...` ind igen, hvis det mangler (ret `?v=`, når filen ændres). **PER, AST/TO og TS%** (sidst i box score og i pivotens "Tal") er siden 6. nov. en del af forsiden selv, så artifacten også har dem. PER er Hollingers model tilpasset D9 (15 er snittet i hver kamp), TS% regnes på NBA-skalaen ud fra 2'ere og skud indenfor, og AST/TO vises, når turnovers registreres (feltet `TOV`).
 
 **Nemesis-tabellen:** hvem dækker hvem. Den, der står over for en spiller ved check ball (i midten lige uden for toppen af
