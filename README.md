@@ -56,3 +56,8 @@ Slutstillinger og minutter er sikre. Fra 28. sep. er hver assist tjekket i video
 28. sep. kamp 3, hvor kun assists er tjekket); 1 eller 2 er målt mod den sorte 2'er-linje. Assist (fra 22. okt.): en holdkammerats aflevering, hvorefter scoreren skyder inden for ca. 4½ s; drib og
 drive er tilladt, og en aflevering lige efter check ball tæller også (før: ca. 3 s og et par drib). Rebounds og bom er automatisk bedste bud fra én kameravinkel. Steals, blocks, turnovers og screen-assists
 (`STL`, `BLK`, `TOV`, `SAST`) er talt i videoen for 28. sep. kamp 1–2, 12. okt. og 17. okt.; andre kampe har `null`.
+
+**Kampene:** https://jacquesbie.github.io/d9-streetball/kampe/ viser hver kamp for sig: stillingen undervejs kurv for kurv,
+vinderchance, føringsskift, runs, comebacks og holdenes tal mod hinanden, og på tværs af kampene hvad der går igen hos vinderne.
+Siden henter tallene fra `index.html`, hver gang den åbnes (datasættene `games`, `player_games` og `plays`), så en ny udgivelse
+af forsiden er nok. `winProb()` i `kampe/index.html` er en tvilling af den på forsiden.

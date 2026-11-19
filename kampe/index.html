@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D9 Kampene</title>
+<meta name="description" content="Kampene i D9 Streetball: stillingen undervejs kurv for kurv, vinderchance, føringsskift, runs og comebacks, holdenes tal mod hinanden og hvad der afgør kampene.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500&display=swap">
+<style>/* Same court-blue neutrals and orange accent as the stats page and the team maker; winners orange, losers blue. */
+:root {
+  --color-bg: #eef2f6; --color-panel: #ffffff; --color-fg: #18212b; --color-fg-muted: #5a6676;
+  --color-border-line: #d9e0e8; --color-bad: #c0392b;
+  --d9-accent: #c95b1e; --team1: #c95b1e; --team2: #2a78d6; --team1-soft: #f7e6dc; --team2-soft: #dde9f8;
+  --font-sans: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --font-cond: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+  --gap-xs: 4px; --gap-sm: 8px; --gap-md: 14px; --gap-lg: 22px;
+  --pad-md: 12px; --pad-lg: 18px;
+  --fs-caption: 0.8rem; --fs-body: 0.95rem; --fs-heading: 1.1rem; --fs-title: 2rem;
+  --radius: 10px; --shadow: 0 6px 20px rgba(20, 30, 45, .14);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --color-bg: #10151b; --color-panel: #18202a; --color-fg: #e6ebf1; --color-fg-muted: #98a4b3;
+  --color-border-line: #2a3442; --color-bad: #ef6a5a;
+  --d9-accent: #f0894a; --team1: #f0894a; --team2: #3987e5; --team1-soft: #3a2a20; --team2-soft: #1d2d42;
+  --shadow: 0 6px 20px rgba(0, 0, 0, .45); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --color-bg: #10151b; --color-panel: #18202a; --color-fg: #e6ebf1; --color-fg-muted: #98a4b3;
+  --color-border-line: #2a3442; --color-bad: #ef6a5a;
+  --d9-accent: #f0894a; --team1: #f0894a; --team2: #3987e5; --team1-soft: #3a2a20; --team2-soft: #1d2d42;
+  --shadow: 0 6px 20px rgba(0, 0, 0, .45); color-scheme: dark; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-sans); font-size: 15px; line-height: 1.45;
+  padding-inline: 16px; padding-block: 24px 48px; }
+@media (min-width: 900px) { body { padding-inline: 32px; } }
+.d9-page { max-width: 1100px; margin-inline: auto; }
+.d9 { display: grid; gap: var(--gap-lg); }
+.d9 > * { min-width: 0; }
+.d9 h1, .d9 h2, .d9 h3 { margin: 0; text-wrap: balance; }
+.d9-back { color: var(--color-fg-muted); font-size: var(--fs-caption); text-decoration: none; }
+.d9-back:hover { color: var(--color-fg); text-decoration: underline; }
+.d9-title { font-family: var(--font-cond); font-weight: 400; font-size: var(--fs-title); }
+.d9-title span { color: var(--d9-accent); }
+.d9-take { margin: var(--gap-xs) 0 0; color: var(--color-fg-muted); font-size: var(--fs-body); max-width: 75ch; }
+.d9-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--radius);
+  padding: var(--pad-lg); display: grid; gap: var(--gap-md); min-width: 0; }
+.d9-card > * { min-width: 0; }
+.d9-card h2 { font-size: var(--fs-heading); font-weight: 600; }
+.d9-sub { font-size: var(--fs-body); font-weight: 600; }
+.d9-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--gap-xs) var(--gap-md); }
+.d9-note { margin: 0; color: var(--color-fg-muted); font-size: var(--fs-caption); max-width: 85ch; }
+.d9-note:empty { display: none; }
+.d9-chips { display: flex; flex-wrap: wrap; gap: var(--gap-sm); }
+.d9-chip { font: inherit; font-size: var(--fs-body); cursor: pointer; border: 1px solid var(--color-border-line); background: var(--color-bg);
+  color: var(--color-fg); border-radius: 999px; padding: 6px 14px; min-height: 36px; display: inline-flex; align-items: center; gap: 6px; }
+.d9-chip:hover { border-color: var(--color-fg-muted); }
+.d9-chip[aria-pressed=true] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+.d9-fail { display: block; color: var(--color-fg-muted); font-size: var(--fs-caption); }
+.d9-fail::before { content: ""; display: inline-block; width: .4rem; height: .4rem; margin-right: 8px; border-radius: 50%; background: var(--color-bad); vertical-align: middle; }
+.d9-how summary { cursor: pointer; font-size: var(--fs-heading); font-weight: 600; }
+.d9-how ul { margin: 0; padding-left: 1.1rem; display: grid; gap: var(--gap-sm); max-width: 85ch; font-size: var(--fs-body); }
+.d9-foot { margin: 0; color: var(--color-fg-muted); font-size: var(--fs-caption); }
+:is(.d9-chip, .km-g, .km-link, summary, .km-hit):focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+
+/* all games: one small card per game with the margin as a sparkline */
+.km-day { display: grid; gap: var(--gap-sm); }
+.km-day h3 { font-size: var(--fs-caption); font-weight: 600; color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .05em; }
+.km-grid { display: grid; gap: var(--gap-sm); grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.km-g { font: inherit; text-align: left; cursor: pointer; color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line);
+  border-radius: var(--radius); padding: 10px 12px; display: grid; gap: 4px; min-width: 0; }
+.km-g:hover { border-color: var(--color-fg-muted); }
+.km-g[aria-pressed=true] { border-color: var(--color-fg); box-shadow: inset 0 0 0 1px var(--color-fg); background: var(--color-panel); }
+.km-g .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.km-g .no { font-size: var(--fs-caption); color: var(--color-fg-muted); }
+.km-g .sc { font-family: var(--font-cond); font-size: 1.5rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.km-g svg { display: block; width: 100%; height: 34px; }
+.km-g .w, .km-g .l { font-size: var(--fs-caption); line-height: 1.25; overflow-wrap: anywhere; }
+.km-g { align-content: start; }
+.km-g .w { font-weight: 600; } .km-g .l { color: var(--color-fg-muted); }
+
+/* the chosen game */
+.km-score { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: var(--gap-md); align-items: center; }
+.km-side { display: grid; gap: 2px; min-width: 0; }
+.km-side.l { text-align: right; }
+.km-side small { font-size: var(--fs-caption); color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .05em; }
+.km-side b { font-weight: 600; font-size: 1.05rem; overflow-wrap: anywhere; }
+.km-side.w b { border-left: 4px solid var(--team1); padding-left: 8px; }
+.km-side.l b { border-right: 4px solid var(--team2); padding-right: 8px; }
+.km-big { font-family: var(--font-cond); font-size: 3rem; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.km-big i { font-style: normal; color: var(--color-fg-muted); padding: 0 .12em; }
+.km-story { margin: 0; font-size: 1.05rem; max-width: 75ch; }
+.km-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: var(--fs-caption); color: var(--color-fg-muted); }
+.km-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.km-legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+.km-legend i.w { background: var(--team1); } .km-legend i.l { background: var(--team2); }
+.km-legend i.two { width: 10px; height: 10px; border-radius: 50%; background: none; border: 2px solid var(--color-fg-muted); }
+.km-chart { position: relative; }
+.km-chart svg { display: block; width: 100%; overflow: visible; }
+.km-chart text { font-family: var(--font-sans); font-size: 11px; fill: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.km-chart .grid { stroke: var(--color-border-line); stroke-width: 1; }
+.km-chart .lw { stroke: var(--team1); } .km-chart .ll { stroke: var(--team2); }
+.km-chart .line { fill: none; stroke-width: 2.5; stroke-linejoin: round; }
+.km-chart .dw { fill: var(--team1); } .km-chart .dl { fill: var(--team2); }
+.km-chart .ring { fill: var(--color-panel); stroke-width: 2.5; }
+.km-chart .end { font-size: 13px; font-weight: 600; }
+.km-chart .end.w { fill: var(--team1); } .km-chart .end.l { fill: var(--team2); }
+.km-chart .miss { stroke-width: 1.5; opacity: .55; }
+.km-chart .aw { fill: var(--team1); opacity: .28; } .km-chart .al { fill: var(--team2); opacity: .28; }
+.km-chart .wp { fill: none; stroke: var(--color-fg); stroke-width: 1.5; }
+.km-hit { fill: transparent; cursor: pointer; outline-offset: 0; }
+.km-tip { position: absolute; z-index: 5; pointer-events: none; background: var(--color-panel); border: 1px solid var(--color-border-line);
+  border-radius: 8px; box-shadow: var(--shadow); padding: 6px 10px; font-size: var(--fs-caption); max-width: 230px; display: grid; gap: 1px; }
+.km-tip b { font-weight: 600; font-size: var(--fs-body); }
+.km-tip span { color: var(--color-fg-muted); }
+.km-kpis { display: grid; gap: var(--gap-sm); grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); }
+.km-kpi { background: var(--color-bg); border-radius: var(--radius); padding: 10px 12px; display: grid; gap: 2px; align-content: start; min-width: 0; }
+.km-kpi small { font-size: var(--fs-caption); color: var(--color-fg-muted); }
+.km-kpi b { font-family: var(--font-cond); font-weight: 400; font-size: 1.7rem; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.km-kpi span { font-size: var(--fs-caption); color: var(--color-fg-muted); }
+.km-two { display: grid; gap: var(--gap-lg); grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 860px) { .km-two { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.km-two > div { display: grid; gap: var(--gap-sm); align-content: start; min-width: 0; }
+/* team against team: value, bar, label, bar, value */
+.km-cmp { display: grid; gap: 6px; font-variant-numeric: tabular-nums; }
+.km-cmp-r { display: grid; grid-template-columns: 4.2em minmax(0, 1fr) 7.2em minmax(0, 1fr) 4.2em; gap: 8px; align-items: center; font-size: var(--fs-body); }
+.km-cmp-r .lab { text-align: center; font-size: var(--fs-caption); color: var(--color-fg-muted); }
+.km-cmp-r .v { white-space: nowrap; } .km-cmp-r .v.l { text-align: right; }
+.km-cmp-r .v.best { font-weight: 600; }
+.km-cmp-r .bar { height: 10px; background: var(--color-bg); border-radius: 999px; display: flex; overflow: hidden; }
+.km-cmp-r .bar.w { justify-content: flex-end; }
+.km-cmp-r .bar i { display: block; height: 100%; border-radius: 999px; }
+.km-cmp-r .bar.w i { background: var(--team1); } .km-cmp-r .bar.l i { background: var(--team2); }
+.km-cmp-h { font-size: var(--fs-caption); font-weight: 600; }
+.km-cmp-h .v.w { color: var(--team1); } .km-cmp-h .v.l { color: var(--team2); }
+@media (max-width: 480px) { .km-cmp-r { grid-template-columns: 3.6em minmax(0, 1fr) 5.6em minmax(0, 1fr) 3.6em; gap: 6px; } .km-big { font-size: 2.4rem; } }
+.km-scroll { overflow-x: auto; }
+.km-t { width: 100%; border-collapse: collapse; font-size: var(--fs-body); font-variant-numeric: tabular-nums; }
+.km-t th, .km-t td { padding: 6px 10px 6px 0; text-align: left; font-weight: 400; border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+.km-t thead th { font-size: var(--fs-caption); font-weight: 600; color: var(--color-fg-muted); white-space: nowrap; }
+.km-t .num { text-align: right; white-space: nowrap; }
+.km-t tbody tr:last-child > * { border-bottom: 0; }
+#season-days td:first-child { white-space: nowrap; }
+.km-t td:last-child, .km-t th:last-child { padding-right: 0; }
+.km-dot { display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; margin-right: 6px; }
+.km-dot.w { background: var(--team1); } .km-dot.l { background: var(--team2); }
+.km-link { white-space: nowrap; font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline;
+  text-decoration-color: var(--color-fg-muted); text-underline-offset: 2px; text-align: left; }
+.km-link:hover { text-decoration-color: var(--color-fg); }
+.km-more summary { cursor: pointer; font-size: var(--fs-body); font-weight: 600; }
+.km-more[open] summary { margin-bottom: var(--gap-sm); }
+/* what decides the games: share of games won by the team that was better at one thing */
+.km-fac { display: grid; gap: 8px; }
+.km-fac-r { display: grid; grid-template-columns: minmax(7.5em, 12em) minmax(0, 1fr) 6.6em; gap: 10px; align-items: center; font-size: var(--fs-body); }
+.km-fac-r .bar { position: relative; height: 12px; background: var(--color-bg); border-radius: 999px; }
+.km-fac-r .bar i { position: absolute; inset: 0 auto 0 0; background: var(--d9-accent); border-radius: 999px; }
+.km-fac-r .bar::after { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--color-fg-muted); }
+.km-fac-r .n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) { .km-fac-r { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; } .km-fac-r .bar { grid-column: 1 / -1; grid-row: 2; } }
+.km-fac-r .n small { color: var(--color-fg-muted); font-size: var(--fs-caption); }
+</style>
+</head>
+<body>
+<div class="d9-page">
+<div class="d9">
+  <header>
+    <a class="d9-back" href="../">← D9 Streetball Stats</a>
+    <h1 class="d9-title">D9 <span>Kampene</span></h1>
+    <p class="d9-take" id="take">Henter kampene fra stats-siden …</p>
+  </header>
+
+  <section class="d9-card" id="all-card" aria-labelledby="all-h" hidden>
+    <div class="d9-head"><h2 id="all-h">Alle kampe</h2></div>
+    <p class="d9-note">Kurven i hvert kort er føringen kurv for kurv: orange over stregen, når vinderne var foran, blå under, når taberne var. Tryk på en kamp for at se den.</p>
+    <div id="all" class="d9" style="gap: var(--gap-md)"></div>
+  </section>
+
+  <section class="d9-card" id="game-card" aria-labelledby="game-h" hidden>
+    <div class="d9-head"><h2 id="game-h"></h2><span class="d9-note" id="game-meta"></span></div>
+    <div class="km-score" id="game-score"></div>
+    <p class="km-story" id="game-story"></p>
+    <div class="km-kpis" id="game-kpis"></div>
+    <div style="display:grid; gap: var(--gap-sm)">
+      <h3 class="d9-sub">Stillingen undervejs</h3>
+      <div class="km-legend" id="game-legend"></div>
+      <div class="km-chart" id="game-chart"></div>
+      <h3 class="d9-sub" id="wp-h" style="margin-top: var(--gap-sm)"></h3>
+      <div class="km-chart" id="game-wp"></div>
+      <p class="d9-note">Tiden er fra kampens første skud. Hver prik er en kurv; en ring er en 2'er. De små streger under grafen er afbrændere. Vinderchancen regnes kun ud fra stillingen, som om næste kurv var et møntkast mellem holdene.</p>
+    </div>
+    <div class="km-two">
+      <div><h3 class="d9-sub">Hold mod hold</h3><div class="km-cmp" id="game-cmp"></div></div>
+      <div><h3 class="d9-sub">Hvem scorede</h3><div class="km-scroll" id="game-scorers"></div></div>
+    </div>
+    <details class="km-more"><summary>Kurvene i rækkefølge</summary><div class="km-scroll" id="game-list"></div></details>
+    <p class="d9-note" id="game-note"></p>
+  </section>
+
+  <section class="d9-card" id="season-card" aria-labelledby="season-h" hidden>
+    <div class="d9-head"><h2 id="season-h">På tværs af kampene</h2>
+      <div class="d9-chips" id="formats" role="group" aria-label="Format"></div></div>
+    <div class="km-kpis" id="season-kpis"></div>
+    <div class="km-two">
+      <div><h3 class="d9-sub">Hvad afgør kampene?</h3>
+        <p class="d9-note">Hvor tit vandt det hold, der var bedst til én ting. Stregen i midten er 50 %: lige så tit som et møntkast. Kampe, hvor holdene stod lige på tallet, tæller ikke med.</p>
+        <div class="km-fac" id="season-fac"></div></div>
+      <div><h3 class="d9-sub">Rekorder</h3><div class="km-scroll" id="season-rec"></div></div>
+    </div>
+    <div class="km-two">
+      <div><h3 class="d9-sub">Kampens faser</h3>
+        <p class="d9-note">Alle skud delt efter, hvor langt kampen var nået (førerholdets point i forhold til slutscoren).</p>
+        <div class="km-scroll" id="season-phase"></div></div>
+      <div><h3 class="d9-sub">Foran, lige eller bagud</h3>
+        <p class="d9-note">Alle skud delt efter stillingen for det hold, der skød.</p>
+        <div class="km-scroll" id="season-sit"></div></div>
+    </div>
+    <div style="display:grid; gap: var(--gap-sm)"><h3 class="d9-sub">Spilledag for spilledag</h3><div class="km-scroll" id="season-days"></div></div>
+  </section>
+
+  <details class="d9-card d9-how" id="how" hidden>
+    <summary>Sådan er tallene regnet</summary>
+    <ul>
+      <li>Siden læser de samme tal som forsiden, hver gang den åbnes. Stillingen undervejs bygger på de kurve, der er tjekket i videoen, i den rækkefølge de faldt.</li>
+      <li>Enkelte kampe har en anden slutstilling i videoen end den, I selv talte (2'ere er målt mod den sorte linje, og et par kurve kan ikke ses). Resultatet øverst er jeres; grafen følger videoen, og det står under kampen, når de to afviger.</li>
+      <li>Føringsskift: føringen går fra det ene hold til det andet. Lige: stillingen bliver uafgjort efter 0–0. Run: point i træk uden kurv imod. Comeback: det største antal point, vinderne var bagud. Tørke: længste tid, et hold gik uden at score.</li>
+      <li>Vinderchance: næste kurv går til hvert hold med lige stor chance og er en 2'er med sæsonens andel af 2'ere, indtil et hold når slutscoren. Det er samme model som WPA på forsiden og kender hverken spillere eller form.</li>
+      <li>Hold mod hold er summen af spillernes box score. Skud og rebounds bygger på sporingen og videogennemgangen og er mindre sikre end kurvene.</li>
+      <li>Hvad afgør kampene: få kampe giver store udsving, så læs tallene som en retning og ikke som en regel. Skud-% og assists følger næsten af sig selv med flest kurve; rebounds, steals, boldtab og hvem der scorer først siger mere om, hvad der kommer før sejren.</li>
+    </ul>
+  </details>
+
+  <p class="d9-foot" id="foot"></p>
+</div>
+</div>
+
+<script>
+// Game page for D9 Streetball. Reads window.D9_DATA out of the stats page (../index.html) on every load, like the team
+// maker and the fantasy page, so a new ./deploy.sh is all it takes. Everything is worked out here from three datasets:
+// games (result, line-ups), player_games (box score rows) and plays (every shot in order, with team and time).
+(function () {
+  'use strict';
+  const $ = (s) => document.querySelector(s);
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, props, ...kids) => { const e = Object.assign(document.createElement(tag), props || {}); e.append(...kids.filter((k) => k != null)); return e; };
+  const sv = (tag, attrs, ...kids) => { const e = document.createElementNS(NS, tag); for (const k in attrs || {}) e.setAttribute(k, attrs[k]); e.append(...kids.filter((k) => k != null)); return e; };
+  const dk = (x, d = 1) => (x == null || !isFinite(x) ? '–' : x.toFixed(d).replace('.', ','));
+  const pct = (m, a) => (a ? Math.round((100 * m) / a) + ' %' : '–');
+  const clock = (s) => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+  const names = (a) => (a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' og ' + a[a.length - 1]);
+  const MONTHS = ['jan.', 'feb.', 'mar.', 'apr.', 'maj', 'jun.', 'jul.', 'aug.', 'sep.', 'okt.', 'nov.', 'dec.'];
+  const dayName = (d) => Number(d.slice(8, 10)) + '. ' + MONTHS[Number(d.slice(5, 7)) - 1] + ' ' + d.slice(0, 4);
+  const FORMAT_DEFAULT = ['3v3', '4v4'];
+
+  let GAMES = [], Q = 0.2, CUR = null, FMT = new Set();
+
+  function fail(msg) { $('#take').replaceChildren(el('span', { className: 'd9-fail', textContent: msg })); }
+
+  // ---------- win probability (the twin of winProb() on the stats page) ----------
+  const wpMemo = new Map();
+  function winProb(a, b, T, q) {
+    if (a >= T) return 1;
+    if (b >= T) return 0;
+    const k = a + '|' + b + '|' + T + '|' + q;
+    if (!wpMemo.has(k)) wpMemo.set(k, 0.5 * ((1 - q) * winProb(a + 1, b, T, q) + q * winProb(a + 2, b, T, q)) + 0.5 * ((1 - q) * winProb(a, b + 1, T, q) + q * winProb(a, b + 2, T, q)));
+    return wpMemo.get(k);
+  }
+
+  // ---------- one game: timeline and what follows from it ----------
+  // Sides are 'w' (the winners in games.winners) and 'l'. The running score is the video's baskets in order.
+  function build(g, rows, shots) {
+    const letter = (rows.find((r) => Number(r.won) === 1) || {}).team;
+    const side = (r) => (r.team === letter ? 'w' : 'l');
+    const box = { w: {}, l: {} };
+    for (const k of ['PTS', 'FGM', 'FGA', 'P2M', 'P2A', 'P1M', 'P1A', 'REB', 'OREB', 'DREB', 'AST', 'STL', 'BLK', 'TOV']) {
+      for (const s of ['w', 'l']) {
+        const vs = rows.filter((r) => side(r) === s).map((r) => r[k]);
+        box[s][k] = vs.length && vs.every((v) => v != null) ? vs.reduce((a, v) => a + Number(v), 0) : null;
+      }
+    }
+    const m = { g, rows, box, side, id: g.game_id, has: false, off: { w: g.score_w, l: g.score_l } };
+    const sh = shots.slice().sort((a, b) => a.t - b.t);
+    if (!sh.length || !letter) return m;
+    const t0 = sh[0].t, sc = { w: 0, l: 0 };
+    m.shots = sh.map((r) => {
+      const s = side(r), made = Number(r.made) === 1 && r.tl !== 0, v = Number(r.value) || 1;
+      const o = { t: r.t - t0, s, made, v, player: r.player, ast: r.ast || null, bw: sc.w, bl: sc.l };
+      if (made) sc[s] += v;
+      o.w = sc.w; o.l = sc.l;
+      return o;
+    });
+    m.makes = m.shots.filter((x) => x.made);
+    if (!m.makes.length) return m;
+    m.has = true;
+    m.fin = { w: sc.w, l: sc.l };
+    m.T = Math.max(sc.w, sc.l);
+    m.tEnd = m.makes[m.makes.length - 1].t;
+    m.tMax = Math.max(m.tEnd, m.shots[m.shots.length - 1].t, 60);
+    m.differs = g.score_w != null && (g.score_w !== sc.w || g.score_l !== sc.l);
+    // lead changes, ties, biggest leads, time in front
+    let leader = null, changes = 0, ties = 0, maxW = 0, maxL = 0, prevT = 0;
+    const lead = { w: 0, l: 0, t: 0 };
+    for (const x of m.makes) {
+      lead[x.bw > x.bl ? 'w' : x.bl > x.bw ? 'l' : 't'] += x.t - prevT; prevT = x.t;
+      const d = x.w - x.l;
+      if (d === 0) ties++;
+      else { const now = d > 0 ? 'w' : 'l'; if (leader && leader !== now) changes++; leader = now; }
+      maxW = Math.max(maxW, d); maxL = Math.max(maxL, -d);
+    }
+    Object.assign(m, { changes, ties, maxW, maxL, lead, comeback: maxL, wire: maxL === 0 && ties === 0 });
+    m.behindAt = m.makes.find((x) => x.l - x.w === maxL && maxL > 0) || null;
+    // longest run (points in a row for one side)
+    let run = null, best = null;
+    for (const x of m.makes) {
+      if (run && run.s === x.s) { run.pts += x.v; run.to = x; }
+      else run = { s: x.s, pts: x.v, from: x, to: x };
+      if (!best || run.pts > best.pts) best = { ...run };
+    }
+    m.run = best;
+    // longest drought per side (time without a basket, from the start or the side's last basket)
+    let dr = null;
+    for (const s of ['w', 'l']) {
+      let last = 0;
+      for (const x of m.makes.filter((y) => y.s === s)) { if (!dr || x.t - last > dr.sec) dr = { s, sec: x.t - last, at: x }; last = x.t; }
+    }
+    m.drought = dr;
+    m.first = m.makes[0].s;
+    const half = Math.ceil(m.T / 2), hx = m.makes.find((x) => Math.max(x.w, x.l) >= half);
+    m.half = half; m.halfLead = hx ? (hx.w > hx.l ? 'w' : hx.l > hx.w ? 'l' : null) : null; m.halfAt = hx || null;
+    m.last = m.makes.filter((x) => x.s === (sc.w >= sc.l ? 'w' : 'l')).pop();
+    m.wp = m.makes.map((x) => ({ t: x.t, p: winProb(x.w, x.l, m.T, Q) }));
+    m.minWp = Math.min(0.5, ...m.wp.map((x) => x.p));
+    return m;
+  }
+
+  // ---------- load ----------
+  async function load() {
+    let html;
+    try {
+      const res = await fetch('../index.html', { cache: 'no-cache' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      html = await res.text();
+    } catch (e) { return fail('Kunne ikke hente kampene fra forsiden (' + e.message + ').'); }
+    const mm = html.match(/window\.D9_DATA\s*=\s*(\{[\s\S]*?\});\s*<\/script>/);
+    let data;
+    try { if (!mm) throw new Error('window.D9_DATA mangler'); data = JSON.parse(mm[1]); }
+    catch (e) { return fail('Fandt ikke tallene på forsiden (' + e.message + ').'); }
+    const up = html.match(/Opdateret\s+([^·<]+?)\s*[·<]/);
+    const shots = (data.plays || []).filter((r) => r.type === 'shot' || r.type === 'make');
+    const allMakes = shots.filter((r) => Number(r.made) === 1 && r.tl !== 0);
+    Q = Math.round((allMakes.filter((r) => Number(r.value) === 2).length / Math.max(1, allMakes.length)) * 100) / 100;
+    const byGame = (list) => { const mp = new Map(); for (const r of list) { if (!mp.has(r.game_id)) mp.set(r.game_id, []); mp.get(r.game_id).push(r); } return mp; };
+    const pg = byGame(data.player_games || []), sg = byGame(shots);
+    GAMES = (data.games || []).slice().sort((a, b) => (a.date + String(a.game_no).padStart(2, '0')).localeCompare(b.date + String(b.game_no).padStart(2, '0')))
+      .map((g) => build(g, pg.get(g.game_id) || [], sg.get(g.game_id) || []));
+    if (!GAMES.length) return fail('Der er ingen kampe i stats endnu.');
+    const fmts = [...new Set(GAMES.map((m) => m.g.format))].sort();
+    FMT = new Set(fmts.filter((f) => FORMAT_DEFAULT.includes(f))); if (!FMT.size) FMT = new Set(fmts);
+    const days = new Set(GAMES.map((m) => m.g.date)).size;
+    $('#take').textContent = GAMES.length + ' kampe på ' + days + ' spilledage. Se, hvordan hver kamp udviklede sig kurv for kurv, og hvad der går igen i de kampe, der bliver vundet.';
+    $('#foot').textContent = (up ? 'Tal opdateret ' + up[1] + ' · ' : '') + 'Alle kurve er tjekket i videoen; skud, rebounds og tider bygger på sporingen og kan afvige lidt.';
+    for (const id of ['#all-card', '#game-card', '#season-card', '#how']) $(id).hidden = false;
+    drawAll();
+    $('#formats').replaceChildren(...fmts.map((f) => {
+      const b = el('button', { className: 'd9-chip', type: 'button', textContent: f });
+      b.setAttribute('aria-pressed', FMT.has(f));
+      b.onclick = () => { if (FMT.has(f)) { if (FMT.size > 1) FMT.delete(f); } else FMT.add(f); b.setAttribute('aria-pressed', FMT.has(f)); [...$('#formats').children].forEach((c) => c.setAttribute('aria-pressed', FMT.has(c.textContent))); drawSeason(); };
+      return b;
+    }));
+    const want = decodeURIComponent(location.hash.slice(1));
+    pick((GAMES.find((m) => m.id === want) || GAMES[GAMES.length - 1]).id, false);
+    drawSeason();
+    addEventListener('hashchange', () => { const w = decodeURIComponent(location.hash.slice(1)); if (GAMES.some((m) => m.id === w) && w !== CUR) pick(w, true); });
+    let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { const m = GAMES.find((x) => x.id === CUR); if (m) drawCharts(m); }, 150); });
+  }
+
+  function pick(id, scroll) {
+    CUR = id;
+    for (const b of document.querySelectorAll('.km-g')) b.setAttribute('aria-pressed', b.dataset.id === id);
+    if (decodeURIComponent(location.hash.slice(1)) !== id) history.replaceState(null, '', '#' + id);
+    drawGame(GAMES.find((m) => m.id === id));
+    if (scroll) $('#game-card').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  }
+  const gameLink = (m, text) => { const b = el('button', { className: 'km-link', type: 'button', textContent: text || m.g.game }); b.onclick = () => pick(m.id, true); return b; };
+
+  // ---------- all games ----------
+  function spark(m) {
+    const W = 120, H = 34, mid = H / 2, s = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'none', 'aria-hidden': 'true' });
+    if (!m.has) return s;
+    const mx = Math.max(m.maxW, m.maxL, 3), n = m.makes.length, x = (i) => (i / n) * W, y = (d) => mid - (d / mx) * (mid - 2);
+    let d = 'M0,' + mid, prev = 0;
+    m.makes.forEach((k, i) => { d += 'H' + x(i + 0.5).toFixed(1) + 'V' + y(k.w - k.l).toFixed(1); prev = k.w - k.l; });
+    d += 'H' + W;
+    const id = 'sp' + m.id.replace(/\W/g, '');
+    s.append(
+      sv('clipPath', { id: id + 'a' }, sv('rect', { x: 0, y: 0, width: W, height: mid })),
+      sv('clipPath', { id: id + 'b' }, sv('rect', { x: 0, y: mid, width: W, height: mid })),
+      sv('path', { d: d + 'V' + mid + 'Z', fill: 'var(--team1)', opacity: .8, 'clip-path': 'url(#' + id + 'a)' }),
+      sv('path', { d: d + 'V' + mid + 'Z', fill: 'var(--team2)', opacity: .8, 'clip-path': 'url(#' + id + 'b)' }),
+      sv('line', { x1: 0, x2: W, y1: mid, y2: mid, stroke: 'var(--color-fg-muted)', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' }));
+    return s;
+  }
+  function drawAll() {
+    const days = new Map();
+    for (const m of GAMES) { if (!days.has(m.g.date)) days.set(m.g.date, []); days.get(m.g.date).push(m); }
+    $('#all').replaceChildren(...[...days].reverse().map(([d, ms]) => el('div', { className: 'km-day' },
+      el('h3', { textContent: dayName(d) + ' · ' + [...new Set(ms.map((m) => m.g.format))].join('/') }),
+      el('div', { className: 'km-grid' }, ...ms.map((m) => {
+        const b = el('button', { className: 'km-g', type: 'button' },
+          el('span', { className: 'top' }, el('span', { className: 'no', textContent: 'Kamp ' + m.g.game_no }),
+            el('span', { className: 'sc', textContent: m.off.w != null ? m.off.w + '–' + m.off.l : '–' })),
+          spark(m),
+          el('span', { className: 'w', textContent: (m.g.winners || []).join(', ') }),
+          el('span', { className: 'l', textContent: (m.g.losers || []).join(', ') }));
+        b.dataset.id = m.id; b.setAttribute('aria-pressed', 'false');
+        b.setAttribute('aria-label', m.g.game + ': ' + names(m.g.winners || []) + ' vandt ' + m.off.w + '–' + m.off.l + ' over ' + names(m.g.losers || []));
+        b.onclick = () => pick(m.id, true);
+        return b;
+      })))));
+  }
+
+  // ---------- the chosen game ----------
+  const teamName = (m, s) => names((s === 'w' ? m.g.winners : m.g.losers) || []);
+  const kpi = (label, big, sub) => el('div', { className: 'km-kpi' }, el('small', { textContent: label }), el('b', { textContent: big }), sub ? el('span', { textContent: sub }) : null);
+  const scoreAt = (x) => x.w + '–' + x.l;
+
+  function story(m) {
+    const W = teamName(m, 'w'), L = teamName(m, 'l'), out = [];
+    if (m.wire) out.push(W + ' kom foran på den første kurv og var det resten af kampen.');
+    else if (m.comeback >= 3) out.push(W + ' var bagud ' + m.behindAt.w + '–' + m.behindAt.l + ' og vendte kampen.');
+    else if (m.changes >= 2) out.push('Føringen skiftede ' + m.changes + ' gange, og der stod lige ' + m.ties + (m.ties === 1 ? ' gang' : ' gange') + ', før ' + W + ' trak det hjem.');
+    else if (m.maxL === 0) out.push(W + ' var aldrig bagud' + (m.ties ? ', men ' + L + ' fik udlignet ' + (m.ties === 1 ? 'én gang' : m.ties + ' gange') : '') + '.');
+    else out.push(L + ' førte med op til ' + m.maxL + ', men ' + W + ' tog over' + (m.ties ? ' efter ' + m.ties + (m.ties === 1 ? ' udligning' : ' udligninger') : '') + '.');
+    if (m.run && m.run.pts >= 4) out.push((m.run.s === 'w' ? W : L) + ' lavede ' + m.run.pts + ' point i træk (fra ' + m.run.from.bw + '–' + m.run.from.bl + ' til ' + scoreAt(m.run.to) + ').');
+    if (m.last) out.push('Kampen blev lukket af ' + m.last.player + (m.last.v === 2 ? ' med en 2\'er' : '') + (m.last.ast ? ' på oplæg fra ' + m.last.ast : '') + ' efter ' + clock(m.tEnd) + '.');
+    return out.join(' ');
+  }
+
+  function drawGame(m) {
+    const g = m.g;
+    $('#game-h').textContent = g.game;
+    $('#game-meta').textContent = [g.setup, g.length_min != null ? dk(Number(g.length_min), 1) + ' min' : null, 'til ' + g.target].filter(Boolean).join(' · ');
+    $('#game-score').replaceChildren(
+      el('div', { className: 'km-side w' }, el('small', { textContent: 'Vindere' }), el('b', { textContent: (g.winners || []).join(', ') })),
+      el('div', { className: 'km-big' }, String(m.off.w ?? '–'), el('i', { textContent: '–' }), String(m.off.l ?? '–')),
+      el('div', { className: 'km-side l' }, el('small', { textContent: 'Tabere' }), el('b', { textContent: (g.losers || []).join(', ') })));
+    const note = [];
+    if (m.has && m.differs) note.push('Videoens kurve giver ' + m.fin.w + '–' + m.fin.l + ' mod jeres ' + m.off.w + '–' + m.off.l + '; grafen og tallene om forløbet følger videoen.');
+    if (g.note) note.push(g.note);
+    $('#game-note').textContent = note.join(' ');
+    const flow = ['#game-story', '#game-kpis', '#game-legend', '#game-chart', '#wp-h', '#game-wp'];
+    if (!m.has) {
+      $('#game-story').textContent = 'Kurvenes rækkefølge kendes ikke i denne kamp, så forløbet kan ikke vises.';
+      for (const id of flow.slice(1)) $(id).replaceChildren();
+      $('#game-list').replaceChildren();
+    } else {
+      $('#game-story').textContent = story(m);
+      const tot = m.lead.w + m.lead.l + m.lead.t || 1;
+      $('#game-kpis').replaceChildren(
+        kpi('Føringsskift', String(m.changes), 'lige ' + m.ties + (m.ties === 1 ? ' gang' : ' gange')),
+        kpi('Største føring', String(Math.max(m.maxW, m.maxL)), 'vinderne ' + m.maxW + ' · taberne ' + m.maxL),
+        kpi('Længste run', m.run.pts + ' point', (m.run.s === 'w' ? 'vinderne' : 'taberne') + ', ' + m.run.from.bw + '–' + m.run.from.bl + ' til ' + scoreAt(m.run.to)),
+        kpi('Tid foran', Math.round((100 * m.lead.w) / tot) + ' %', 'vinderne (taberne ' + Math.round((100 * m.lead.l) / tot) + ' %)'),
+        kpi('Længste tørke', clock(m.drought.sec), (m.drought.s === 'w' ? 'vinderne' : 'taberne') + ' uden kurv'),
+        kpi('Laveste vinderchance', Math.round(100 * m.minWp) + ' %', 'for vinderne undervejs'));
+      $('#game-legend').replaceChildren(
+        el('span', {}, el('i', { className: 'w' }), teamName(m, 'w')), el('span', {}, el('i', { className: 'l' }), teamName(m, 'l')),
+        el('span', {}, el('i', { className: 'two' }), '2\'er'));
+      $('#wp-h').textContent = 'Vinderchance for ' + teamName(m, 'w');
+      drawCharts(m);
+      const t = el('table', { className: 'km-t' }, el('thead', {}, el('tr', {}, ...['Tid', 'Stilling', 'Kurv', 'Oplæg'].map((h, i) => el('th', { textContent: h, className: i < 2 ? 'num' : '' })))),
+        el('tbody', {}, ...m.makes.map((x) => el('tr', {}, el('td', { className: 'num', textContent: clock(x.t) }), el('td', { className: 'num', textContent: scoreAt(x) }),
+          el('td', {}, el('span', { className: 'km-dot ' + x.s }), x.player + (x.v === 2 ? ' · 2\'er' : '')), el('td', { textContent: x.ast || '' })))));
+      $('#game-list').replaceChildren(t);
+    }
+    // team against team (box score sums)
+    const b = m.box, rowsC = [];
+    const add = (lab, fw, fl, nw, nl, lowBest) => {
+      if (nw == null || nl == null) return;
+      const mx = Math.max(nw, nl, 1e-9), better = nw === nl ? null : (nw > nl) !== !!lowBest ? 'w' : 'l';
+      rowsC.push(el('div', { className: 'km-cmp-r' },
+        el('span', { className: 'v w' + (better === 'w' ? ' best' : ''), textContent: fw }),
+        el('span', { className: 'bar w' }, el('i', { style: 'width:' + (100 * nw) / mx + '%' })),
+        el('span', { className: 'lab', textContent: lab }),
+        el('span', { className: 'bar l' }, el('i', { style: 'width:' + (100 * nl) / mx + '%' })),
+        el('span', { className: 'v l' + (better === 'l' ? ' best' : ''), textContent: fl })));
+    };
+    const rate = (s, mk, at) => (b[s][at] ? b[s][mk] / b[s][at] : b[s][at] === 0 ? 0 : null);
+    const cnt = (lab, k, low) => add(lab, String(b.w[k]), String(b.l[k]), b.w[k], b.l[k], low);
+    if (b.w.FGA != null && b.l.FGA != null) add('Skud-%', pct(b.w.FGM, b.w.FGA), pct(b.l.FGM, b.l.FGA), rate('w', 'FGM', 'FGA'), rate('l', 'FGM', 'FGA'));
+    cnt('Kurve', 'FGM'); cnt('Skudforsøg', 'FGA');
+    if (b.w.P2A != null && b.l.P2A != null) add('2\'ere', b.w.P2M + '/' + b.w.P2A, b.l.P2M + '/' + b.l.P2A, b.w.P2M, b.l.P2M);
+    cnt('Rebounds', 'REB'); cnt('Offensive reb.', 'OREB'); cnt('Assists', 'AST'); cnt('Steals', 'STL'); cnt('Blokke', 'BLK'); cnt('Boldtab', 'TOV', true);
+    $('#game-cmp').replaceChildren(el('div', { className: 'km-cmp-r km-cmp-h' }, el('span', { className: 'v w', textContent: 'Vindere' }), el('span'), el('span'), el('span'), el('span', { className: 'v l', textContent: 'Tabere' })),
+      ...(rowsC.length ? rowsC : [el('span', { className: 'd9-fail', textContent: 'Ingen box score for denne kamp.' })]));
+    const pr = m.rows.slice().sort((a, c) => (c.PTS ?? -1) - (a.PTS ?? -1));
+    const cell = (v) => el('td', { className: 'num', textContent: v == null ? '–' : String(v) });
+    $('#game-scorers').replaceChildren(el('table', { className: 'km-t' },
+      el('thead', {}, el('tr', {}, el('th', { textContent: 'Spiller' }), ...['Point', 'Skud', 'Reb', 'Ast', '+/-'].map((h) => el('th', { className: 'num', textContent: h })))),
+      el('tbody', {}, ...pr.map((r) => el('tr', {}, el('td', {}, el('span', { className: 'km-dot ' + m.side(r) }), r.player), cell(r.PTS),
+        cell(r.FGA != null ? r.FGM + '/' + r.FGA : null), cell(r.REB), cell(r.AST), cell(r.PM == null ? null : (r.PM > 0 ? '+' : '') + r.PM))))));
+  }
+
+  // score chart and win-probability strip, drawn at the container's own width so the text keeps its size
+  let tip;
+  function showTip(host, target, x) {
+    hideTip();
+    tip = el('div', { className: 'km-tip' }, el('b', { textContent: x.player + (x.v === 2 ? ' · 2\'er' : ' · 1\'er') }),
+      el('span', { textContent: clock(x.t) + ' · stilling ' + scoreAt(x) }), x.ast ? el('span', { textContent: 'Oplæg: ' + x.ast }) : null);
+    host.append(tip);
+    const hb = host.getBoundingClientRect(), tb = target.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+    let left = tb.left + tb.width / 2 - hb.left - w / 2; left = Math.max(0, Math.min(left, hb.width - w));
+    let top = tb.top - hb.top - h - 6; if (top < -h - 40) top = tb.bottom - hb.top + 6;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  function hideTip() { if (tip) { tip.remove(); tip = null; } }
+  document.addEventListener('pointerdown', (e) => { if (!e.target.closest || !e.target.closest('.km-hit')) hideTip(); });
+
+  function drawCharts(m) {
+    if (!m.has) return;
+    const host = $('#game-chart'), W = Math.max(280, host.clientWidth || 600), small = W < 520;
+    const ml = 26, mr = 30, mt = 12, ph = small ? 190 : 240, missH = 22, mb = 20, H = mt + ph + missH + mb, pw = W - ml - mr;
+    const yMax = Math.max(m.T, 2), x = (t) => ml + (t / m.tMax) * pw, y = (v) => mt + ph - (v / yMax) * ph;
+    const s = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, height: H, role: 'img',
+      'aria-label': 'Stillingen undervejs i ' + m.g.game + '. Slutstilling i videoen ' + m.fin.w + '–' + m.fin.l + '. ' + story(m) });
+    const yStep = yMax <= 12 ? 2 : yMax <= 20 ? 4 : 5;
+    for (let v = 0; v <= yMax; v += yStep) s.append(sv('line', { class: 'grid', x1: ml, x2: W - mr, y1: y(v), y2: y(v) }), sv('text', { x: ml - 6, y: y(v) + 4, 'text-anchor': 'end' }, String(v)));
+    const mins = m.tMax / 60, xStep = mins <= 6 ? 1 : mins <= 14 ? 2 : 5;
+    for (let t = 0; t <= mins; t += xStep) s.append(sv('text', { x: x(t * 60), y: H - 5, 'text-anchor': t === 0 ? 'start' : 'middle' }, t === 0 ? '0' : t + ' min'));
+    for (const [side, cls, row] of [['w', 'lw', 0], ['l', 'll', 1]]) {
+      const y0 = mt + ph + 5 + row * 9;
+      for (const k of m.shots) if (!k.made && k.s === side) s.append(sv('line', { class: 'miss ' + cls, x1: x(k.t), x2: x(k.t), y1: y0, y2: y0 + 6 }));
+    }
+    for (const [side, cls, dcls] of [['l', 'll', 'dl'], ['w', 'lw', 'dw']]) {
+      let d = 'M' + x(0) + ',' + y(0);
+      const mine = m.makes.filter((k) => k.s === side);
+      for (const k of mine) d += 'H' + x(k.t).toFixed(1) + 'V' + y(k[side]).toFixed(1);
+      d += 'H' + x(m.tEnd).toFixed(1);
+      s.append(sv('path', { class: 'line ' + cls, d }));
+      for (const k of mine) s.append(k.v === 2 ? sv('circle', { class: 'ring ' + cls, cx: x(k.t), cy: y(k[side]), r: 4.5 }) : sv('circle', { class: dcls, cx: x(k.t), cy: y(k[side]), r: 3.5 }));
+    }
+    // end labels, kept apart when the scores are close
+    let yw = y(m.fin.w) + 4, yl = y(m.fin.l) + 4;
+    if (Math.abs(yw - yl) < 14) { const mid = (yw + yl) / 2, up = m.fin.w >= m.fin.l ? -7 : 7; yw = mid + up; yl = mid - up; }
+    s.append(sv('text', { class: 'end w', x: x(m.tEnd) + 8, y: yw }, String(m.fin.w)), sv('text', { class: 'end l', x: x(m.tEnd) + 8, y: yl }, String(m.fin.l)));
+    for (const k of m.makes) {
+      const c = sv('circle', { class: 'km-hit', cx: x(k.t), cy: y(k[k.s]), r: 11, tabindex: 0, role: 'button',
+        'aria-label': clock(k.t) + ': ' + k.player + (k.v === 2 ? ', 2\'er' : '') + ', stilling ' + scoreAt(k) + (k.ast ? ', oplæg ' + k.ast : '') });
+      c.addEventListener('pointerenter', () => showTip(host, c, k)); c.addEventListener('pointerleave', hideTip);
+      c.addEventListener('focus', () => showTip(host, c, k)); c.addEventListener('blur', hideTip);
+      c.addEventListener('click', () => showTip(host, c, k));
+      s.append(c);
+    }
+    hideTip(); host.replaceChildren(s);
+
+    // win probability for the winners: area from the 50 % line, orange above and blue below
+    const hh = small ? 70 : 84, t2 = 8, H2 = t2 + hh + 6, yp = (p) => t2 + hh - p * hh, id = 'wp' + m.id.replace(/\W/g, '');
+    const s2 = sv('svg', { viewBox: '0 0 ' + W + ' ' + H2, height: H2, role: 'img',
+      'aria-label': 'Vinderchance for vinderne undervejs. Lavest ' + Math.round(100 * m.minWp) + ' procent.' });
+    let d = 'M' + x(0) + ',' + yp(0.5);
+    for (const k of m.wp) d += 'H' + x(k.t).toFixed(1) + 'V' + yp(k.p).toFixed(1);
+    const area = d + 'V' + yp(0.5) + 'Z';
+    s2.append(
+      sv('clipPath', { id: id + 'a' }, sv('rect', { x: 0, y: 0, width: W, height: yp(0.5) })),
+      sv('clipPath', { id: id + 'b' }, sv('rect', { x: 0, y: yp(0.5), width: W, height: H2 })),
+      sv('path', { class: 'aw', d: area, 'clip-path': 'url(#' + id + 'a)' }), sv('path', { class: 'al', d: area, 'clip-path': 'url(#' + id + 'b)' }),
+      sv('line', { class: 'grid', x1: ml, x2: W - mr, y1: yp(1), y2: yp(1) }), sv('line', { class: 'grid', x1: ml, x2: W - mr, y1: yp(0), y2: yp(0) }),
+      sv('line', { x1: ml, x2: W - mr, y1: yp(0.5), y2: yp(0.5), stroke: 'var(--color-fg-muted)', 'stroke-width': 1, 'stroke-dasharray': '3 3' }),
+      sv('path', { class: 'wp', d }),
+      sv('text', { x: ml - 6, y: yp(1) + 4, 'text-anchor': 'end' }, '100'), sv('text', { x: ml - 6, y: yp(0.5) + 4, 'text-anchor': 'end' }, '50'),
+      sv('text', { x: ml - 6, y: yp(0) + 4, 'text-anchor': 'end' }, '0'));
+    $('#game-wp').replaceChildren(s2);
+  }
+
+  // ---------- across the games ----------
+  const table = (heads, rows, numFrom = 1) => el('table', { className: 'km-t' },
+    el('thead', {}, el('tr', {}, ...heads.map((h, i) => el('th', { className: i >= numFrom ? 'num' : '', textContent: h })))),
+    el('tbody', {}, ...rows.map((r) => el('tr', {}, ...r.map((c, i) => { const td = el('td', { className: i >= numFrom ? 'num' : '' }); td.append(c == null ? '–' : c); return td; })))));
+
+  function drawSeason() {
+    const ms = GAMES.filter((m) => FMT.has(m.g.format)), fl = ms.filter((m) => m.has), n = ms.length;
+    const avg = (a) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : null);
+    const marg = ms.filter((m) => m.off.w != null).map((m) => m.off.w - m.off.l);
+    const close = marg.filter((d) => d <= 3).length;
+    const mins = ms.map((m) => Number(m.g.length_min)).filter((v) => v > 0);
+    const wire = fl.filter((m) => m.wire).length, back = fl.filter((m) => m.comeback >= 3).length;
+    $('#season-kpis').replaceChildren(
+      kpi('Kampe', String(n), fl.length < n ? fl.length + ' med kendt forløb' : 'alle med kendt forløb'),
+      kpi('Sejrsmargin', dk(avg(marg), 1), 'point i snit'),
+      kpi('Tætte kampe', marg.length ? close + ' af ' + marg.length : '–', 'afgjort med højst 3 point'),
+      kpi('Kamplængde', dk(avg(mins), 1) + ' min', mins.length ? 'fra ' + dk(Math.min(...mins), 1) + ' til ' + dk(Math.max(...mins), 1) : ''),
+      kpi('Føringsskift', dk(avg(fl.map((m) => m.changes)), 1), 'pr. kamp'),
+      kpi('Foran hele vejen', fl.length ? wire + ' af ' + fl.length : '–', 'vinderne var aldrig bagud eller lige'),
+      kpi('Comebacks', fl.length ? back + ' af ' + fl.length : '–', 'vundet efter mindst 3 bagud'));
+
+    // what decides the games
+    const cmp = (k, low) => (m) => { const a = m.box.w[k], b = m.box.l[k]; return a == null || b == null || a === b ? null : (a > b) !== !!low ? 'w' : 'l'; };
+    const fg = (m) => { const b = m.box; if (!b.w.FGA || !b.l.FGA) return null; const a = b.w.FGM / b.w.FGA, c = b.l.FGM / b.l.FGA; return a === c ? null : a > c ? 'w' : 'l'; };
+    const facs = [
+      ['Scorede først', (m) => (m.has ? m.first : null)],
+      ['Foran halvvejs', (m) => (m.has ? m.halfLead : null)],
+      ['Bedste skud-%', fg], ['Flest skudforsøg', cmp('FGA')], ['Flest 2\'ere', cmp('P2M')],
+      ['Flest rebounds', cmp('REB')], ['Flest offensive reb.', cmp('OREB')], ['Flest assists', cmp('AST')],
+      ['Flest steals', cmp('STL')], ['Færrest boldtab', cmp('TOV', true)],
+    ].map(([lab, f]) => { const r = ms.map(f).filter(Boolean); return { lab, n: r.length, w: r.filter((s) => s === 'w').length }; }).filter((f) => f.n >= 3);
+    $('#season-fac').replaceChildren(...(facs.length ? facs.map((f) => el('div', { className: 'km-fac-r' }, el('span', { textContent: f.lab }),
+      el('span', { className: 'bar' }, el('i', { style: 'width:' + (100 * f.w) / f.n + '%' })),
+      el('span', { className: 'n' }, pct(f.w, f.n) + ' ', el('small', { textContent: f.w + ' af ' + f.n })))) : [el('span', { className: 'd9-fail', textContent: 'For få kampe i de valgte formater.' })]));
+
+    // records
+    const top = (list, f) => list.reduce((best, m) => (best == null || f(m) > f(best) ? m : best), null);
+    const rec = [];
+    const withScore = ms.filter((m) => m.off.w != null);
+    const big = top(withScore, (m) => m.off.w - m.off.l); if (big) rec.push(['Største sejr', big.off.w + '–' + big.off.l, big]);
+    const tight = top(withScore, (m) => -(m.off.w - m.off.l) * 100 + m.off.l); if (tight) rec.push(['Tætteste kamp', tight.off.w + '–' + tight.off.l, tight]);
+    const cb = top(fl, (m) => m.comeback); if (cb && cb.comeback > 0) rec.push(['Største comeback', 'fra ' + cb.behindAt.w + '–' + cb.behindAt.l, cb]);
+    const rn = top(fl, (m) => m.run.pts); if (rn) rec.push(['Længste run', rn.run.pts + ' point i træk', rn]);
+    const ch = top(fl, (m) => m.changes * 100 + m.ties); if (ch && (ch.changes || ch.ties)) rec.push(['Flest føringsskift', ch.changes + ' skift, lige ' + ch.ties + (ch.ties === 1 ? ' gang' : ' gange'), ch]);
+    const lw = top(fl, (m) => -m.minWp); if (lw && lw.minWp < 0.5) rec.push(['Laveste vinderchance, der holdt', Math.round(100 * lw.minWp) + ' %', lw]);
+    const dr = top(fl, (m) => m.drought.sec); if (dr) rec.push(['Længste tørke', clock(dr.drought.sec) + ' uden kurv (' + (dr.drought.s === 'w' ? 'vinderne' : 'taberne') + ')', dr]);
+    const withLen = ms.filter((m) => Number(m.g.length_min) > 0);
+    const lo = top(withLen, (m) => Number(m.g.length_min)), sh = top(withLen, (m) => -Number(m.g.length_min));
+    if (lo) rec.push(['Længste kamp', dk(Number(lo.g.length_min), 1) + ' min', lo]);
+    if (sh && sh !== lo) rec.push(['Korteste kamp', dk(Number(sh.g.length_min), 1) + ' min', sh]);
+    $('#season-rec').replaceChildren(table(['', '', 'Kamp'], rec.map(([a, b, m]) => [a, b, gameLink(m)]), 9));
+
+    // phases and score situation, from every shot in order
+    const mk = () => ({ a: 0, m: 0, a2: 0, pts: 0 });
+    const ph = [mk(), mk(), mk()], sit = { foran: mk(), lige: mk(), bagud: mk() };
+    for (const m of fl) for (const k of m.shots) {
+      if (Math.max(k.bw, k.bl) >= m.T) continue;                 // after the deciding basket
+      const lead = Math.max(k.bw, k.bl), p = lead < m.T / 3 ? 0 : lead < (2 * m.T) / 3 ? 1 : 2;
+      const mine = k.s === 'w' ? k.bw : k.bl, theirs = k.s === 'w' ? k.bl : k.bw;
+      for (const o of [ph[p], sit[mine > theirs ? 'foran' : mine < theirs ? 'bagud' : 'lige']]) { o.a++; if (k.v === 2) o.a2++; if (k.made) { o.m++; o.pts += k.v; } }
+    }
+    const prow = (lab, o) => [lab, String(o.a), pct(o.m, o.a), pct(o.a2, o.a), o.a ? dk(o.pts / o.a, 2) : '–'];
+    const heads = ['', 'Skud', 'Skud-%', '2\'er-andel', 'Point pr. skud'];
+    $('#season-phase').replaceChildren(table(heads, [prow('Start', ph[0]), prow('Midt', ph[1]), prow('Slut', ph[2])]));
+    $('#season-sit').replaceChildren(table(heads, [prow('Foran', sit.foran), prow('Lige', sit.lige), prow('Bagud', sit.bagud)]));
+
+    // day by day
+    const days = new Map();
+    for (const m of ms) { if (!days.has(m.g.date)) days.set(m.g.date, []); days.get(m.g.date).push(m); }
+    const sum = (list, f) => list.reduce((s, m) => s + (f(m) || 0), 0);
+    $('#season-days').replaceChildren(table(['Spilledag', 'Kampe', 'Margin', 'Skud-%', '2\'er-andel', 'Sek. pr. skud', 'Føringsskift'], [...days].map(([d, list]) => {
+      const bx = list.filter((m) => m.box.w.FGA != null && m.box.l.FGA != null);
+      const fga = sum(bx, (m) => m.box.w.FGA + m.box.l.FGA), fgm = sum(bx, (m) => m.box.w.FGM + m.box.l.FGM), p2a = sum(bx, (m) => (m.box.w.P2A || 0) + (m.box.l.P2A || 0));
+      const secs = sum(bx, (m) => Number(m.g.length_min) * 60), f2 = list.filter((m) => m.has), mg = list.filter((m) => m.off.w != null).map((m) => m.off.w - m.off.l);
+      return [dayName(d) + ' · ' + [...new Set(list.map((m) => m.g.format))].join('/'), String(list.length), dk(avg(mg), 1), pct(fgm, fga), pct(p2a, fga),
+        fga && secs ? dk(secs / fga, 0) : '–', f2.length ? dk(avg(f2.map((m) => m.changes)), 1) : '–'];
+    })));
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

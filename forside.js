@@ -1,7 +1,7 @@
 // Tilføjelse til forsiden: knapper til holdgeneratoren og fantasy-spillet øverst. index.html bygges forfra af build_site.py,
 // så koden ligger her for sig, og deploy.sh sætter <script src="forside.js?v=..."> ind igen, hvis den mangler.
 // PER, AST/TO og TS% lå her indtil 6. nov.; nu er de en del af forsiden selv (dashboard/index.html), så artifacten også har dem.
-// Holdgeneratoren (hold/) kom til 12. nov.
+// Holdgeneratoren (hold/) kom til 12. nov., kampsiden (kampe/) 19. nov.
 (function () {
   const title = document.querySelector('header .d9-title');
   if (title && !document.querySelector('.d9-fantasy')) {
@@ -17,6 +17,7 @@
     const links = Object.assign(document.createElement('div'), { className: 'd9-toplinks' });
     title.before(bar);
     links.append(
+      Object.assign(document.createElement('a'), { className: 'd9-fantasy', href: 'kampe/', textContent: 'Kampene →' }),
       Object.assign(document.createElement('a'), { className: 'd9-fantasy', href: 'hold/', textContent: 'Holdgenerator →' }),
       Object.assign(document.createElement('a'), { className: 'd9-fantasy', href: 'fantasy/', textContent: 'Se fantasy-spillet →' }));
     bar.append(title, links);
