@@ -15,7 +15,7 @@ den ligger ikke på hjemmesiden. Skal dagene med igen: slet datoerne i `fjern-ka
 
 **Sidst opdateret** (fra 19. nov.): linjen under titlen og datoen i bunden sættes af `build_site.py`. Tidspunktet skifter
 kun, når den byggede side ændrer sig: siden bærer selv tidspunktet og en hash af indholdet i meta-tagget `d9-opdateret`, og en
-ny build med samme indhold beholder det gamle tidspunkt. `D9_UPDATED` bruges ikke længere; `D9_UPDATED_ISO=ÅÅÅÅ-MM-DDTTT:MM`
+ny build med samme indhold beholder det gamle tidspunkt. `D9_UPDATED` bruges ikke længere; `D9_UPDATED_ISO=ÅÅÅÅ-MM-DDTHH:MM`
 tvinger et tidspunkt.
 
 **Forsiden** har knapper til holdgeneratoren og fantasy-spillet øverst. Den ligger i `forside.js`, fordi `build_site.py` skriver `index.html` forfra; `./deploy.sh` sætter linket til `forside.js?v=...` ind igen, hvis det mangler (ret `?v=`, når filen ændres). **PER, AST/TO og TS%** (sidst i box score og i pivotens "Tal") er siden 6. nov. en del af forsiden selv, så artifacten også har dem. PER er Hollingers model tilpasset D9 (15 er snittet i hver kamp), TS% regnes på NBA-skalaen ud fra 2'ere og skud indenfor, og AST/TO vises, når turnovers registreres (feltet `TOV`).
