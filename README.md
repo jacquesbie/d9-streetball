@@ -13,6 +13,11 @@ dem igen før hver udgivelse. Datoerne står øverst i `fjern-kampe.py`.
 Sikkerhedskopi: hele den gamle side med de to dage er commit `0439fd4` i git-historikken (`git show 0439fd4:index.html`);
 den ligger ikke på hjemmesiden. Skal dagene med igen: slet datoerne i `fjern-kampe.py`, byg og udgiv.
 
+**Sidst opdateret** (fra 19. nov.): linjen under titlen og datoen i bunden sættes af `build_site.py`. Tidspunktet skifter
+kun, når den byggede side ændrer sig: siden bærer selv tidspunktet og en hash af indholdet i meta-tagget `d9-opdateret`, og en
+ny build med samme indhold beholder det gamle tidspunkt. `D9_UPDATED` bruges ikke længere; `D9_UPDATED_ISO=ÅÅÅÅ-MM-DDTTT:MM`
+tvinger et tidspunkt.
+
 **Forsiden** har knapper til holdgeneratoren og fantasy-spillet øverst. Den ligger i `forside.js`, fordi `build_site.py` skriver `index.html` forfra; `./deploy.sh` sætter linket til `forside.js?v=...` ind igen, hvis det mangler (ret `?v=`, når filen ændres). **PER, AST/TO og TS%** (sidst i box score og i pivotens "Tal") er siden 6. nov. en del af forsiden selv, så artifacten også har dem. PER er Hollingers model tilpasset D9 (15 er snittet i hver kamp), TS% regnes på NBA-skalaen ud fra 2'ere og skud indenfor, og AST/TO vises, når turnovers registreres (feltet `TOV`).
 
 **Nemesis-tabellen:** hvem dækker hvem. Den, der står over for en spiller ved check ball (i midten lige uden for toppen af
