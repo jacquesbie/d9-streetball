@@ -438,6 +438,14 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     return out.join(' ');
   }
 
+  // where the biggest lead was reached, as a score, so the two numbers cannot be read as a score themselves
+  function leadSub(m) {
+    const big = m.maxW >= m.maxL ? 'w' : 'l', n = big === 'w' ? m.maxW : m.maxL, o = big === 'w' ? m.maxL : m.maxW;
+    const at = m.makes.find((x) => (big === 'w' ? x.w - x.l : x.l - x.w) === n);
+    const other = big === 'w' ? 'taberne' : 'vinderne';
+    return (big === 'w' ? 'vinderne' : 'taberne') + ' ved ' + scoreAt(at) + ' · ' + (o ? other + ' højst ' + o + ' foran' : other + ' aldrig foran');
+  }
+
   function drawGame(m) {
     const g = m.g;
     $('#game-h').textContent = g.game;
@@ -460,7 +468,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       const tot = m.lead.w + m.lead.l + m.lead.t || 1;
       $('#game-kpis').replaceChildren(
         kpi('Føringsskift', String(m.changes), 'lige ' + m.ties + (m.ties === 1 ? ' gang' : ' gange')),
-        kpi('Største føring', String(Math.max(m.maxW, m.maxL)), 'vinderne ' + m.maxW + ' · taberne ' + m.maxL),
+        kpi('Største føring', Math.max(m.maxW, m.maxL) + ' point', leadSub(m)),
         kpi('Længste run', m.run.pts + ' point', (m.run.s === 'w' ? 'vinderne' : 'taberne') + ', ' + m.run.from.bw + '–' + m.run.from.bl + ' til ' + scoreAt(m.run.to)),
         kpi('Tid foran', Math.round((100 * m.lead.w) / tot) + ' %', 'vinderne (taberne ' + Math.round((100 * m.lead.l) / tot) + ' %)'),
         kpi('Længste tørke', clock(m.drought.sec), (m.drought.s === 'w' ? 'vinderne' : 'taberne') + ' uden kurv'),
