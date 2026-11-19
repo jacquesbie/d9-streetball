@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 # build_site.py skriver index.html forfra, så fantasy-knappen (forside.js) sættes ind igen, hvis linket mangler.
 # ?v= skal ændres, når forside.js ændres, så browsere ikke bruger en gammel kopi (GitHub Pages cacher i 10 min).
-grep -q 'src="forside.js' index.html || perl -0pi -e 's#</body>#<script src="forside.js?v=20261112"></script>\n</body>#' index.html
+grep -q 'src="forside.js' index.html || perl -0pi -e 's#</body>#<script src="forside.js?v=20261119"></script>\n</body>#' index.html
 # 6. jul. og 10. aug. holdes ude af dataene (se fjern-kampe.py), også efter en ny build.
 python3 fjern-kampe.py
 git add -A

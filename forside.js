@@ -21,4 +21,19 @@
       Object.assign(document.createElement('a'), { className: 'd9-fantasy', href: 'fantasy/', textContent: 'Se fantasy-spillet →' }));
     bar.append(title, links);
   }
+  // Highlights fra seneste spilledag (19. nov): altid kun én video, highlight/seneste.mp4, lagt op af
+  // HoopStatsLocal/highlights/udgiv_dag.py. Kortet står øverst, før første kort; videoen hentes først ved tryk.
+  fetch('highlight/seneste.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).then((h) => {
+    const first = document.querySelector('section.d9-card');
+    if (!h || !first || document.querySelector('#hl-card')) return;
+    document.head.append(Object.assign(document.createElement('style'), { textContent: `
+#hl-card video { width: 100%; max-width: 56rem; aspect-ratio: 16 / 9; background: #000; border-radius: var(--cds-radius); display: block; }` }));
+    const card = Object.assign(document.createElement('section'), { className: 'd9-card', id: 'hl-card' });
+    card.setAttribute('aria-labelledby', 'hl-h');
+    const head = document.createElement('div');
+    head.append(Object.assign(document.createElement('h2'), { id: 'hl-h', textContent: h.titel }),
+      Object.assign(document.createElement('p'), { className: 'd9-note', textContent: 'Den samlede video fra seneste spilledag (' + Math.floor(h.sek / 60) + ' min ' + (h.sek % 60) + ' s). Den skiftes ud, hver gang der er spillet.' }));
+    const v = Object.assign(document.createElement('video'), { controls: true, preload: 'none', playsInline: true, poster: 'highlight/seneste.jpg?v=' + h.v, src: 'highlight/seneste.mp4?v=' + h.v });
+    card.append(head, v); first.before(card);
+  }).catch(() => {});
 })();
