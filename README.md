@@ -65,3 +65,18 @@ drive er tilladt, og en aflevering lige efter check ball tæller også (før: ca
 vinderchance, føringsskift, runs, comebacks og holdenes tal mod hinanden, og på tværs af kampene hvad der går igen hos vinderne.
 Siden henter tallene fra `index.html`, hver gang den åbnes (datasættene `games`, `player_games` og `plays`), så en ny udgivelse
 af forsiden er nok. `winProb()` i `kampe/index.html` er en tvilling af den på forsiden.
+
+## Kampgennemgang på video (20. nov. 2026)
+
+`kampe/video/` holder én video pr. kamp for den SENESTE spilledag (alle kurve i rækkefølge, løbende stilling, banens lyd
+og dansk speak med undertekst) samt `video.json`, som kampsiden læser. Videoerne laves af `~/HoopStatsLocal/highlights/kampvideo.py`:
+
+    /usr/bin/python3 kampvideo.py ÅÅÅÅ-MM-DD          # klipper (ca. 8 min for fem kampe)
+    /usr/bin/python3 kampvideo.py ÅÅÅÅ-MM-DD udgiv    # tømmer kampe/video/ og lægger den nye dag ind; derefter deploy.sh
+
+Den gamle dags videoer forsvinder fra siden, når en ny dag udgives. Kør den igen, hvis en kurv bliver rettet.
+
+## Makkerpar: »Minder om« (20. nov. 2026)
+
+Kolonnen regnes i siden (`DUOS` og `duoAll()` i `dashboard/index.html`): begge spilleres z-scorer fra scouting-rapporten og
+parrets assists til hinanden holdes op mod 34 kendte NBA-par. Nye kendte par tilføjes som en linje i `DUOS`.

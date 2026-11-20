@@ -92,6 +92,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .km-side.l b { border-right: 4px solid var(--team2); padding-right: 8px; }
 .km-big { font-family: var(--font-cond); font-size: 3rem; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .km-big i { font-style: normal; color: var(--color-fg-muted); padding: 0 .12em; }
+.km-video { display: grid; gap: var(--gap-sm); }
+.km-video video { width: 100%; max-width: 48rem; aspect-ratio: 16 / 9; background: #000; border-radius: 10px; display: block; }
 .km-story { margin: 0; font-size: 1.05rem; max-width: 75ch; }
 .km-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: var(--fs-caption); color: var(--color-fg-muted); }
 .km-legend span { display: inline-flex; align-items: center; gap: 6px; }
@@ -212,6 +214,11 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   <section class="d9-card" id="game-card" aria-labelledby="game-h" hidden>
     <div class="d9-head"><h2 id="game-h"></h2><span class="d9-note" id="game-meta"></span></div>
     <div class="km-score" id="game-score"></div>
+    <div id="game-video" class="km-video" hidden>
+      <h3 class="d9-sub">Kampgennemgang</h3>
+      <video id="game-vid" controls playsinline preload="none"></video>
+      <p class="d9-note" id="game-vid-note"></p>
+    </div>
     <p class="km-story" id="game-story"></p>
     <div class="km-kpis" id="game-kpis"></div>
     <div style="display:grid; gap: var(--gap-sm)">
@@ -298,7 +305,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   const dayName = (d) => Number(d.slice(8, 10)) + '. ' + MONTHS[Number(d.slice(5, 7)) - 1] + ' ' + d.slice(0, 4);
   const FORMAT_DEFAULT = ['3v3', '4v4'];
 
-  let GAMES = [], Q = 0.2, CUR = null, FMT = new Set();
+  let GAMES = [], Q = 0.2, CUR = null, FMT = new Set(), VID = null;
   let EV = new Map();
 
   function fail(msg) { $('#take').replaceChildren(el('span', { className: 'd9-fail', textContent: msg })); }
@@ -401,6 +408,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     // shots, assists and rebounds from 'events'; steals, blocks and turnovers from 'defevents' (heat/build_def_events.py)
     EV = byGame([...(data.events || []).filter((e) => e.type === 'shot' || e.type === 'ast' || e.type === 'reb'),
       ...(data.defevents || []).filter((e) => e.type === 'stl' || e.type === 'blk' || e.type === 'tov')]);
+    // game recaps: only the latest game day has them (highlights/kampvideo.py empties video/ on every new day)
+    try { const r = await fetch('video/video.json', { cache: 'no-cache' }); if (r.ok) VID = await r.json(); } catch (e) { VID = null; }
     colourPlayers(data.games || [], data.events || []);
     GAMES = (data.games || []).slice().sort((a, b) => (a.date + String(a.game_no).padStart(2, '0')).localeCompare(b.date + String(b.game_no).padStart(2, '0')))
       .map((g) => build(g, pg.get(g.game_id) || [], sg.get(g.game_id) || []));
@@ -495,8 +504,19 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     return (big === 'w' ? 'vinderne' : 'taberne') + ' ved ' + scoreAt(at) + ' · ' + (o ? other + ' højst ' + o + ' foran' : other + ' aldrig foran');
   }
 
+  function drawVideo(m) {
+    const v = VID && VID.kampe && VID.kampe[m.id], box = $('#game-video'), vid = $('#game-vid');
+    box.hidden = !v;
+    if (!v) { vid.pause(); vid.removeAttribute('src'); vid.removeAttribute('poster'); vid.load(); return; }
+    const src = 'video/' + v.fil + '?v=' + VID.v;
+    if (vid.getAttribute('src') !== src) { vid.pause(); vid.poster = 'video/' + v.billede + '?v=' + VID.v; vid.src = src; vid.load(); }
+    const min = Math.floor(v.sek / 60), sek = String(v.sek % 60).padStart(2, '0');
+    $('#game-vid-note').textContent = 'Alle ' + v.kurve + ' kurve i rækkefølge med stillingen undervejs, ' + min + ':' + sek + ' min. Speaken er lavet automatisk ud fra tallene og står også som tekst i billedet. Videoerne findes kun for den seneste spilledag og bliver skiftet ud, næste gang der er spillet.';
+  }
+
   function drawGame(m) {
     const g = m.g;
+    drawVideo(m);
     $('#game-h').textContent = g.game;
     $('#game-meta').textContent = [g.setup, g.length_min != null ? dk(Number(g.length_min), 1) + ' min' : null, 'til ' + g.target].filter(Boolean).join(' · ');
     $('#game-score').replaceChildren(

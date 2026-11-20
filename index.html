@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>D9 Streetball Stats</title>
-<meta name="d9-opdateret" content="2026-11-20T08:45|3aa59b6637a6b179">
+<meta name="d9-opdateret" content="2026-11-20T14:41|b52128812fb5c17b">
 <meta name="description" content="Stats fra vores pickup-kampe: box scores, scouting reports med video, sæsonens priser og rekorder, Elo pr. kamp, holdgenerator, WPA, heatmaps, spillestil, impact, nemesis-tabel, pivot og makkerpar.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -130,6 +130,9 @@ html:not([data-side="forside"]) #hl-card { display: none; }
 .d9 td.tot, .d9 th.tot { font-weight: 600; }
 .d9 td.n { color: var(--color-fg-muted); }
 .d9 td.na { color: var(--color-fg-muted); }
+.d9 td.d9-duo { text-align: left; min-width: 15rem; white-space: normal; }
+.d9 td.d9-duo span { color: var(--color-fg-muted); }
+.d9 td.d9-duo small { display: block; color: var(--color-fg-muted); font-size: 0.8rem; line-height: 1.35; }
 .d9-wrap td { white-space: normal; text-align: left; min-width: 10rem; }
 .d9-wrap td.num { text-align: right; min-width: 0; white-space: nowrap; }
 .d9-wrap td.sh { min-width: 0; white-space: nowrap; }
@@ -216,7 +219,7 @@ html:not([data-side="forside"]) #hl-card { display: none; }
 <div class="d9">
   <header id="top">
     <h1 class="d9-title">D9 Streetball Stats</h1>
-    <p class="d9-updated">Sidst opdateret <time datetime="2026-11-20T08:45">20. nov. 2026 kl. 08:45</time></p>
+    <p class="d9-updated">Sidst opdateret <time datetime="2026-11-20T14:41">20. nov. 2026 kl. 14:41</time></p>
     <p class="d9-take" id="take" data-source="games player_games"><b data-k="ov.games">—</b> kampe på <b data-k="ov.days">—</b> spilledage med
       <b data-k="ov.players">—</b> spillere (<span data-k="ov.formats">—</span>). Bedste sejrsprocent: <b data-k="ov.wins">—</b>.
       Holdene blandes hver gang, så der vises ingen holdnavne – kun hvem der spillede sammen.
@@ -488,7 +491,8 @@ html:not([data-side="forside"]) #hl-card { display: none; }
   <div class="d9-grid2">
     <section class="d9-card" id="duos-card" aria-labelledby="duos-h">
       <div><h2 id="duos-h">Makkerpar</h2>
-        <p class="d9-note">To spillere på samme hold i samme kamp. Kun par med mindst 2 kampe sammen.</p></div>
+        <p class="d9-note">To spillere på samme hold i samme kamp. Kun par med mindst 2 kampe sammen.</p>
+        <p class="d9-note">»Minder om« er for sjov: parrets to spillerprofiler fra scouting-rapporten (alle 3v3- og 4v4-kampe, uanset filtre) og hvor tit de to afleverer til hinanden er holdt op mod kendte NBA-makkerpar i deres bedste år. Det par, hvis roller ligner mest, vinder, og et kendt par bruges kun én gang, medmindre det passer klart bedst til flere. Under navnet står, hvem der er hvem.</p></div>
       <div class="d9-scroll" id="duos" data-source="player_games"></div>
     </section>
 
@@ -660,7 +664,7 @@ html:not([data-side="forside"]) #hl-card { display: none; }
 </div>
 
 
-<p class="d9-foot">Opdateret 20. nov. 2026 kl. 08:45 · Spilledage: 28. sep (4v4), 12. okt (2v2), 17. okt (3v3), 26. okt (4v4), 2. nov (3v3), 16. nov (3v3) · Alle kurve og assists er tjekket i videoen, og 1 eller 2 er målt mod den sorte 2'er-linje; spillere i ens tøj kan være byttet om. 2v2 er fravalgt som standard (se Format).</p>
+<p class="d9-foot">Opdateret 20. nov. 2026 kl. 14:41 · Spilledage: 28. sep (4v4), 12. okt (2v2), 17. okt (3v3), 26. okt (4v4), 2. nov (3v3), 16. nov (3v3) · Alle kurve og assists er tjekket i videoen, og 1 eller 2 er målt mod den sorte 2'er-linje; spillere i ens tøj kan være byttet om. 2v2 er fravalgt som standard (se Format).</p>
 </div>
 <script>// Public site only (20 Nov 2026, user: "Byg forslag B (kort forside med undersider)"). The page used to be 20 cards in one
 // scroll. Now the front page shows the leaders, the day video and the box score (top 5), and the other cards live on
@@ -672,7 +676,7 @@ html:not([data-side="forside"]) #hl-card { display: none; }
   const SIDER = [
     { id: 'forside', navn: 'Forside', kort: ['leaders', 'hl-card', 'boxscore'] },
     { id: 'spillere', navn: 'Spillere', om: 'Scouting report med video og spillestil', kort: ['scout-card', 'style-card'] },
-    { href: 'kampe/', navn: 'Kampene', om: 'Hver kamp kurv for kurv, vendepunkter og rekorder' },
+    { href: 'kampe/', navn: 'Kampene', om: 'Hver kamp kurv for kurv, videogennemgang af seneste spilledag og rekorder' },
     { id: 'hold', navn: 'Hold og dueller', om: 'Elo, nemesis, makkerpar, trioer og on/off', kort: ['elo-card', 'nemesis-card', 'duos-card', 'trio-card'] },
     { id: 'banen', navn: 'Banen', om: 'Hvor på banen skud, assists og rebounds falder', kort: ['heat-card'] },
     { id: 'avanceret', navn: 'Avanceret', om: 'Impact, vinderchance, skudkvalitet og pivot', kort: ['impact-card', 'adv-card', 'pivot'] },
@@ -1051,7 +1055,7 @@ function duos(rows) {
     const names = rs.map((r) => r.player).sort(); const won = Number(rs[0].won);
     for (let i = 0; i < names.length; i++) for (let j = i + 1; j < names.length; j++) {
       const k = names[i] + ' + ' + names[j];
-      const q = pairs[k] || (pairs[k] = { pair: pairName(k), games: 0, wins: 0 }); q.games += 1; q.wins += won;
+      const q = pairs[k] || (pairs[k] = { pair: pairName(k), key: k, games: 0, wins: 0 }); q.games += 1; q.wins += won;
     }
   }
   return Object.values(pairs).filter((q) => q.games >= 2).map((q) => ({ ...q, winpct: Math.round((q.wins / q.games) * 100) }))
@@ -1312,12 +1316,97 @@ function drawBox(sel) {
 }
 
 // ---------- duos and games ----------
+// Famous duos (20 Nov 2026, user: "sammenligne hvem hvert makkerpar minder om af kendte makkerpar historisk. F.eks
+// curry klay 2017"). One line per duo: the two players as "Full name=short", team and year, a line about the pairing,
+// each player's traits on NBA_F (as in the NBA list of the scouting report) and lk = how much the two feed each other
+// (-2.5..+2.5). A D9 pair is compared on both players' z-scores from the scouting report plus the pair's assists to
+// each other per game together; the best of the two ways round counts.
+const DUOS = `
+Stephen Curry=Curry + Klay Thompson=Klay|Warriors 2017|To skytter, der straffer langt fra|longShare 2 longFG 2 eff 1.5 pts 1.5 usg 1 motor 1.5 ast 1 impact 1.5 win 2|longShare 2 longFG 1.5 catch 2 assisted 2 ast -1 pts 1 stl 0.5 win 2|1
+Michael Jordan=Jordan + Scottie Pippen=Pippen|Bulls 1996|Scoreren og altmuligmanden, begge stærke i forsvaret|usg 2 pts 2.5 midFG 1.5 pullup 1.5 clutch 2 stl 1.5 impact 2 win 2|ast 1.5 stl 2 reb 1 blk 0.5 impact 1.5 win 2 motor 1|0.5
+Michael Jordan=Jordan + Dennis Rodman=Rodman|Bulls 1996|Scoreren og rebound-maskinen|usg 2.5 pts 2.5 midFG 1.5 pullup 1.5 clutch 2 win 2|reb 2.5 oreb 2.5 usg -2.5 pts -2 putback 1 motor 2 stl 0.5 win 2|0
+Shaquille O'Neal=Shaq + Kobe Bryant=Kobe|Lakers 2001|Kraft under kurven og en scorer udefra|rimFG 2 reb 2 oreb 1.5 blk 1.5 pts 2 usg 1.5 longShare -2.5 putback 1.5 impact 2 win 1.5|usg 2 pts 2 pullup 2 midFG 1 clutch 1.5 assisted -1.5 stl 1 win 1.5|0
+John Stockton=Stockton + Karl Malone=Malone|Jazz 1997|Afleveringen og afslutningen, igen og igen|ast 2.5 stl 2 tov 0.5 usg -1.5 eff 1 assisted -1|pts 2 usg 2 assisted 2 midFG 1.5 reb 1.5 rimFG 1 sast 1|2.5
+LeBron James=LeBron + Dwyane Wade=Wade|Heat 2012|To, der angriber kurven og jager bolden i forsvaret|drive 2 rimFG 1.5 ast 1.5 pts 2 reb 1 impact 2.5 win 1.5 usg 1.5|drive 2 stl 1.5 blk 1 pts 1.5 longShare -1.5 usg 1.5 win 1.5|1
+Magic Johnson=Magic + Kareem Abdul-Jabbar=Kareem|Lakers 1985|Playmakeren, der fodrer den store mand|ast 2.5 reb 1 tov 1 impact 2 win 2 longShare -1|pts 1.5 rimFG 1.5 midFG 1 assisted 1.5 blk 1.5 reb 1 longShare -2.5 win 2|2
+Steve Nash=Nash + Amar'e Stoudemire=Amar'e|Suns 2005|Fart og oplæg til en afslutter ved kurven|ast 2.5 eff 2 longFG 1.5 tov 0.5 usg -0.5 reb -1.5 blk -1 motor 1|rimFG 2 pts 2 assisted 2 drive 1 reb 1 usg 1.5 longShare -2|2.5
+Kevin Durant=Durant + Russell Westbrook=Westbrook|Thunder 2012|Den effektive scorer og energibomben|pts 2.5 eff 2 pullup 1.5 longFG 1 usg 1.5 blk 0.5|usg 2 drive 2 ast 1.5 tov 2 reb 1 motor 2 eff -1 stl 1|0.5
+Tim Duncan=Duncan + Tony Parker=Parker|Spurs 2007|Den rolige storspiller og guarden, der kører til kurven|reb 2 blk 2 midFG 1 impact 2 win 2 tov -0.5 longShare -2 sast 1|drive 2 rimFG 1 ast 1 pts 1 longShare -1.5 win 2 motor 1|1
+Tim Duncan=Duncan + Manu Ginóbili=Ginóbili|Spurs 2005|Fundamentet og jokeren|reb 2 blk 2 impact 2 win 2 longShare -2 midFG 1|drive 1.5 stl 1.5 ast 1 tov 1 longShare 1 clutch 1.5 motor 1.5 usg 0.5|0.5
+Kobe Bryant=Kobe + Pau Gasol=Gasol|Lakers 2009|Scoreren og den kloge storspiller|usg 2.5 pts 2 pullup 2 clutch 2 assisted -1.5|reb 1.5 eff 1.5 ast 1 rimFG 1 blk 1 usg -0.5 longShare -2|1
+Nikola Jokić=Jokić + Jamal Murray=Murray|Nuggets 2023|Storspilleren, der afleverer, og skytten, der afslutter|ast 2 reb 2 eff 2 impact 2.5 rimFG 1.5 pts 1.5 motor -1|pullup 1.5 longFG 1 clutch 2 assisted 1 pts 1 usg 1|2.5
+Larry Bird=Bird + Kevin McHale=McHale|Celtics 1986|Skytten, der ser alt, og manden på posten|pts 2 longFG 1.5 ast 1.5 reb 1.5 clutch 2 impact 2 win 2|rimFG 2 eff 2 blk 1.5 reb 1 ast -1.5 longShare -2.5 win 2|1
+Gary Payton=Payton + Shawn Kemp=Kemp|Sonics 1996|Forsvarsguarden og ham, der afslutter over ringen|stl 2.5 ast 2 usg 1 pts 1 drive 1|rimFG 2 putback 1.5 oreb 1.5 reb 2 blk 1.5 assisted 1.5 tov 1 longShare -2|2
+Damian Lillard=Lillard + CJ McCollum=McCollum|Trail Blazers 2019|To guards, der begge skaber deres eget skud|usg 2 pts 2 longShare 2 longFG 1 pullup 1.5 clutch 2 ast 1 assisted -1.5|pullup 2 midFG 1.5 usg 1.5 pts 1 assisted -1 reb -1 stl -0.5|-0.5
+James Harden=Harden + Chris Paul=Paul|Rockets 2018|To boldholdere, der skiftes til at styre|usg 2.5 pts 2.5 longShare 2 assisted -2.5 tov 1.5 ast 1.5|ast 2 tov -2 midFG 1.5 pullup 1.5 stl 1.5 win 1.5|-1
+LeBron James=LeBron + Kyrie Irving=Kyrie|Cavaliers 2016|Alt-i-en-spilleren og en-mod-en-scoreren|ast 2 reb 1.5 drive 1.5 impact 2.5 pts 1.5 blk 1|pullup 2 usg 1.5 pts 1.5 clutch 2 assisted -2 reb -1.5 drive 1.5|0.5
+LeBron James=LeBron + Anthony Davis=Davis|Lakers 2020|Playmakeren og storspilleren, der dækker hele banen|ast 2.5 drive 1.5 impact 2 pts 1 reb 1|blk 2.5 reb 2 rimFG 1.5 pts 1.5 assisted 1.5 stl 1 putback 1|2
+Giannis Antetokounmpo=Giannis + Khris Middleton=Middleton|Bucks 2021|Kraft mod kurven og en stille skytte ved siden af|drive 2.5 rimFG 2 reb 2 blk 1 pts 2 usg 2 longFG -1.5 longShare -1.5 impact 2|midFG 1.5 pullup 1.5 longFG 1 clutch 1.5 catch 1|0.5
+Jayson Tatum=Tatum + Jaylen Brown=Brown|Celtics 2024|To wings, der deler scoringen ligeligt|pts 1.5 usg 1.5 longShare 1.5 reb 1.5 ast 1 pullup 1 win 2|pts 1.5 usg 1.5 drive 1.5 stl 1 tov 1 win 2 midFG 0.5|-0.5
+Shaquille O'Neal=Shaq + Penny Hardaway=Penny|Magic 1995|Ung kraft under kurven og en høj playmaker|rimFG 2 reb 2 blk 2 pts 2 oreb 1 longShare -2.5 tov 1|ast 2 stl 1.5 drive 1 pts 1 eff 1|1.5
+Isiah Thomas=Isiah + Joe Dumars=Dumars|Pistons 1989|To hårde guards: dirigenten og forsvareren|ast 2 usg 1.5 stl 1.5 tov 1.5 clutch 1.5 drive 1|stl 1 midFG 1 tov -1 usg -0.5 eff 0.5 win 1.5 pullup 1|0.5
+Chauncey Billups=Billups + Ben Wallace=Big Ben|Pistons 2004|Den kolde afslutter og muren under kurven|clutch 2 longShare 1 ast 1.5 tov -1 pts 1 win 1.5|blk 2 reb 2.5 oreb 1.5 stl 1 usg -2 pts -2 longShare -2.5 win 1.5|0
+Dirk Nowitzki=Dirk + Jason Terry=Terry|Mavericks 2011|Mellemdistance-mesteren og skytten, der tænder til sidst|midFG 2.5 pullup 2 pts 2 clutch 2 reb 1 usg 1.5 drive -1|longShare 1.5 longFG 1.5 clutch 1.5 catch 1 reb -1.5 usg 0.5|0.5
+Chris Paul=Paul + Blake Griffin=Griffin|Clippers 2014|Lob City: oplæg og afslutning over ringen|ast 2.5 tov -2 stl 2 midFG 1|rimFG 2 pts 1.5 assisted 2 reb 1.5 putback 1 longShare -2 usg 1.5|2.5
+Kawhi Leonard=Kawhi + Kyle Lowry=Lowry|Raptors 2019|Den tavse scorer og den slidstærke organisator|pts 2 midFG 2 stl 1.5 eff 1.5 clutch 2 usg 1.5 impact 2|ast 1.5 longShare 1.5 sast 1.5 motor 1.5 usg -0.5 pts -0.5 win 1 stl 1|0.5
+Allen Iverson=Iverson + Dikembe Mutombo=Mutombo|76ers 2001|Én tager alle skuddene, én vogter kurven|usg 2.5 pts 2 eff -1.5 stl 2 drive 1.5 assisted -2 motor 2|blk 2.5 reb 2.5 oreb 1.5 usg -2 pts -1.5 putback 1 longShare -2.5|-0.5
+Hakeem Olajuwon=Hakeem + Clyde Drexler=Drexler|Rockets 1995|Fodarbejde på posten og en glider på kanten|blk 2 reb 2 stl 1.5 midFG 1.5 pts 2 usg 2 longShare -2|drive 1.5 reb 1 ast 1 stl 1 pts 1 motor 1|0.5
+Kevin Garnett=Garnett + Paul Pierce=Pierce|Celtics 2008|Forsvarets hjerte og scoreren i de store øjeblikke|reb 2 blk 1.5 stl 1 midFG 1.5 impact 2 sast 1.5 win 2 motor 1.5|pts 1.5 clutch 2 pullup 1.5 usg 1.5 drive 1 win 2|0.5
+Stephen Curry=Curry + Draymond Green=Draymond|Warriors 2016|Skytten og ham, der sætter screens og afleverer|longShare 2 longFG 2 pts 2 eff 2 assisted 1 motor 1.5 win 2|ast 2 sast 2.5 stl 1.5 blk 1 reb 1.5 usg -2 pts -1.5 eff -0.5 win 2|2.5
+Luka Dončić=Luka + Kyrie Irving=Kyrie|Mavericks 2024|To, der kan score på alle helt alene|usg 2.5 pts 2 ast 2 reb 1.5 longShare 1.5 tov 1.5 assisted -2 motor -1.5|pullup 2 eff 1 clutch 2 drive 1.5 assisted -1.5 pts 1.5|0
+Shai Gilgeous-Alexander=SGA + Jalen Williams=J-Dub|Thunder 2025|Scoreren i mellemdistancen og den alsidige makker|usg 2 pts 2.5 pullup 2 midFG 1.5 drive 1.5 stl 1.5 eff 1 win 2|stl 1 drive 1 ast 0.5 pts 0.5 eff 0.5 win 2 reb 0.5 catch 0.5|0.5
+Jason Kidd=Kidd + Vince Carter=Carter|Nets 2006|Afleveringer i fart til en afslutter|ast 2.5 reb 1.5 stl 1.5 eff -1.5 pts -0.5 motor 1.5|pts 2 usg 2 assisted 1 longShare 1 drive 1 rimFG 1|2
+`.trim().split('\n').map((l) => {
+  const [n, yr, d, a, b, lk] = l.split('|');
+  const tw = (t) => { const v = t.trim().split(/\s+/), w = {}; for (let i = 0; i < v.length; i += 2) w[v[i]] = Number(v[i + 1]); return w; };
+  const [fa, fb] = n.split(' + ').map((x) => x.split('='));
+  return { a: fa[0], sa: fa[1], b: fb[0], sb: fb[1], yr, d, wa: tw(a), wb: tw(b), lk: Number(lk) };
+});
+const DUO_LK = 1.5;                       // weight of the assist link beside the 2 x 23 traits
+let duoSrc = null, duoRes = new Map();
+function duoAll() {
+  const scope = scoutScope(); if (!scope) return new Map();
+  const S = scoutAll(scope); if (S === duoSrc) return duoRes;
+  const res = new Map(), ok = new Set(S.Q.map((s) => s.p)), n = (a, b) => (S.give.get(a) && S.give.get(a).get(b)) || 0;
+  const pairs = duos(scope.rows).map((q) => { const [a, b] = q.key.split(' + '); return { key: q.key, a, b, games: q.games }; }).filter((q) => ok.has(q.a) && ok.has(q.b));
+  if (pairs.length) {
+    for (const q of pairs) q.link = (n(q.a, q.b) + n(q.b, q.a)) / q.games;
+    const lv = pairs.map((q) => q.link), lm = lv.reduce((x, y) => x + y, 0) / lv.length, lsd = Math.sqrt(lv.reduce((x, y) => x + (y - lm) ** 2, 0) / lv.length) || 1;
+    const zl = (v) => Math.max(-2.5, Math.min(2.5, (v - lm) / lsd)), zv = (p) => NBA_F.map((f) => S.byP.get(p).z[f] || 0);
+    const cos = (x, y) => { let d = 0, nx = 0, ny = 0; x.forEach((v, i) => { d += v * y[i]; nx += v * v; ny += y[i] * y[i]; }); return nx && ny ? d / Math.sqrt(nx * ny) : 0; };
+    const sims = [];
+    for (const q of pairs) {
+      const za = zv(q.a), zb = zv(q.b), l = DUO_LK * (zl(q.link) || 0);
+      DUOS.forEach((c, i) => {
+        const w = [...NBA_F.map((f) => c.wa[f] || 0), ...NBA_F.map((f) => c.wb[f] || 0), DUO_LK * c.lk], v1 = cos([...za, ...zb, l], w), v2 = cos([...zb, ...za, l], w);
+        sims.push({ q, i, v: Math.max(v1, v2), swap: v2 > v1 });
+      });
+    }
+    sims.sort((x, y) => y.v - x.v || x.q.key.localeCompare(y.q.key, 'da') || x.i - y.i);
+    const taken = new Set(), set = (o) => { const c = DUOS[o.i]; res.set(o.q.key, { c, v: o.v, as: o.swap ? [[o.q.a, c.sb], [o.q.b, c.sa]] : [[o.q.a, c.sa], [o.q.b, c.sb]], link: n(o.q.a, o.q.b) + n(o.q.b, o.q.a) }); };
+    // a famous duo is used once where that costs little: a pair takes a free duo only if it is within 0.12 of its own
+    // best fit; otherwise it gets its best fit, even when another pair has it too
+    const best = new Map(); for (const o of sims) if (!best.has(o.q.key)) best.set(o.q.key, o.v);
+    for (const o of sims) { if (res.has(o.q.key) || taken.has(o.i) || o.v < best.get(o.q.key) - 0.12) continue; taken.add(o.i); set(o); }
+    for (const o of sims) if (!res.has(o.q.key)) set(o);
+  }
+  duoSrc = S; duoRes = res;
+  return res;
+}
 function drawDuos(list) {
+  let cmp = new Map(); try { cmp = duoAll(); } catch (e) { console.error(e); }
   const table = document.createElement('table'); const hr = table.createTHead().insertRow();
-  for (const l of ['Makkerpar', 'Kampe', 'Sejre', 'Sejr-%']) { const t = document.createElement('th'); t.scope = 'col'; t.textContent = l; hr.append(t); }
+  for (const l of ['Makkerpar', 'Kampe', 'Sejre', 'Sejr-%', 'Minder om']) { const t = document.createElement('th'); t.scope = 'col'; t.textContent = l; hr.append(t); }
   const tb = table.createTBody();
-  for (const q of list) { const tr = tb.insertRow(); const t0 = document.createElement('th'); t0.scope = 'row'; t0.textContent = q.pair; tr.append(t0); for (const k of ['games', 'wins', 'winpct']) tr.insertCell().textContent = String(q[k]); }
-  if (!list.length) { const tr = tb.insertRow(); const td = tr.insertCell(); td.colSpan = 4; td.textContent = 'Ingen par med mindst 2 kampe sammen.'; td.className = 'na'; }
+  for (const q of list) {
+    const tr = tb.insertRow(); const t0 = document.createElement('th'); t0.scope = 'row'; t0.textContent = q.pair; tr.append(t0); for (const k of ['games', 'wins', 'winpct']) tr.insertCell().textContent = String(q[k]);
+    const td = tr.insertCell(), m = cmp.get(q.key); td.className = 'd9-duo';
+    if (!m) { td.textContent = '–'; td.classList.add('na'); td.title = 'For få kampe med fuld box score til en sammenligning'; continue; }
+    td.append(el('b', { textContent: m.c.sa + ' + ' + m.c.sb }), ' ', el('span', { textContent: '(' + m.c.yr + ')' }),
+      el('small', { textContent: m.as.map(([p, f]) => p + ' som ' + f).join(', ') + '. ' + m.c.d + '.' }));
+    td.title = m.c.a + ' + ' + m.c.b + ', ' + m.c.yr + ' · lighed ' + Math.round(m.v * 100) + ' af 100 · ' + nOf(m.link, 'assist', 'assists') + ' til hinanden';
+  }
+  if (!list.length) { const tr = tb.insertRow(); const td = tr.insertCell(); td.colSpan = 5; td.textContent = 'Ingen par med mindst 2 kampe sammen.'; td.className = 'na'; }
   $('#duos').replaceChildren(table);
 }
 function drawGames(sel) {
@@ -2323,7 +2412,7 @@ function scoutAll(scope) {
       near: sims.filter((q) => q.s === o.s).slice(0, 3).map((q) => ({ n: NBA[q.i].n, d: 1 - q.v })),
       shared: NBA_F.map((f, j) => ({ f, c: z[j] * W[o.i][j], up: z[j] > 0 })).filter((q) => q.c > 0.3).sort((a, b) => b.c - a.c).slice(0, 3).map((q) => TRAIT[q.f][q.up ? 0 : 1]) };
   }
-  scoutKey = src; scoutRes = { list, Q, byP: new Map(list.map((s) => [s.p, s])) };
+  scoutKey = src; scoutRes = { list, Q, byP: new Map(list.map((s) => [s.p, s])), give };
   return scoutRes;
 }
 // how to defend the player: the strongest patterns first, at most three
