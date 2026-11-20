@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>D9 Streetball Stats</title>
-<meta name="d9-opdateret" content="2026-11-20T14:49|75e4fe152e694493">
+<meta name="d9-opdateret" content="2026-11-20T15:07|67f9f5640c9fa91d">
 <meta name="description" content="Stats fra vores pickup-kampe: box scores, scouting reports med video, sæsonens priser og rekorder, Elo pr. kamp, holdgenerator, WPA, heatmaps, spillestil, impact, nemesis-tabel, pivot og makkerpar.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -196,6 +196,7 @@ html:not([data-side="forside"]) #hl-card { display: none; }
 .d9-scout-keys { display: grid; gap: var(--cds-gap-sm); grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: var(--cds-gap-sm); }
 .d9-scout-keys .d9-tile { background: var(--color-bg); padding: var(--cds-pad-sm) var(--cds-pad-md); min-width: 0; }
 .d9-scout-nba { background: var(--color-bg); min-width: 0; }
+.d9-scout-nba .d9-scout-duo { margin-top: var(--cds-gap-md); padding-top: var(--cds-gap-md); border-top: 1px solid var(--color-border-line); }
 .d9-scout-nba p { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
 .d9-scout-list { margin: 0 0 var(--cds-gap-sm); padding-left: 1.1rem; display: grid; gap: 5px; font-size: var(--cds-font-size-body); line-height: 1.45; }
 .d9-scout-list b { font-weight: 600; }
@@ -222,7 +223,7 @@ html:not([data-side="forside"]) #hl-card { display: none; }
 <div class="d9">
   <header id="top">
     <h1 class="d9-title">D9 Streetball Stats</h1>
-    <p class="d9-updated">Sidst opdateret <time datetime="2026-11-20T14:49">20. nov. 2026 kl. 14:49</time></p>
+    <p class="d9-updated">Sidst opdateret <time datetime="2026-11-20T15:07">20. nov. 2026 kl. 15:07</time></p>
     <p class="d9-take" id="take" data-source="games player_games"><b data-k="ov.games">—</b> kampe på <b data-k="ov.days">—</b> spilledage med
       <b data-k="ov.players">—</b> spillere (<span data-k="ov.formats">—</span>). Bedste sejrsprocent: <b data-k="ov.wins">—</b>.
       Holdene blandes hver gang, så der vises ingen holdnavne – kun hvem der spillede sammen.
@@ -667,7 +668,7 @@ html:not([data-side="forside"]) #hl-card { display: none; }
 </div>
 
 
-<p class="d9-foot">Opdateret 20. nov. 2026 kl. 14:49 · Spilledage: 28. sep (4v4), 12. okt (2v2), 17. okt (3v3), 26. okt (4v4), 2. nov (3v3), 16. nov (3v3) · Alle kurve og assists er tjekket i videoen, og 1 eller 2 er målt mod den sorte 2'er-linje; spillere i ens tøj kan være byttet om. 2v2 er fravalgt som standard (se Format).</p>
+<p class="d9-foot">Opdateret 20. nov. 2026 kl. 15:07 · Spilledage: 28. sep (4v4), 12. okt (2v2), 17. okt (3v3), 26. okt (4v4), 2. nov (3v3), 16. nov (3v3) · Alle kurve og assists er tjekket i videoen, og 1 eller 2 er målt mod den sorte 2'er-linje; spillere i ens tøj kan være byttet om. 2v2 er fravalgt som standard (se Format).</p>
 </div>
 <script>// Public site only (20 Nov 2026, user: "Byg forslag B (kort forside med undersider)"). The page used to be 20 cards in one
 // scroll. Now the front page shows the leaders, the day video and the box score (top 5), and the other cards live on
@@ -1390,12 +1391,23 @@ function duoAll() {
       });
     }
     sims.sort((x, y) => y.v - x.v || x.q.key.localeCompare(y.q.key, 'da') || x.i - y.i);
-    const taken = new Set(), set = (o) => { const c = DUOS[o.i]; res.set(o.q.key, { c, v: o.v, as: o.swap ? [[o.q.a, c.sb], [o.q.b, c.sa]] : [[o.q.a, c.sa], [o.q.b, c.sb]], link: n(o.q.a, o.q.b) + n(o.q.b, o.q.a) }); };
-    // a famous duo is used once where that costs little: a pair takes a free duo only if it is within 0.12 of its own
-    // best fit; otherwise it gets its best fit, even when another pair has it too
+    // why: each player's traits that point the same way as his role's, and the assist link when it counts
+    const mk = (o) => {
+      const c = DUOS[o.i], as = o.swap ? [[o.q.a, c.sb, c.wb], [o.q.b, c.sa, c.wa]] : [[o.q.a, c.sa, c.wa], [o.q.b, c.sb, c.wb]];
+      const why = as.map(([p, f, w]) => { const z = S.byP.get(p).z; return { p, f, t: NBA_F.map((k) => ({ k, c: (z[k] || 0) * (w[k] || 0), up: (z[k] || 0) > 0 })).filter((x) => x.c > 0.3).sort((x, y) => y.c - x.c).slice(0, 2).map((x) => TRAIT[x.k][x.up ? 0 : 1]) }; });
+      const lz = zl(o.q.link), link = n(o.q.a, o.q.b) + n(o.q.b, o.q.a);
+      return { c, v: o.v, as: as.map(([p, f]) => [p, f]), link, games: o.q.games, why, mate: (p) => (p === o.q.a ? o.q.b : o.q.a),
+        linkTxt: lz * c.lk > 0.5 ? (lz > 0 ? 'De finder hinanden tit: ' + nOf(link, 'assist', 'assists') + ' til hinanden i ' + nOf(o.q.games, 'kamp', 'kampe') + '.' : 'De scorer mest hver for sig: ' + nOf(link, 'assist', 'assists') + ' til hinanden i ' + nOf(o.q.games, 'kamp', 'kampe') + '.') : '' };
+    };
+    // every player's own best pair first (shown in his scouting report, and the table says the same); then a famous duo
+    // is used once where that costs little: a pair takes a free duo only if it is within 0.12 of its own best fit
+    const taken = new Set(), top = new Map();
+    for (const o of sims) for (const p of [o.q.a, o.q.b]) if (!top.has(p)) top.set(p, o);
+    for (const o of new Set(top.values())) if (!res.has(o.q.key)) { res.set(o.q.key, mk(o)); taken.add(o.i); }
     const best = new Map(); for (const o of sims) if (!best.has(o.q.key)) best.set(o.q.key, o.v);
-    for (const o of sims) { if (res.has(o.q.key) || taken.has(o.i) || o.v < best.get(o.q.key) - 0.12) continue; taken.add(o.i); set(o); }
-    for (const o of sims) if (!res.has(o.q.key)) set(o);
+    for (const o of sims) { if (res.has(o.q.key) || taken.has(o.i) || o.v < best.get(o.q.key) - 0.12) continue; taken.add(o.i); res.set(o.q.key, mk(o)); }
+    for (const o of sims) if (!res.has(o.q.key)) res.set(o.q.key, mk(o));
+    res.top = new Map([...top].map(([p, o]) => [p, res.get(o.q.key)]));
   }
   duoSrc = S; duoRes = res;
   return res;
@@ -2590,6 +2602,18 @@ function drawScout() {
     el('p', { className: 'sub', textContent: 'Nærmeste profiler: ' + s.nba.near.map((q) => q.n + ' (afstand ' + dk(q.d, 2) + ')').join(' · ') + '. Afstand 0 = samme profil, 1 = ingen fælles træk.' })]
     : [lbl, el('span', { className: 'big', textContent: 'Kommer senere' }),
       el('span', { className: 'sub', textContent: 'Sammenligningen kræver mindst ' + SCOUT_MIN + ' kampe med fuld box score; ' + s.p + ' har ' + s.box + '.' })]));
+  // the one pairing of his that looks most like a famous duo, with whom and why (20 Nov 2026, user)
+  let duo = null; try { const D = duoAll(); duo = D.top && D.top.get(s.p); } catch (e) { console.error(e); }
+  if (duo) {
+    const me = duo.as.find(([p]) => p === s.p), him = duo.as.find(([p]) => p !== s.p);
+    const whyTxt = duo.why.filter((w) => w.t.length).sort((x, y) => (y.p === s.p) - (x.p === s.p)).map((w) => w.p + ' ligner ' + w.f + ': ' + og(w.t)).join('. ');
+    $('#scout-nba').append(el('span', { className: 'lbl d9-scout-duo', textContent: 'Makkerpar: sammen med ' + him[0] + ' minder I om' }),
+      el('span', { className: 'big', textContent: duo.c.sa + ' + ' + duo.c.sb }),
+      el('span', { className: 'sub', textContent: duo.c.a + ' og ' + duo.c.b + ', ' + duo.c.yr + '. ' + duo.c.d + '.' }),
+      el('p', { textContent: s.p + ' er ' + me[1] + ', ' + him[0] + ' er ' + him[1] + '.' }),
+      el('p', { textContent: 'Hvorfor: ' + (whyTxt ? whyTxt + '. ' : '') + duo.linkTxt }),
+      el('p', { className: 'sub', textContent: 'Det af ' + s.p + (/[sxz]$/.test(s.p) ? "'" : 's') + ' makkerpar (mindst 2 kampe sammen), der ligger tættest på et kendt par: lighed ' + Math.round(duo.v * 100) + ' af 100.' }));
+  }
   // profile bars; the diamond is the chosen comparison (a D9 player's own placement, or an NBA profile on the same
   // scale), otherwise the matched NBA player
   const cmpName = scope.p.scoutCmp || '', cD9 = cmpName !== s.p ? S.byP.get(cmpName) : null, cNba = NBA.find((c) => c.n === cmpName);
