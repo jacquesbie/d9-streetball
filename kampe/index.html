@@ -161,6 +161,37 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .km-fac-r .n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 @media (max-width: 560px) { .km-fac-r { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; } .km-fac-r .bar { grid-column: 1 / -1; grid-row: 2; } }
 .km-fac-r .n small { color: var(--color-fg-muted); font-size: var(--fs-caption); }
+
+/* court map per game (20 Nov 2026): every shot, assist and rebound where it happened, one colour per player */
+:root { --p0: #2a78d6; --p1: #eb6834; --p2: #1baf7a; --p3: #eda100; --p4: #e87ba4; --p5: #008300; --p6: #6250d6; --p7: #e34948; --p8: #6b7785; --p9: #8c5a2e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --p0: #3987e5; --p1: #d95926; --p2: #199e70; --p3: #c98500; --p4: #d55181; --p5: #008300; --p6: #9085e9; --p7: #e66767; --p8: #9aa6b5; --p9: #b98755; } }
+:root[data-theme="dark"] { --p0: #3987e5; --p1: #d95926; --p2: #199e70; --p3: #c98500; --p4: #d55181; --p5: #008300; --p6: #9085e9; --p7: #e66767; --p8: #9aa6b5; --p9: #b98755; }
+.km-court-wrap { display: grid; gap: var(--gap-md) var(--gap-lg); grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 860px) { .km-court-wrap { grid-template-columns: minmax(0, 34rem) minmax(15rem, 1fr); } }
+.km-court { position: relative; width: 100%; max-width: 34rem; }
+.km-court svg { display: block; width: 100%; height: auto; }
+.km-court .floor { fill: var(--color-bg); }
+.km-court .line { fill: none; stroke: var(--color-fg-muted); stroke-opacity: .45; stroke-width: 0.06; }
+.km-court .mk { cursor: pointer; }
+.km-court .mk .ring { stroke: var(--color-panel); stroke-width: 0.07; }
+.km-court .mk text { font-size: 0.3px; font-weight: 600; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.km-court .mk:hover .ring, .km-court .mk.on .ring { stroke: var(--color-fg); }
+.km-court .pass { stroke-width: 0.06; opacity: .7; pointer-events: none; }
+@media (max-width: 560px) { .km-court .mk text { display: none; } }
+.km-side { display: grid; gap: var(--gap-md); align-content: start; min-width: 0; }
+.km-keys { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: var(--fs-caption); color: var(--color-fg-muted); }
+.km-keys span { display: inline-flex; align-items: center; gap: 5px; }
+.km-keys svg { width: 14px; height: 14px; }
+.km-pl { display: grid; gap: 4px; }
+.km-pl h4 { margin: 6px 0 0; font-size: var(--fs-caption); font-weight: 600; color: var(--color-fg-muted); }
+.km-pl button { font: inherit; font-size: var(--fs-body); color: var(--color-fg); background: none; border: 1px solid transparent; border-radius: 8px; padding: 5px 8px; cursor: pointer;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; text-align: left; min-height: 36px; }
+.km-pl button:hover { border-color: var(--color-border-line); }
+.km-pl button[aria-pressed=true] { background: var(--color-bg); border-color: var(--color-fg-muted); }
+.km-pl button.dim { opacity: .45; }
+.km-pl button:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+.km-pl .sw { width: 1.5rem; height: 1.5rem; border-radius: 50%; display: inline-grid; place-items: center; font-size: .68rem; font-weight: 600; }
+.km-pl .st { color: var(--color-fg-muted); font-size: var(--fs-caption); font-variant-numeric: tabular-nums; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -195,6 +226,18 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       <div><h3 class="d9-sub">Hold mod hold</h3><div class="km-cmp" id="game-cmp"></div></div>
       <div><h3 class="d9-sub">Hvem scorede</h3><div class="km-scroll" id="game-scorers"></div></div>
     </div>
+    <div id="court-block" style="display:grid; gap: var(--gap-sm)">
+      <h3 class="d9-sub">Hvor på banen</h3>
+      <p class="d9-note" id="court-note"></p>
+      <div class="km-court-wrap">
+        <div class="km-court" id="game-court"></div>
+        <div class="km-side">
+          <div class="d9-chips" id="court-types" role="group" aria-label="Vis på banen"></div>
+          <div class="km-keys" id="court-keys"></div>
+          <div class="km-pl" id="court-players"></div>
+        </div>
+      </div>
+    </div>
     <details class="km-more"><summary>Kurvene i rækkefølge</summary><div class="km-scroll" id="game-list"></div></details>
     <p class="d9-note" id="game-note"></p>
   </section>
@@ -223,6 +266,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   <details class="d9-card d9-how" id="how" hidden>
     <summary>Sådan er tallene regnet</summary>
     <ul>
+      <li>Hvor på banen: hvert skud, hver assist og hver rebound er tegnet, hvor sporingen placerede det (de samme rækker som "Hvor på banen" på stats-siden). 1 eller 2 point følger den sorte linje, så et mærke kan stå lidt på den forkerte side af buen. Hver spiller har samme farve i alle kampe og to bogstaver i mærket.</li>
       <li>Siden læser de samme tal som forsiden, hver gang den åbnes. Stillingen undervejs bygger på de kurve, der er tjekket i videoen, i den rækkefølge de faldt.</li>
       <li>Enkelte kampe har en anden slutstilling i videoen end den, I selv talte (2'ere er målt mod den sorte linje, og et par kurve kan ikke ses). Resultatet øverst er jeres; grafen følger videoen, og det står under kampen, når de to afviger.</li>
       <li>Føringsskift: føringen går fra det ene hold til det andet. Lige: stillingen bliver uafgjort efter 0–0. Run: point i træk uden kurv imod. Comeback: det største antal point, vinderne var bagud. Tørke: længste tid, et hold gik uden at score.</li>
@@ -255,6 +299,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   const FORMAT_DEFAULT = ['3v3', '4v4'];
 
   let GAMES = [], Q = 0.2, CUR = null, FMT = new Set();
+  let EV = new Map();
 
   function fail(msg) { $('#take').replaceChildren(el('span', { className: 'd9-fail', textContent: msg })); }
 
@@ -353,6 +398,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     Q = Math.round((allMakes.filter((r) => Number(r.value) === 2).length / Math.max(1, allMakes.length)) * 100) / 100;
     const byGame = (list) => { const mp = new Map(); for (const r of list) { if (!mp.has(r.game_id)) mp.set(r.game_id, []); mp.get(r.game_id).push(r); } return mp; };
     const pg = byGame(data.player_games || []), sg = byGame(shots);
+    EV = byGame((data.events || []).filter((e) => e.type === 'shot' || e.type === 'ast' || e.type === 'reb'));
+    colourPlayers(data.games || [], data.events || []);
     GAMES = (data.games || []).slice().sort((a, b) => (a.date + String(a.game_no).padStart(2, '0')).localeCompare(b.date + String(b.game_no).padStart(2, '0')))
       .map((g) => build(g, pg.get(g.game_id) || [], sg.get(g.game_id) || []));
     if (!GAMES.length) return fail('Der er ingen kampe i stats endnu.');
@@ -509,6 +556,140 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       el('thead', {}, el('tr', {}, el('th', { textContent: 'Spiller' }), ...['Point', 'Skud', 'Reb', 'Ast', '+/-'].map((h) => el('th', { className: 'num', textContent: h })))),
       el('tbody', {}, ...pr.map((r) => el('tr', {}, el('td', {}, el('span', { className: 'km-dot ' + m.side(r) }), r.player), cell(r.PTS),
         cell(r.FGA != null ? r.FGM + '/' + r.FGA : null), cell(r.REB), cell(r.AST), cell(r.PM == null ? null : (r.PM > 0 ? '+' : '') + r.PM))))));
+    COURT.only = null; drawCourt(m);
+  }
+
+
+  // ---------- court map: what happened where, and who did it ----------
+  // Rows of the 'events' dataset (the same ones as "Hvor på banen" on the stats page): shot / ast / reb at a court point
+  // (u across, v out from the baseline, metres; hoop at (0, 1.575)). Each player keeps one colour on the whole page:
+  // players are taken by number of events and get the first of ten colours that nobody they have shared a game with has.
+  const PCOL = new Map(), NCOL = 10;
+  function colourPlayers(games, events) {
+    const n = new Map(), adj = new Map();
+    for (const e of events) if (e.type !== 'pos') n.set(e.player, (n.get(e.player) || 0) + 1);
+    for (const g of games) { const ps = [...(g.winners || []), ...(g.losers || [])]; for (const a of ps) { if (!adj.has(a)) adj.set(a, new Set()); if (!n.has(a)) n.set(a, 0); for (const b of ps) if (a !== b) adj.get(a).add(b); } }
+    for (const p of [...n.keys()].sort((a, b) => n.get(b) - n.get(a) || a.localeCompare(b, 'da'))) {
+      const taken = new Set([...(adj.get(p) || [])].map((q) => PCOL.get(q)));
+      let c = 0; while (taken.has(c) && c < NCOL) c++;
+      PCOL.set(p, c < NCOL ? c : PCOL.size % NCOL);
+    }
+  }
+  const pcol = (p) => 'var(--p' + (PCOL.has(p) ? PCOL.get(p) : 8) + ')';
+  // two letters per player, so the mark is never told apart by colour alone (Nicehair / Nicklas need the second letter)
+  function codes(ps) {
+    const out = new Map();
+    for (const p of ps) {
+      let c = p.slice(0, 2); const tw = ps.find((q) => q !== p && q.slice(0, 2) === c);
+      if (tw) { let i = 2; while (i < p.length - 1 && p[i] === tw[i]) i++; c = p[0] + p[i]; }      // first letter that differs
+      out.set(p, c);
+    }
+    return out;
+  }
+  const inkCache = new Map();
+  function inkOn(v) {          // dark or light letters on a player's colour
+    const hex = getComputedStyle(document.documentElement).getPropertyValue(v.slice(4, -1)).trim();
+    if (inkCache.has(hex)) return inkCache.get(hex);
+    const ch = [1, 3, 5].map((i) => { const x = parseInt(hex.slice(i, i + 2), 16) / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); });
+    const L = 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2], ink = L > 0.3 ? '#18212b' : '#ffffff';
+    inkCache.set(hex, ink); return ink;
+  }
+  const KINDS = [['make', 'Kurve'], ['miss', 'Afbrændere'], ['ast', 'Assists'], ['reb', 'Rebounds']];
+  const COURT = { kinds: new Set(['make', 'miss', 'ast']), only: null };
+  const U_MAX = 7.5, V_MAX = 10.5, HOOP_V = 1.575, ARC_R = 6.75, R = 0.3;
+  const kindOf = (e) => (e.type === 'shot' ? (Number(e.made) === 1 ? 'make' : 'miss') : e.type);
+  function shape(kind, x, y, r, attrs) {
+    if (kind === 'reb') return sv('rect', Object.assign({ x: x - r * 0.86, y: y - r * 0.86, width: r * 1.72, height: r * 1.72, rx: 0.05 }, attrs));
+    if (kind === 'ast') return sv('path', Object.assign({ d: 'M' + x + ',' + (y - r * 1.2) + 'L' + (x + r * 1.2) + ',' + y + 'L' + x + ',' + (y + r * 1.2) + 'L' + (x - r * 1.2) + ',' + y + 'Z' }, attrs));
+    return sv('circle', Object.assign({ cx: x, cy: y, r }, attrs));
+  }
+  let courtTip;
+  function hideCourtTip() { if (courtTip) { courtTip.remove(); courtTip = null; } for (const x of document.querySelectorAll('.km-court .mk.on')) x.classList.remove('on'); }
+  document.addEventListener('pointerdown', (e) => { if (!e.target.closest || !e.target.closest('.km-court .mk')) hideCourtTip(); });
+  function drawCourt(m) {
+    const all = EV.get(m.id) || [], block = $('#court-block');
+    block.hidden = !all.length; if (!all.length) return;
+    const g = m.g, teams = [['Vindere', g.winners || []], ['Tabere', g.losers || []]];
+    const known = new Set([...teams[0][1], ...teams[1][1]]);
+    const extra = [...new Set(all.map((e) => e.player))].filter((p) => !known.has(p)).sort((a, b) => a.localeCompare(b, 'da'));
+    if (extra.length) teams.push(['Andre', extra]);
+    const players = teams.flatMap((t) => t[1]), code = codes(players);
+    const placed = all.filter((e) => e.u != null && e.v != null && Math.abs(e.u) <= U_MAX + 0.3 && e.v >= -0.3 && e.v <= V_MAX + 0.3);
+    const noSpot = all.filter((e) => e.type === 'shot').length - placed.filter((e) => e.type === 'shot').length;
+    $('#court-note').textContent = 'Hvert mærke er én hændelse, dér hvor den skete, i spillerens farve. Tryk på et mærke for at se hvad det var, og på en spiller for kun at se ham.'
+      + (noSpot ? ' ' + noSpot + ' skud har' + ' ingen position og er ikke tegnet, men tæller i spillerlisten.' : '')
+      + ' Kameraet står lavt, så steder langt fra kurven kan ligge 1–2 m forkert. Steals, blokke og boldtab har ingen position i dataene endnu.';
+    // what to show
+    $('#court-types').replaceChildren(...KINDS.map(([k, lab]) => {
+      const n = placed.filter((e) => kindOf(e) === k && (!COURT.only || e.player === COURT.only)).length;
+      const b = el('button', { className: 'd9-chip', type: 'button' }, lab, el('span', { className: 'cnt', textContent: ' ' + n }));
+      b.setAttribute('aria-pressed', COURT.kinds.has(k));
+      b.onclick = () => { if (COURT.kinds.has(k)) COURT.kinds.delete(k); else COURT.kinds.add(k); drawCourt(m); };
+      return b;
+    }));
+    const key = (kind, lab, fill) => el('span', {}, sv('svg', { viewBox: '-0.5 -0.5 1 1', 'aria-hidden': 'true' }, shape(kind, 0, 0, kind === 'ast' ? 0.34 : 0.4,
+      { fill: fill ? 'var(--color-fg-muted)' : 'none', stroke: 'var(--color-fg-muted)', 'stroke-width': 0.1 })), lab);
+    $('#court-keys').replaceChildren(key('make', 'kurv (dobbelt ring: 2\'er)', true), key('miss', 'afbrænder', false), key('ast', 'assist, streg til skuddet', true), key('reb', 'rebound (hul: offensiv)', true));
+    // court
+    const host = $('#game-court'); hideCourtTip();
+    const svg = sv('svg', { viewBox: (-U_MAX - 0.3) + ' -0.4 ' + (2 * U_MAX + 0.6) + ' ' + (V_MAX + 0.8), role: 'img',
+      'aria-label': 'Banekort for ' + g.game + ': skud, assists og rebounds pr. spiller. De samme tal står i listen ved siden af.' });
+    svg.append(sv('rect', { class: 'floor', x: -U_MAX, y: 0, width: 2 * U_MAX, height: V_MAX }));
+    const ax = Math.sqrt(ARC_R * ARC_R - HOOP_V * HOOP_V);
+    svg.append(sv('g', { class: 'line' },
+      sv('rect', { x: -U_MAX, y: 0, width: 2 * U_MAX, height: V_MAX }),
+      sv('rect', { x: -2.45, y: 0, width: 4.9, height: 5.8 }), sv('circle', { cx: 0, cy: 5.8, r: 1.8 }),
+      sv('path', { d: 'M' + -ax + ',0A' + ARC_R + ',' + ARC_R + ' 0 1,0 ' + ax + ',0' }), sv('path', { d: 'M-1.25,' + HOOP_V + 'A1.25,1.25 0 0,0 1.25,' + HOOP_V }),
+      sv('line', { x1: -0.9, x2: 0.9, y1: 1.2, y2: 1.2, 'stroke-width': 0.12 }), sv('circle', { cx: 0, cy: HOOP_V, r: 0.225 })));
+    const shown = placed.filter((e) => COURT.kinds.has(kindOf(e)) && (!COURT.only || e.player === COURT.only));
+    const order = { ast: 0, reb: 1, miss: 2, make: 3 };
+    shown.sort((a, b) => order[kindOf(a)] - order[kindOf(b)]);
+    for (const e of shown) if (e.type === 'ast' && e.su != null) svg.append(sv('line', { class: 'pass', x1: e.u, y1: e.v, x2: e.su, y2: e.sv, stroke: pcol(e.player) }));
+    const what = (e) => {
+      const k = kindOf(e), d = dk(Math.hypot(e.u, e.v - HOOP_V), 1) + ' m fra kurven';
+      if (k === 'make') return [e.player + ' · kurv, ' + (Number(e.value) === 2 ? '2\'er' : '1\'er'), d, e.ast ? 'Oplæg: ' + e.ast : null];
+      if (k === 'miss') return [e.player + ' · afbrænder' + (Number(e.value) === 2 ? ', 2\'er-forsøg' : ''), d, null];
+      if (k === 'ast') return [e.player + ' · assist', 'Til ' + e.to + (Number(e.value) === 2 ? ' (2\'er)' : ''), 'Afleveret ' + d];
+      return [e.player + ' · ' + (Number(e.off) === 1 ? 'offensiv' : 'defensiv') + ' rebound', d, null];
+    };
+    for (const e of shown) {
+      const k = kindOf(e), c = pcol(e.player), hollow = k === 'miss' || (k === 'reb' && Number(e.off) === 1);
+      const mk = sv('g', { class: 'mk', tabindex: 0, role: 'img', 'aria-label': what(e).filter(Boolean).join('. ') });
+      if (k === 'make' && Number(e.value) === 2) mk.append(sv('circle', { cx: e.u, cy: e.v, r: R + 0.14, fill: 'none', stroke: c, 'stroke-width': 0.07 }));
+      mk.append(shape(k, e.u, e.v, R, { class: 'ring', fill: 'var(--color-panel)' }));
+      mk.append(shape(k, e.u, e.v, R - 0.06, hollow ? { fill: 'var(--color-panel)', stroke: c, 'stroke-width': 0.09 } : { fill: c }));
+      const t = sv('text', { x: e.u, y: e.v + 0.01, fill: hollow ? 'var(--color-fg)' : inkOn(c) }); t.textContent = code.get(e.player) || ''; mk.append(t);
+      const show = () => {
+        hideCourtTip(); mk.classList.add('on');
+        const [a, b, cc] = what(e);
+        courtTip = el('div', { className: 'km-tip' }, el('b', { textContent: a }), el('span', { textContent: b }), cc ? el('span', { textContent: cc }) : null);
+        host.append(courtTip);
+        const hb = host.getBoundingClientRect(), tb = mk.getBoundingClientRect(), w = courtTip.offsetWidth, h = courtTip.offsetHeight;
+        let left = tb.left + tb.width / 2 - hb.left - w / 2; left = Math.max(0, Math.min(left, hb.width - w));
+        let top = tb.top - hb.top - h - 6; if (top < 0) top = tb.bottom - hb.top + 6;
+        courtTip.style.left = left + 'px'; courtTip.style.top = top + 'px';
+      };
+      mk.addEventListener('pointerenter', (ev) => { if (ev.pointerType === 'mouse') show(); });
+      mk.addEventListener('pointerleave', (ev) => { if (ev.pointerType === 'mouse') hideCourtTip(); });
+      mk.addEventListener('click', show); mk.addEventListener('focus', show); mk.addEventListener('blur', hideCourtTip);
+      svg.append(mk);
+    }
+    host.replaceChildren(svg);
+    // players: the legend, the numbers behind the map and the way to see one player alone
+    const kids = [];
+    for (const [lab, ps] of teams) {
+      kids.push(el('h4', { textContent: lab }));
+      for (const p of ps) {
+        const mine = all.filter((e) => e.player === p), sh = mine.filter((e) => e.type === 'shot'), mk = sh.filter((e) => Number(e.made) === 1).length;
+        const c = pcol(p), b = el('button', { type: 'button', className: COURT.only && COURT.only !== p ? 'dim' : '', title: COURT.only === p ? 'Vis alle spillere' : 'Vis kun ' + p },
+          el('span', { className: 'sw', textContent: code.get(p), style: 'background:' + c + ';color:' + inkOn(c) }), el('span', { textContent: p }),
+          el('span', { className: 'st', textContent: mk + '/' + sh.length + ' skud · ' + mine.filter((e) => e.type === 'ast').length + ' ast · ' + mine.filter((e) => e.type === 'reb').length + ' reb' }));
+        b.setAttribute('aria-pressed', COURT.only === p);
+        b.onclick = () => { COURT.only = COURT.only === p ? null : p; drawCourt(m); };
+        kids.push(b);
+      }
+    }
+    $('#court-players').replaceChildren(...kids);
   }
 
   // score chart and win-probability strip, drawn at the container's own width so the text keeps its size
