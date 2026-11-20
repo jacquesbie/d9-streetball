@@ -1,0 +1,37 @@
+{
+ "dato": "2026-11-16",
+ "titel": "Kampgennemgang fra 16. november",
+ "kampe": {
+  "2026-11-16-k1": {
+   "fil": "k1.mp4",
+   "billede": "k1.jpg",
+   "sek": 94,
+   "kurve": 13
+  },
+  "2026-11-16-k2": {
+   "fil": "k2.mp4",
+   "billede": "k2.jpg",
+   "sek": 114,
+   "kurve": 15
+  },
+  "2026-11-16-k3": {
+   "fil": "k3.mp4",
+   "billede": "k3.jpg",
+   "sek": 139,
+   "kurve": 20
+  },
+  "2026-11-16-k4": {
+   "fil": "k4.mp4",
+   "billede": "k4.jpg",
+   "sek": 98,
+   "kurve": 14
+  },
+  "2026-11-16-k5": {
+   "fil": "k5.mp4",
+   "billede": "k5.jpg",
+   "sek": 116,
+   "kurve": 15
+  }
+ },
+ "v": "20261116-ad3cfa"
+}
