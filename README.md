@@ -49,6 +49,13 @@ serien, delt i 2–0 og 2–1, og chancen for en tredje kamp. Det regnes ud fra 
 Siden henter tallene fra `index.html`, hver gang den åbnes, ligesom fantasy. `eloPerGame()` i `hold/index.html` er en tvilling
 af `eloRun()` i dashboardets `index.html`, så ret begge, hvis Elo-reglen ændres. Valget huskes i browseren (localStorage).
 
+**Minder om (20. nov.):** under hvert hold står det kendte NBA-hold, holdet ligner mest: et par for to spillere, en trio for
+tre, en kvartet for fire og en femmer for fem (andre størrelser får ingen). Listen ligger i `hold/historie.js` (spillere med
+træk på scouting-rapportens 23 træk, og hold som lister af spillere); par bruger forsidens egen liste `DUOS`. Spillernes tal
+hentes ved at åbne `../index.html` i en skjult ramme og kalde `scoutAll()`, så intet er kopieret i hånden. Ligheden er cosinus
+mellem holdets z-scores og det kendte holds træk med den bedste fordeling af rollerne; de to hold får aldrig samme kendte
+hold, og spillere uden scouting-rapport tæller som gennemsnit (mindst to og mindst halvdelen af holdet skal have en).
+
 **Elo pr. kamp** (fra 12. nov.): hver kamp giver det sædvanlige Elo-skridt, 32 × M × (resultat − forventet) × andel af
 spilletiden, og ratingen er 1500 + 10 × gennemsnittet af skridtene pr. kamp (mindst 3 i nævneren). Antallet af kampe trækker
 derfor ikke op. Forventet regnes ud fra holdenes Elo pr. kamp før kampen.

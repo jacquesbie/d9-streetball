@@ -95,6 +95,15 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .d9-team li .r { color: var(--color-fg-muted); font-variant-numeric: tabular-nums; white-space: nowrap; font-size: var(--fs-body); }
 .d9-team .avg { color: var(--color-fg-muted); font-size: var(--fs-caption); font-variant-numeric: tabular-nums; }
 .d9-team .avg b { color: var(--color-fg); font-weight: 600; }
+.d9-hist { display: grid; gap: 4px; border-top: 1px solid var(--color-border-line); padding-top: 10px; margin-top: 2px; min-width: 0; }
+.d9-hist:empty { display: none; }
+.d9-hist small { font-size: var(--fs-caption); color: var(--color-fg-muted); }
+.d9-hist b.n { font-family: var(--font-cond); font-weight: 400; font-size: 1.35rem; line-height: 1.1; color: var(--tc); }
+.d9-hist p { margin: 0; font-size: var(--fs-body); }
+.d9-hist ul { list-style: none; margin: 2px 0; padding: 0; display: grid; gap: 3px; font-size: var(--fs-body); }
+.d9-hist li { overflow-wrap: anywhere; }
+.d9-hist li b { font-weight: 600; }
+.d9-hist li i { font-style: normal; color: var(--color-fg-muted); }
 .d9-odds { display: grid; gap: 8px; background: var(--color-bg); border-radius: var(--radius); padding: var(--pad-md) var(--pad-lg); }
 .d9-odds-h { font-size: var(--fs-caption); font-weight: 600; color: var(--color-fg-muted); }
 .d9-odds-h span { font-weight: 400; }
@@ -198,6 +207,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 </div>
 </div>
 
+<script src="historie.js?v=1"></script>
 <script>
 // Team maker for D9 Streetball. Reads window.D9_DATA out of the stats page (../index.html) on every load, like the
 // fantasy page, so a new ./deploy.sh is all it takes. Strength = Elo per game, worked out here by eloPerGame(), the
@@ -275,6 +285,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 
   // ---------- state ----------
   let ELO = new Map(), KNOWN = [], UPDATED = '', GAMES = 0;
+  let TR = null, HIST = [null, null];          // scouting traits from the stats page; the famous team each side resembles
   const S = { sel: new Set(), guests: [], mode: null, queue: [], qi: 0, total: 0, teams: null };
 
   function save() {
@@ -323,6 +334,89 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     if (!KNOWN.length) return fail('Der er ingen spillere i stats endnu.');
     restore();
     setup();
+    loadTraits();
+  }
+
+  // ---------- which famous team each side resembles ----------
+  // The scouting report's z-scores (23 traits per player) are worked out by the stats page itself, so the page is opened
+  // in a hidden frame and asked: scoutAll() for the players, NBA_F / TRAIT / DUOS for the trait list, the words and the
+  // famous duos. Nothing is copied by hand, so the two pages cannot drift apart. If it fails, the block just stays empty.
+  function loadTraits() {
+    const fr = el('iframe', { src: '../index.html', title: '', tabIndex: -1 });
+    fr.setAttribute('aria-hidden', 'true');
+    fr.style.cssText = 'position:absolute;left:-9999px;top:0;width:320px;height:10px;border:0;visibility:hidden';
+    let tries = 0;
+    const read = () => {
+      try {
+        const w = fr.contentWindow, scope = typeof w.scoutScope === 'function' ? w.scoutScope() : null;
+        if (!scope) { if (++tries < 40) setTimeout(read, 250); else fr.remove(); return; }
+        const R = w.scoutAll(scope), c = JSON.parse(JSON.stringify(w.eval('({ F: NBA_F, T: TRAIT, D: DUOS })')));
+        const z = new Map();
+        for (const q of R.Q) z.set(q.p, c.F.map((f) => Number(q.z[f]) || 0));
+        const vec = (o) => c.F.map((f) => o[f] || 0), tw = (t) => { const v = t.trim().split(/\s+/), o = {}; for (let i = 0; i < v.length; i += 2) o[v[i]] = Number(v[i + 1]); return o; };
+        const lib = new Map((window.D9_HIST ? window.D9_HIST.spillere : '').trim().split('\n').map((l) => { const [k, n, t] = l.split('|'), [full, short] = n.split('='); return [k, { full, short, w: vec(tw(t)) }]; }));
+        const teams = c.D.map((d) => ({ n: d.yr, d: d.d, m: [{ short: d.sa, w: vec(d.wa) }, { short: d.sb, w: vec(d.wb) }] }));
+        for (const l of (window.D9_HIST ? window.D9_HIST.hold : '').trim().split('\n')) {
+          const [n, d, ks] = l.split('|'), m = ks.trim().split(/\s+/).map((k) => lib.get(k));
+          if (m.every(Boolean)) teams.push({ n, d, m });
+        }
+        for (const t of teams) t.norm = Math.sqrt(t.m.reduce((a, x) => a + x.w.reduce((b, v) => b + v * v, 0), 0));
+        TR = { F: c.F, T: c.T, z, teams };
+      } catch (e) { TR = null; }
+      fr.remove();
+      if (TR && S.teams) drawHist();
+    };
+    fr.addEventListener('load', read);
+    document.body.append(fr);
+  }
+  const perms = (n) => { const out = []; const go = (a, rest) => { if (!rest.length) return out.push(a); rest.forEach((x, i) => go([...a, x], rest.filter((_, j) => j !== i))); }; go([], [...Array(n).keys()]); return out; };
+  // every famous team of the same size, best first: cosine between the team's z-scores and the famous team's traits, the
+  // roles handed out the way that fits best. Players without a scouting report (new, or too few games) count as average.
+  function histList(t) {
+    const zs = t.map((p) => TR.z.get(p) || null), known = zs.filter(Boolean).length;
+    if (t.length < 2 || known < Math.max(2, Math.ceil(t.length / 2))) return [];
+    const zn = Math.sqrt(zs.reduce((a, z) => a + (z ? z.reduce((b, v) => b + v * v, 0) : 0), 0));
+    if (!zn) return [];
+    const ps = perms(t.length), out = [];
+    for (const c of TR.teams) {
+      if (c.m.length !== t.length || !c.norm) continue;
+      const D = zs.map((z) => c.m.map((m) => (z ? z.reduce((a, v, i) => a + v * m.w[i], 0) : 0)));
+      let best = -Infinity, bp = null;
+      for (const pm of ps) { let d = 0; for (let i = 0; i < pm.length; i++) d += D[i][pm[i]]; if (d > best) { best = d; bp = pm; } }
+      out.push({ c, v: best / (zn * c.norm), pm: bp });
+    }
+    return out.sort((a, b) => b.v - a.v);
+  }
+  function histFor(teams) {
+    if (!TR) return [null, null];
+    const [a, b] = teams.map(histList);
+    let x = a[0] || null, y = b[0] || null;
+    // the two sides never get the same famous team: the one that loses least takes its second choice
+    if (x && y && x.c.n === y.c.n) {
+      const a2 = a.find((o) => o.c.n !== x.c.n), b2 = b.find((o) => o.c.n !== y.c.n);
+      if (a2 && (!b2 || x.v - a2.v < y.v - b2.v)) x = a2; else if (b2) y = b2;
+    }
+    const mk = (o, t) => o && { n: o.c.n, d: o.c.d, v: o.v, who: t.map((p, i) => {
+      const m = o.c.m[o.pm[i]], z = TR.z.get(p);
+      const why = z ? TR.F.map((f, j) => ({ f, c: z[j] * m.w[j], up: z[j] > 0 })).filter((q) => q.c > 0.3).sort((q, r) => r.c - q.c).slice(0, 2).map((q) => TR.T[q.f][q.up ? 0 : 1]) : null;
+      return { p, as: m.short, why };
+    }) };
+    return [mk(x, teams[0]), mk(y, teams[1])];
+  }
+  function drawHist() {
+    if (!S.teams) return;
+    HIST = histFor(S.teams);
+    HIST.forEach((h, i) => {
+      const box = document.getElementById('hist' + (i + 1)); if (!box) return;
+      if (!h) return box.replaceChildren();
+      const order = strongFirst(S.teams[i]);
+      box.replaceChildren(
+        el('small', { textContent: 'Minder om' }),
+        el('b', { className: 'n', textContent: h.n }),
+        el('p', { textContent: h.d + '.' }),
+        el('ul', {}, order.map((p) => { const w = h.who.find((q) => q.p === p); return el('li', {}, [el('b', { textContent: p }), ' er ' + w.as, el('i', { textContent: w.why === null ? ' · for få kampe til at sige hvorfor' : w.why.length ? ' · ' + w.why.join(', ') : '' })]); })),
+        el('small', { textContent: 'Lighed ' + Math.max(0, Math.round(100 * h.v)) + ' % · roller og hold fra scouting-rapportens tal' }));
+    });
   }
 
   // ---------- picking players ----------
@@ -465,8 +559,11 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
         el('span', { className: 'r', textContent: ELO.has(p) ? Math.round(rating(p)) + (ELO.get(p).n < ELO_MIN ? ' · få kampe' : '') : 'ny · ' + NEW_ELO }),
       ]))),
       el('div', { className: 'avg' }, ['Snit ', el('b', { textContent: String(Math.round(avg)) }), ' · vinderchance ', el('b', { textContent: p + ' %' })]),
+      el('div', { className: 'd9-hist', id: 'hist' + i }),
     ]);
     $('#teams').replaceChildren(team(t1, 1, a1, p1), team(t2, 2, a2, p2));
+    HIST = [null, null];
+    if (TR) drawHist();
     // win probability for this suggestion: big numbers, a bar and a sentence
     const side = (i, p) => el('div', { className: 't' + i }, [el('small', { textContent: 'Hold ' + i }), el('b', { textContent: p + ' %' })]);
     $('#odds-big').replaceChildren(side(1, p1), side(2, p2));
@@ -515,7 +612,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   }
   async function copyTeams() {
     const [t1, t2] = S.teams, [p1, p2] = chances(t1, t2), b3 = bestOf3(p1);
-    const text = 'Hold 1 (vinderchance ' + p1 + ' %): ' + strongFirst(t1).join(', ') + '\nHold 2 (vinderchance ' + p2 + ' %): ' + strongFirst(t2).join(', ')
+    const som = (i) => (HIST[i] ? ' – minder om ' + HIST[i].n + ' (' + strongFirst(S.teams[i]).map((p) => HIST[i].who.find((q) => q.p === p).as).join(', ') + ')' : '');
+    const text = 'Hold 1 (vinderchance ' + p1 + ' %): ' + strongFirst(t1).join(', ') + som(0) + '\nHold 2 (vinderchance ' + p2 + ' %): ' + strongFirst(t2).join(', ') + som(1)
       + '\nBedst af 3: Hold 1 ' + b3.s1 + ' % (2–0: ' + b3.w20 + ' %, 2–1: ' + b3.w21 + ' %) · Hold 2 ' + b3.s2 + ' % (2–0: ' + b3.l20 + ' %, 2–1: ' + b3.l21 + ' %)';
     let ok = false;
     try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {
