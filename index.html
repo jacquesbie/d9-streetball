@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>D9 Streetball Stats</title>
-<meta name="d9-opdateret" content="2026-11-20T14:41|b52128812fb5c17b">
+<meta name="d9-opdateret" content="2026-11-20T14:49|75e4fe152e694493">
 <meta name="description" content="Stats fra vores pickup-kampe: box scores, scouting reports med video, sæsonens priser og rekorder, Elo pr. kamp, holdgenerator, WPA, heatmaps, spillestil, impact, nemesis-tabel, pivot og makkerpar.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -85,6 +85,9 @@ html:not([data-side="forside"]) #hl-card { display: none; }
 .d9-go span { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
 @media (max-width: 459px) { html[data-side] .d9-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--cds-gap-sm); }
   html[data-side] .d9-tile { padding: var(--cds-pad-sm) var(--cds-pad-md); } html[data-side] .d9-tile .big { font-size: 1.6rem; } }
+
+.d9-foot a.d9-loglink { color: inherit; text-decoration: none; }
+.d9-foot a.d9-loglink:hover { text-decoration: underline; }
 
 
 /* Layout: header + tiles, then the pivot (controls, table, bar chart), then insights, duos and games. */
@@ -219,7 +222,7 @@ html:not([data-side="forside"]) #hl-card { display: none; }
 <div class="d9">
   <header id="top">
     <h1 class="d9-title">D9 Streetball Stats</h1>
-    <p class="d9-updated">Sidst opdateret <time datetime="2026-11-20T14:41">20. nov. 2026 kl. 14:41</time></p>
+    <p class="d9-updated">Sidst opdateret <time datetime="2026-11-20T14:49">20. nov. 2026 kl. 14:49</time></p>
     <p class="d9-take" id="take" data-source="games player_games"><b data-k="ov.games">—</b> kampe på <b data-k="ov.days">—</b> spilledage med
       <b data-k="ov.players">—</b> spillere (<span data-k="ov.formats">—</span>). Bedste sejrsprocent: <b data-k="ov.wins">—</b>.
       Holdene blandes hver gang, så der vises ingen holdnavne – kun hvem der spillede sammen.
@@ -664,7 +667,7 @@ html:not([data-side="forside"]) #hl-card { display: none; }
 </div>
 
 
-<p class="d9-foot">Opdateret 20. nov. 2026 kl. 14:41 · Spilledage: 28. sep (4v4), 12. okt (2v2), 17. okt (3v3), 26. okt (4v4), 2. nov (3v3), 16. nov (3v3) · Alle kurve og assists er tjekket i videoen, og 1 eller 2 er målt mod den sorte 2'er-linje; spillere i ens tøj kan være byttet om. 2v2 er fravalgt som standard (se Format).</p>
+<p class="d9-foot">Opdateret 20. nov. 2026 kl. 14:49 · Spilledage: 28. sep (4v4), 12. okt (2v2), 17. okt (3v3), 26. okt (4v4), 2. nov (3v3), 16. nov (3v3) · Alle kurve og assists er tjekket i videoen, og 1 eller 2 er målt mod den sorte 2'er-linje; spillere i ens tøj kan være byttet om. 2v2 er fravalgt som standard (se Format).</p>
 </div>
 <script>// Public site only (20 Nov 2026, user: "Byg forslag B (kort forside med undersider)"). The page used to be 20 cards in one
 // scroll. Now the front page shows the leaders, the day video and the box score (top 5), and the other cards live on
@@ -786,6 +789,10 @@ html:not([data-side="forside"]) #hl-card { display: none; }
     SIDER.filter((s) => s !== side).forEach((s) => gå.append(el('a', { href: url(s) }, el('b', { textContent: s.navn }), el('span', { textContent: s.om }))));
     root.append(gå);
   }
+
+  // change log: for the user only, so not in the menu, just a quiet link at the very bottom (site/log/, entries in log.json)
+  const fod = root.querySelector('.d9-foot') || document.querySelector('.d9-foot');
+  if (fod) fod.append(' · ', el('a', { href: 'log/', textContent: 'Ændringslog', className: 'd9-loglink', rel: 'nofollow' }));
 
   // a link to a card that lives on another page goes to that page
   document.addEventListener('click', (e) => {

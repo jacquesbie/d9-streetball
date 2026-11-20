@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Ændringslog · D9</title>
+<style>
+:root { --bg: #f4f6f9; --card: #ffffff; --fg: #16202c; --muted: #5d6b7c; --line: #dfe5ec; --accent: #c2540a; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0f151c; --card: #18212b; --fg: #e8edf2; --muted: #97a4b3; --line: #2a3644; --accent: #ff8a3c; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 46rem; margin: 0 auto; padding: 24px 16px 64px; }
+a { color: var(--accent); }
+h1 { font-size: 1.6rem; margin: 12px 0 4px; }
+p.om { color: var(--muted); margin: 0 0 24px; font-size: 0.9rem; }
+h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 28px 0 8px; font-weight: 600; }
+ul { list-style: none; margin: 0; padding: 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+li { padding: 12px 16px; border-top: 1px solid var(--line); }
+li:first-child { border-top: 0; }
+</style>
+</head>
+<body>
+<main>
+  <a href="../">← D9 Streetball Stats</a>
+  <h1>Ændringslog</h1>
+  <p class="om">Hvad der er ændret på siden og i tallene, nyeste først. Siden er ikke i menuen og ikke i søgemaskiner, men den er ikke låst: alle med linket kan læse den.</p>
+  <div id="log">Henter …</div>
+</main>
+<script>
+(async function () {
+  const box = document.getElementById('log');
+  const MD = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'];
+  try {
+    const res = await fetch('log.json', { cache: 'no-cache' }); if (!res.ok) throw new Error('HTTP ' + res.status);
+    const rows = await res.json(); box.textContent = '';
+    let ul = null, last = null;
+    for (const r of rows) {
+      if (r.d !== last) {
+        const [y, m, d] = r.d.split('-').map(Number), h = document.createElement('h2');
+        h.textContent = d + '. ' + MD[m - 1] + ' ' + y; ul = document.createElement('ul'); box.append(h, ul); last = r.d;
+      }
+      const li = document.createElement('li'); li.textContent = r.t; ul.append(li);
+    }
+  } catch (e) { box.textContent = 'Kunne ikke hente loggen (' + e.message + ').'; }
+})();
+</script>
+</body>
+</html>

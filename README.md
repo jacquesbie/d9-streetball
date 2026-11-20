@@ -80,3 +80,8 @@ Den gamle dags videoer forsvinder fra siden, når en ny dag udgives. Kør den ig
 
 Kolonnen regnes i siden (`DUOS` og `duoAll()` i `dashboard/index.html`): begge spilleres z-scorer fra scouting-rapporten og
 parrets assists til hinanden holdes op mod 34 kendte NBA-par. Nye kendte par tilføjes som en linje i `DUOS`.
+
+## Ændringslog (20. nov. 2026)
+
+`log/` er en underside kun til Jacob: ikke i menuen, `noindex`, et stille link sidst i sidefoden (sat af `site_sider.js`).
+Den er ikke låst. Hver udgivelse, der ændrer tal eller sider, får en linje øverst i `log/log.json` (`{"d": "ÅÅÅÅ-MM-DD", "t": "tekst"}`).
