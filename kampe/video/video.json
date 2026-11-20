@@ -5,33 +5,33 @@
   "2026-11-16-k1": {
    "fil": "k1.mp4",
    "billede": "k1.jpg",
-   "sek": 94,
+   "sek": 90,
    "kurve": 13
   },
   "2026-11-16-k2": {
    "fil": "k2.mp4",
    "billede": "k2.jpg",
-   "sek": 114,
+   "sek": 111,
    "kurve": 15
   },
   "2026-11-16-k3": {
    "fil": "k3.mp4",
    "billede": "k3.jpg",
-   "sek": 139,
+   "sek": 137,
    "kurve": 20
   },
   "2026-11-16-k4": {
    "fil": "k4.mp4",
    "billede": "k4.jpg",
-   "sek": 98,
+   "sek": 97,
    "kurve": 14
   },
   "2026-11-16-k5": {
    "fil": "k5.mp4",
    "billede": "k5.jpg",
-   "sek": 116,
+   "sek": 110,
    "kurve": 15
   }
  },
- "v": "20261116-ad3cfa"
+ "v": "20261116-371c92"
 }

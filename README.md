@@ -68,8 +68,8 @@ af forsiden er nok. `winProb()` i `kampe/index.html` er en tvilling af den på f
 
 ## Kampgennemgang på video (20. nov. 2026)
 
-`kampe/video/` holder én video pr. kamp for den SENESTE spilledag (alle kurve i rækkefølge, løbende stilling, banens lyd
-og dansk speak med undertekst) samt `video.json`, som kampsiden læser. Videoerne laves af `~/HoopStatsLocal/highlights/kampvideo.py`:
+`kampe/video/` holder én video pr. kamp for den SENESTE spilledag (alle kurve i rækkefølge, løbende stilling, D9-sangen
+som eneste lyd og en tekstlinje om hver kurv; speak kan slås til med SPEAK = True) samt `video.json`, som kampsiden læser. Videoerne laves af `~/HoopStatsLocal/highlights/kampvideo.py`:
 
     /usr/bin/python3 kampvideo.py ÅÅÅÅ-MM-DD          # klipper (ca. 8 min for fem kampe)
     /usr/bin/python3 kampvideo.py ÅÅÅÅ-MM-DD udgiv    # tømmer kampe/video/ og lægger den nye dag ind; derefter deploy.sh

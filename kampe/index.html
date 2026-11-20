@@ -511,7 +511,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     const src = 'video/' + v.fil + '?v=' + VID.v;
     if (vid.getAttribute('src') !== src) { vid.pause(); vid.poster = 'video/' + v.billede + '?v=' + VID.v; vid.src = src; vid.load(); }
     const min = Math.floor(v.sek / 60), sek = String(v.sek % 60).padStart(2, '0');
-    $('#game-vid-note').textContent = 'Alle ' + v.kurve + ' kurve i rækkefølge med stillingen undervejs, ' + min + ':' + sek + ' min. Speaken er lavet automatisk ud fra tallene og står også som tekst i billedet. Videoerne findes kun for den seneste spilledag og bliver skiftet ud, næste gang der er spillet.';
+    $('#game-vid-note').textContent = 'Alle ' + v.kurve + ' kurve i rækkefølge med stillingen undervejs, ' + min + ':' + sek + ' min. Teksten om hver kurv er lavet automatisk ud fra tallene, og lyden er D9-sangen. Videoerne findes kun for den seneste spilledag og bliver skiftet ud, næste gang der er spillet.';
   }
 
   function drawGame(m) {
