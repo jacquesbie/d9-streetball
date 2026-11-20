@@ -191,7 +191,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .km-pl button.dim { opacity: .45; }
 .km-pl button:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
 .km-pl .sw { width: 1.5rem; height: 1.5rem; border-radius: 50%; display: inline-grid; place-items: center; font-size: .68rem; font-weight: 600; }
-.km-pl .st { color: var(--color-fg-muted); font-size: var(--fs-caption); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.km-pl .st { color: var(--color-fg-muted); font-size: var(--fs-caption); font-variant-numeric: tabular-nums; text-align: right; }
 </style>
 </head>
 <body>
@@ -266,7 +266,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   <details class="d9-card d9-how" id="how" hidden>
     <summary>Sådan er tallene regnet</summary>
     <ul>
-      <li>Hvor på banen: hvert skud, hver assist og hver rebound er tegnet, hvor sporingen placerede det (de samme rækker som "Hvor på banen" på stats-siden). 1 eller 2 point følger den sorte linje, så et mærke kan stå lidt på den forkerte side af buen. Hver spiller har samme farve i alle kampe og to bogstaver i mærket.</li>
+      <li>Hvor på banen: hvert skud, hver assist og hver rebound er tegnet, hvor sporingen placerede det (de samme rækker som "Hvor på banen" på stats-siden). Steals, blokke og boldtab er de samme, som tæller i box score, tegnet dér hvor sporingen havde spilleren på det tidspunkt, videogennemgangen angiver; de få uden tidspunkt eller spor er ikke tegnet. 1 eller 2 point følger den sorte linje, så et mærke kan stå lidt på den forkerte side af buen. Hver spiller har samme farve i alle kampe og to bogstaver i mærket.</li>
       <li>Siden læser de samme tal som forsiden, hver gang den åbnes. Stillingen undervejs bygger på de kurve, der er tjekket i videoen, i den rækkefølge de faldt.</li>
       <li>Enkelte kampe har en anden slutstilling i videoen end den, I selv talte (2'ere er målt mod den sorte linje, og et par kurve kan ikke ses). Resultatet øverst er jeres; grafen følger videoen, og det står under kampen, når de to afviger.</li>
       <li>Føringsskift: føringen går fra det ene hold til det andet. Lige: stillingen bliver uafgjort efter 0–0. Run: point i træk uden kurv imod. Comeback: det største antal point, vinderne var bagud. Tørke: længste tid, et hold gik uden at score.</li>
@@ -398,7 +398,9 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     Q = Math.round((allMakes.filter((r) => Number(r.value) === 2).length / Math.max(1, allMakes.length)) * 100) / 100;
     const byGame = (list) => { const mp = new Map(); for (const r of list) { if (!mp.has(r.game_id)) mp.set(r.game_id, []); mp.get(r.game_id).push(r); } return mp; };
     const pg = byGame(data.player_games || []), sg = byGame(shots);
-    EV = byGame((data.events || []).filter((e) => e.type === 'shot' || e.type === 'ast' || e.type === 'reb'));
+    // shots, assists and rebounds from 'events'; steals, blocks and turnovers from 'defevents' (heat/build_def_events.py)
+    EV = byGame([...(data.events || []).filter((e) => e.type === 'shot' || e.type === 'ast' || e.type === 'reb'),
+      ...(data.defevents || []).filter((e) => e.type === 'stl' || e.type === 'blk' || e.type === 'tov')]);
     colourPlayers(data.games || [], data.events || []);
     GAMES = (data.games || []).slice().sort((a, b) => (a.date + String(a.game_no).padStart(2, '0')).localeCompare(b.date + String(b.game_no).padStart(2, '0')))
       .map((g) => build(g, pg.get(g.game_id) || [], sg.get(g.game_id) || []));
@@ -594,12 +596,16 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     const L = 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2], ink = L > 0.3 ? '#18212b' : '#ffffff';
     inkCache.set(hex, ink); return ink;
   }
-  const KINDS = [['make', 'Kurve'], ['miss', 'Afbrændere'], ['ast', 'Assists'], ['reb', 'Rebounds']];
-  const COURT = { kinds: new Set(['make', 'miss', 'ast']), only: null };
+  const KINDS = [['make', 'Kurve'], ['miss', 'Afbrændere'], ['ast', 'Assists'], ['reb', 'Rebounds'], ['stl', 'Steals'], ['blk', 'Blokke'], ['tov', 'Boldtab']];
+  const COURT = { kinds: new Set(['make', 'miss', 'ast', 'stl', 'blk', 'tov']), only: null };
   const U_MAX = 7.5, V_MAX = 10.5, HOOP_V = 1.575, ARC_R = 6.75, R = 0.3;
   const kindOf = (e) => (e.type === 'shot' ? (Number(e.made) === 1 ? 'make' : 'miss') : e.type);
   function shape(kind, x, y, r, attrs) {
     if (kind === 'reb') return sv('rect', Object.assign({ x: x - r * 0.86, y: y - r * 0.86, width: r * 1.72, height: r * 1.72, rx: 0.05 }, attrs));
+    if (kind === 'stl' || kind === 'tov') { const k = kind === 'stl' ? -1 : 1, a = r * 1.3;          // triangle: up = steal, down = turnover
+      return sv('path', Object.assign({ d: 'M' + x + ',' + (y + k * a) + 'L' + (x + a * 1.1) + ',' + (y - k * a * 0.75) + 'L' + (x - a * 1.1) + ',' + (y - k * a * 0.75) + 'Z', 'stroke-linejoin': 'round' }, attrs)); }
+    if (kind === 'blk') { const a = r * 1.12, pts = [0, 1, 2, 3, 4, 5].map((i) => (x + a * Math.cos(Math.PI / 6 + i * Math.PI / 3)) + ',' + (y + a * Math.sin(Math.PI / 6 + i * Math.PI / 3)));
+      return sv('path', Object.assign({ d: 'M' + pts.join('L') + 'Z' }, attrs)); }
     if (kind === 'ast') return sv('path', Object.assign({ d: 'M' + x + ',' + (y - r * 1.2) + 'L' + (x + r * 1.2) + ',' + y + 'L' + x + ',' + (y + r * 1.2) + 'L' + (x - r * 1.2) + ',' + y + 'Z' }, attrs));
     return sv('circle', Object.assign({ cx: x, cy: y, r }, attrs));
   }
@@ -615,10 +621,14 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     if (extra.length) teams.push(['Andre', extra]);
     const players = teams.flatMap((t) => t[1]), code = codes(players);
     const placed = all.filter((e) => e.u != null && e.v != null && Math.abs(e.u) <= U_MAX + 0.3 && e.v >= -0.3 && e.v <= V_MAX + 0.3);
+    const isDef = (e) => e.type === 'stl' || e.type === 'blk' || e.type === 'tov';
     const noSpot = all.filter((e) => e.type === 'shot').length - placed.filter((e) => e.type === 'shot').length;
+    const defs = all.filter(isDef), noDef = defs.length - placed.filter(isDef).length;
     $('#court-note').textContent = 'Hvert mærke er én hændelse, dér hvor den skete, i spillerens farve. Tryk på et mærke for at se hvad det var, og på en spiller for kun at se ham.'
-      + (noSpot ? ' ' + noSpot + ' skud har' + ' ingen position og er ikke tegnet, men tæller i spillerlisten.' : '')
-      + ' Kameraet står lavt, så steder langt fra kurven kan ligge 1–2 m forkert. Steals, blokke og boldtab har ingen position i dataene endnu.';
+      + (noSpot ? ' ' + noSpot + ' skud har ingen position og er ikke tegnet, men tæller i spillerlisten.' : '')
+      + (noDef ? ' Det samme gælder ' + noDef + (noDef === 1 ? ' steal, blok eller boldtab.' : ' steals, blokke eller boldtab.') : '')
+      + ' Kameraet står lavt, så steder langt fra kurven kan ligge 1–2 m forkert.'
+      + (defs.length ? '' : ' Steals, blokke og boldtab er ikke gennemgået i videoen for denne kamp.');
     // what to show
     $('#court-types').replaceChildren(...KINDS.map(([k, lab]) => {
       const n = placed.filter((e) => kindOf(e) === k && (!COURT.only || e.player === COURT.only)).length;
@@ -629,11 +639,12 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     }));
     const key = (kind, lab, fill) => el('span', {}, sv('svg', { viewBox: '-0.5 -0.5 1 1', 'aria-hidden': 'true' }, shape(kind, 0, 0, kind === 'ast' ? 0.34 : 0.4,
       { fill: fill ? 'var(--color-fg-muted)' : 'none', stroke: 'var(--color-fg-muted)', 'stroke-width': 0.1 })), lab);
-    $('#court-keys').replaceChildren(key('make', 'kurv (dobbelt ring: 2\'er)', true), key('miss', 'afbrænder', false), key('ast', 'assist, streg til skuddet', true), key('reb', 'rebound (hul: offensiv)', true));
+    $('#court-keys').replaceChildren(key('make', 'kurv (dobbelt ring: 2\'er)', true), key('miss', 'afbrænder', false), key('ast', 'assist, streg til skuddet', true), key('reb', 'rebound (hul: offensiv)', true),
+      key('stl', 'steal', true), key('tov', 'boldtab', false), key('blk', 'blok', true));
     // court
     const host = $('#game-court'); hideCourtTip();
     const svg = sv('svg', { viewBox: (-U_MAX - 0.3) + ' -0.4 ' + (2 * U_MAX + 0.6) + ' ' + (V_MAX + 0.8), role: 'img',
-      'aria-label': 'Banekort for ' + g.game + ': skud, assists og rebounds pr. spiller. De samme tal står i listen ved siden af.' });
+      'aria-label': 'Banekort for ' + g.game + ': skud, assists, rebounds, steals, blokke og boldtab pr. spiller. De samme tal står i listen ved siden af.' });
     svg.append(sv('rect', { class: 'floor', x: -U_MAX, y: 0, width: 2 * U_MAX, height: V_MAX }));
     const ax = Math.sqrt(ARC_R * ARC_R - HOOP_V * HOOP_V);
     svg.append(sv('g', { class: 'line' },
@@ -642,7 +653,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       sv('path', { d: 'M' + -ax + ',0A' + ARC_R + ',' + ARC_R + ' 0 1,0 ' + ax + ',0' }), sv('path', { d: 'M-1.25,' + HOOP_V + 'A1.25,1.25 0 0,0 1.25,' + HOOP_V }),
       sv('line', { x1: -0.9, x2: 0.9, y1: 1.2, y2: 1.2, 'stroke-width': 0.12 }), sv('circle', { cx: 0, cy: HOOP_V, r: 0.225 })));
     const shown = placed.filter((e) => COURT.kinds.has(kindOf(e)) && (!COURT.only || e.player === COURT.only));
-    const order = { ast: 0, reb: 1, miss: 2, make: 3 };
+    const order = { ast: 0, reb: 1, miss: 2, make: 3, tov: 4, stl: 5, blk: 6 };
     shown.sort((a, b) => order[kindOf(a)] - order[kindOf(b)]);
     for (const e of shown) if (e.type === 'ast' && e.su != null) svg.append(sv('line', { class: 'pass', x1: e.u, y1: e.v, x2: e.su, y2: e.sv, stroke: pcol(e.player) }));
     const what = (e) => {
@@ -650,15 +661,18 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       if (k === 'make') return [e.player + ' · kurv, ' + (Number(e.value) === 2 ? '2\'er' : '1\'er'), d, e.ast ? 'Oplæg: ' + e.ast : null];
       if (k === 'miss') return [e.player + ' · afbrænder' + (Number(e.value) === 2 ? ', 2\'er-forsøg' : ''), d, null];
       if (k === 'ast') return [e.player + ' · assist', 'Til ' + e.to + (Number(e.value) === 2 ? ' (2\'er)' : ''), 'Afleveret ' + d];
+      if (k === 'stl') return [e.player + ' · steal', e.mod ? 'Fra ' + e.mod : d, e.mod ? d : null];
+      if (k === 'tov') return [e.player + ' · boldtab', e.mod ? 'Stjålet af ' + e.mod : 'Uden steal', d];
+      if (k === 'blk') return [e.player + ' · blok', e.mod ? 'På ' + e.mod + 's skud' : d, e.mod ? d : null];
       return [e.player + ' · ' + (Number(e.off) === 1 ? 'offensiv' : 'defensiv') + ' rebound', d, null];
     };
     for (const e of shown) {
-      const k = kindOf(e), c = pcol(e.player), hollow = k === 'miss' || (k === 'reb' && Number(e.off) === 1);
+      const k = kindOf(e), c = pcol(e.player), hollow = k === 'miss' || k === 'tov' || (k === 'reb' && Number(e.off) === 1);
       const mk = sv('g', { class: 'mk', tabindex: 0, role: 'img', 'aria-label': what(e).filter(Boolean).join('. ') });
       if (k === 'make' && Number(e.value) === 2) mk.append(sv('circle', { cx: e.u, cy: e.v, r: R + 0.14, fill: 'none', stroke: c, 'stroke-width': 0.07 }));
       mk.append(shape(k, e.u, e.v, R, { class: 'ring', fill: 'var(--color-panel)' }));
       mk.append(shape(k, e.u, e.v, R - 0.06, hollow ? { fill: 'var(--color-panel)', stroke: c, 'stroke-width': 0.09 } : { fill: c }));
-      const t = sv('text', { x: e.u, y: e.v + 0.01, fill: hollow ? 'var(--color-fg)' : inkOn(c) }); t.textContent = code.get(e.player) || ''; mk.append(t);
+      const t = sv('text', { x: e.u, y: e.v + (k === 'stl' ? 0.07 : k === 'tov' ? -0.05 : 0.01), fill: hollow ? 'var(--color-fg)' : inkOn(c) }); t.textContent = code.get(e.player) || ''; mk.append(t);
       const show = () => {
         hideCourtTip(); mk.classList.add('on');
         const [a, b, cc] = what(e);
@@ -683,7 +697,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
         const mine = all.filter((e) => e.player === p), sh = mine.filter((e) => e.type === 'shot'), mk = sh.filter((e) => Number(e.made) === 1).length;
         const c = pcol(p), b = el('button', { type: 'button', className: COURT.only && COURT.only !== p ? 'dim' : '', title: COURT.only === p ? 'Vis alle spillere' : 'Vis kun ' + p },
           el('span', { className: 'sw', textContent: code.get(p), style: 'background:' + c + ';color:' + inkOn(c) }), el('span', { textContent: p }),
-          el('span', { className: 'st', textContent: mk + '/' + sh.length + ' skud · ' + mine.filter((e) => e.type === 'ast').length + ' ast · ' + mine.filter((e) => e.type === 'reb').length + ' reb' }));
+          el('span', { className: 'st', textContent: mk + '/' + sh.length + ' skud · ' + mine.filter((e) => e.type === 'ast').length + ' ast · ' + mine.filter((e) => e.type === 'reb').length + ' reb'
+            + [['stl', 'stl'], ['blk', 'blk'], ['tov', 'tab']].map(([ty, lab]) => { const n = mine.filter((e) => e.type === ty).length; return n ? ' · ' + n + ' ' + lab : ''; }).join('') }));
         b.setAttribute('aria-pressed', COURT.only === p);
         b.onclick = () => { COURT.only = COURT.only === p ? null : p; drawCourt(m); };
         kids.push(b);
