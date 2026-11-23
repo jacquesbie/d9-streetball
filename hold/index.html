@@ -58,11 +58,16 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .d9-chip:hover { border-color: var(--color-fg-muted); }
 .d9-chip[aria-pressed=true] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
 .d9-chip .tag { font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; opacity: .75; }
+/* Egne hold: a chip on Hold 1 / Hold 2 takes that team's colour */
+.d9-chip.o1[aria-pressed=true] { background: var(--team1-soft); color: var(--color-fg); border-color: var(--team1); box-shadow: inset 0 0 0 1px var(--team1); }
+.d9-chip.o2[aria-pressed=true] { background: var(--team2-soft); color: var(--color-fg); border-color: var(--team2); box-shadow: inset 0 0 0 1px var(--team2); }
+.d9-chip.o1 .tag.h, .d9-chip.o2 .tag.h { opacity: 1; font-weight: 600; }
 .d9-guest { position: relative; display: inline-flex; }
 .d9-guest .d9-chip { padding-right: 40px; }
 .d9-chip-x { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); font: inherit; font-size: 1.1rem; line-height: 1;
   cursor: pointer; border: 0; background: none; color: var(--color-fg-muted); width: 32px; height: 32px; border-radius: 999px; }
 .d9-chip[aria-pressed=true] + .d9-chip-x { color: var(--color-bg); }
+.d9-chip.o1[aria-pressed=true] + .d9-chip-x, .d9-chip.o2[aria-pressed=true] + .d9-chip-x { color: var(--color-fg-muted); }
 .d9-chip-x:hover { background: color-mix(in srgb, currentColor 18%, transparent); }
 .d9-row { display: flex; flex-wrap: wrap; gap: var(--gap-sm); align-items: center; }
 .d9-add { display: flex; flex-wrap: wrap; gap: var(--gap-sm); align-items: end; }
@@ -74,6 +79,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .d9-btn:hover { border-color: var(--color-fg-muted); }
 .d9-btn.main { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
 .d9-btn.main:hover { box-shadow: 0 0 0 3px var(--d9-accent); }
+.d9-btn[aria-pressed=true] { border-color: var(--d9-accent); box-shadow: inset 0 0 0 1px var(--d9-accent); }
 .d9-btn.small { font-weight: 500; font-size: var(--fs-caption); padding: 6px 14px; min-height: 36px; }
 .d9-btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
 .d9-chip:focus-visible, .d9-btn:focus-visible, .d9-chip-x:focus-visible, .d9-how summary:focus-visible, .d9-field input:focus-visible {
@@ -148,6 +154,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 
   <section class="d9-card" id="who-card" aria-labelledby="who-h" hidden>
     <div class="d9-head"><h2 id="who-h">Hvem er mødt op?</h2><span class="d9-count" id="count" aria-live="polite"></span></div>
+    <p class="d9-note" id="own-help" hidden>Egne hold: tryk på en spiller for at sætte ham på Hold 1, tryk igen for Hold 2 og en tredje gang
+      for at tage ham ud. Skrevne navne kommer på det mindste hold. Tallene nedenfor regnes forfra for hvert tryk.</p>
     <div class="d9-chips" id="players" role="group" aria-label="Spillere"></div>
     <div class="d9-row">
       <button class="d9-btn small" id="all" type="button">Vælg alle</button>
@@ -163,6 +171,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   <div class="d9-actions" id="actions" hidden>
     <button class="d9-btn main" id="even" type="button">Lige hold</button>
     <button class="d9-btn" id="random" type="button">Tilfældige hold</button>
+    <button class="d9-btn" id="own" type="button" aria-pressed="false">Egne hold</button>
   </div>
 
   <section class="d9-card" id="result" aria-labelledby="result-h" aria-live="polite" hidden>
@@ -190,6 +199,9 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
         hvor vinderchancen ligger tættest på 50 %. Delinger, der højst er 2 procentpoint fra den mest lige, er lige gode, og der
         trækkes lod mellem dem. Tryk igen for et nyt bud. Når de lige gode er brugt, kommer de næstmest lige.</li>
       <li><b>Tilfældige hold:</b> ren lodtrækning. Vinderchancen vises også her, så man kan se, hvor skævt det blev.</li>
+      <li><b>Egne hold:</b> sæt selv spillerne på Hold 1 og Hold 2 (tryk på en spiller for at skifte hold). Siden viser så
+        vinderchance, bedst af 3 og hvilket kendt hold de minder om, præcis som for et bud, og regner forfra, hver gang en
+        spiller flyttes. Holdene må gerne være ulige store. Har man lige lavet et bud, starter Egne hold fra det.</li>
       <li><b>Vinderchance (win probability)</b> for hvert bud: Elo-formlen 1 / (1 + 10^(−β × forskel / 400)), hvor forskel er
         forskellen på de to holds snit af Elo pr. kamp. Elo pr. kamp er presset sammen (den svarer til 10 kampe), så den rene
         formel er for forsigtig. Derfor ganges forskellen med β = <span id="beta">3</span>. <span id="beta-how"></span></li>
@@ -199,7 +211,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       <li><b>Elo pr. kamp</b> kommer fra stats-siden og følger med, når nye kampe kommer ind. Den er 1500 + 10 × ens gennemsnitlige
         Elo-gevinst pr. kamp, så den ikke vokser af at spille mange kampe. Under 3 kampe deles der med 3. Kun 3v3- og 4v4-kampe tæller.</li>
       <li><b>Ulige antal:</b> det ene hold får en ekstra spiller, som skifter ind og ud. Holdet regnes med sit snit.</li>
-      <li><b>Nye spillere</b>, som ikke er i stats endnu, regnes som 1500. De og de valgte huskes på denne telefon eller computer til næste gang.</li>
+      <li><b>Nye spillere</b>, som ikke er i stats endnu, regnes som 1500. De, de valgte og egne hold huskes på denne telefon eller computer til næste gang.</li>
     </ul>
   </details>
 
@@ -286,10 +298,11 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   // ---------- state ----------
   let ELO = new Map(), KNOWN = [], UPDATED = '', GAMES = 0;
   let TR = null, HIST = [null, null];          // scouting traits from the stats page; the famous team each side resembles
-  const S = { sel: new Set(), guests: [], mode: null, queue: [], qi: 0, total: 0, teams: null };
+  const S = { sel: new Set(), guests: [], mode: null, queue: [], qi: 0, total: 0, teams: null, own: new Map(), ownStart: false };
+  // S.own: Egne hold, player -> 1 or 2 (only players in S.sel); S.mode === 'own' while that view is on
 
   function save() {
-    try { localStorage.setItem(STORE, JSON.stringify({ sel: [...S.sel], guests: S.guests })); } catch (e) { /* private window: just don't remember */ }
+    try { localStorage.setItem(STORE, JSON.stringify({ sel: [...S.sel], guests: S.guests, own: Object.fromEntries(S.own), egne: S.mode === 'own' })); } catch (e) { /* private window: just don't remember */ }
   }
   function restore() {
     try {
@@ -297,6 +310,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
       if (!o) return;
       S.guests = (o.guests || []).filter((g) => typeof g === 'string' && g.trim() && !KNOWN.some((k) => key(k) === key(g)));
       for (const p of o.sel || []) if (KNOWN.includes(p) || S.guests.includes(p)) S.sel.add(p);
+      for (const [p, t] of Object.entries(o.own || {})) if (S.sel.has(p) && (t === 1 || t === 2)) S.own.set(p, t);
+      S.ownStart = o.egne === true;
     } catch (e) { /* nothing remembered */ }
   }
   const rating = (p) => (ELO.has(p) ? ELO.get(p).elo : NEW_ELO);
@@ -422,27 +437,66 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   // ---------- picking players ----------
   function drawPlayers() {
     const box = $('#players');
-    const chips = KNOWN.map((p) => {
-      const b = el('button', { className: 'd9-chip', type: 'button', textContent: p });
+    const own = S.mode === 'own';
+    // in Egne hold a chosen player's chip shows its team: colour plus a "Hold 1" / "Hold 2" tag
+    const chip = (p, extra) => {
+      const t = own && S.sel.has(p) ? S.own.get(p) : 0;
+      const b = el('button', { className: 'd9-chip' + (t ? ' o' + t : ''), type: 'button' }, [p, ...extra, ...(t ? [el('span', { className: 'tag h', textContent: 'Hold ' + t })] : [])]);
       b.dataset.p = p; b.setAttribute('aria-pressed', String(S.sel.has(p)));
       return b;
-    });
+    };
+    const chips = KNOWN.map((p) => chip(p, []));
     for (const g of S.guests) {
-      const b = el('button', { className: 'd9-chip', type: 'button' }, [g, el('span', { className: 'tag', textContent: 'ny' })]);
-      b.dataset.p = g; b.setAttribute('aria-pressed', String(S.sel.has(g)));
+      const b = chip(g, [el('span', { className: 'tag', textContent: 'ny' })]);
       const x = el('button', { className: 'd9-chip-x', type: 'button', textContent: '×', title: 'Fjern ' + g });
       x.setAttribute('aria-label', 'Fjern ' + g); x.dataset.drop = g;
       chips.push(el('span', { className: 'd9-guest' }, [b, x]));
     }
     box.replaceChildren(...chips);
     const n = S.sel.size, a = Math.floor(n / 2);
-    $('#count').replaceChildren(...(n < 2 ? [n === 1 ? '1 valgt · vælg mindst 2' : 'Vælg mindst 2']
-      : [el('b', { textContent: String(n) }), ' valgt · ' + (n - a) + ' mod ' + a + (n % 2 ? ' (én skifter ind og ud)' : '')]));
+    if (own) {
+      const [t1, t2] = ownTeams();
+      $('#count').replaceChildren(...(n ? [el('b', { textContent: 'Hold 1: ' + t1.length }), ' · ', el('b', { textContent: 'Hold 2: ' + t2.length }),
+        ...(t1.length && t2.length ? [] : [' · sæt mindst én spiller på hvert hold'])] : ['Tryk på spillerne for at sætte dem på hold']));
+    } else {
+      $('#count').replaceChildren(...(n < 2 ? [n === 1 ? '1 valgt · vælg mindst 2' : 'Vælg mindst 2']
+        : [el('b', { textContent: String(n) }), ' valgt · ' + (n - a) + ' mod ' + a + (n % 2 ? ' (én skifter ind og ud)' : '')]));
+    }
+    $('#who-h').textContent = own ? 'Hvem spiller på hvilket hold?' : 'Hvem er mødt op?';
+    $('#own-help').hidden = !own;
+    $('#own').setAttribute('aria-pressed', String(own));
     $('#even').disabled = $('#random').disabled = n < 2;
   }
   function selectionChanged() {
+    if (S.mode === 'own') { syncOwn(); save(); drawPlayers(); return drawOwn(); }
     S.queue = []; S.mode = null; S.teams = null; $('#result').hidden = true;
     save(); drawPlayers();
+  }
+
+  // ---------- Egne hold: the user's own teams ----------
+  const ownTeams = () => { const ps = chosen(); return [1, 2].map((t) => ps.filter((p) => S.own.get(p) === t)); };
+  // drop players no longer chosen; a chosen player without a team (typed, "Vælg alle") goes on the smaller team
+  function syncOwn() {
+    for (const p of [...S.own.keys()]) if (!S.sel.has(p)) S.own.delete(p);
+    for (const p of chosen()) if (!S.own.has(p)) { const [t1, t2] = ownTeams(); S.own.set(p, t1.length <= t2.length ? 1 : 2); }
+  }
+  // the same result view as a suggestion, once both teams have at least one player
+  function drawOwn() {
+    const [t1, t2] = ownTeams();
+    if (!t1.length || !t2.length) { S.teams = null; $('#result').hidden = true; return; }
+    S.teams = [t1, t2];
+    drawResult();
+  }
+  function startOwn() {
+    if (S.mode === 'own') return;
+    // start from the suggestion on screen, if there is one, so it can be adjusted by hand
+    if (S.teams && (S.mode === 'even' || S.mode === 'random')) { S.own = new Map(); S.teams.forEach((t, i) => t.forEach((p) => S.own.set(p, i + 1))); }
+    S.mode = 'own'; S.queue = [];
+    selectionChanged();
+  }
+  function leaveOwn() {
+    if (S.mode !== 'own') return;
+    S.mode = null; S.queue = []; save(); drawPlayers();
   }
   function addNames() {
     const input = $('#add-name'), names = input.value.split(/[,;\n]+/).map((s) => s.trim().replace(/\s+/g, ' ')).filter(Boolean);
@@ -507,6 +561,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   function combos(n, k) { let c = 1; for (let i = 1; i <= k; i++) c = (c * (n - k + i)) / i; return Math.round(c); }
 
   function makeEven() {
+    leaveOwn();
     const ps = chosen(), n = ps.length;
     if (n < 2) return;
     if (S.mode !== 'even' || !S.queue.length) {
@@ -520,6 +575,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     drawResult();
   }
   function makeRandom() {
+    leaveOwn();
     const ps = shuffle(chosen()), a = Math.ceil(ps.length / 2);
     if (ps.length < 2) return;
     S.mode = 'random'; S.queue = [];
@@ -596,6 +652,11 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
           : q.tie ? ' Tryk "Lige hold" igen for det næstmest lige bud.' : ' Tryk "Lige hold" igen for næste bud.';
       }
       $('#verdict').replaceChildren(first + ': forskel ', el('b', { textContent: gapTxt }), '.' + next);
+    } else if (S.mode === 'own') {
+      $('#result-h').textContent = 'Egne hold';
+      $('#result-sub').textContent = t1.length + ' mod ' + t2.length;
+      $('#verdict').replaceChildren('Jeres egne hold: forskel ', el('b', { textContent: gapTxt }),
+        edge(gap) <= TOL_P ? ' – det er lige hold.' : '. Tryk på en spiller ovenfor for at flytte ham.');
     } else {
       $('#result-h').textContent = 'Tilfældige hold';
       $('#result-sub').textContent = '';
@@ -603,12 +664,13 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
         edge(gap) <= TOL_P ? ' – det blev faktisk lige.' : '. Tryk igen for en ny lodtrækning.');
     }
     $('#again').textContent = S.mode === 'even' ? 'Nyt lige bud' : 'Ny lodtrækning';
-    $('#again').hidden = S.mode === 'even' && S.queue.length < 2;
+    $('#again').hidden = S.mode === 'own' || (S.mode === 'even' && S.queue.length < 2);
     $('#copied').textContent = '';
     const box = $('#result'), was = box.hidden;
     box.hidden = false;
     // on a phone the teams land below the buttons: bring them up the first time they appear
-    if (was && box.getBoundingClientRect().top > window.innerHeight * 0.6) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // (not in Egne hold: the result updates on every tap, and the page must not jump away from the players)
+    if (was && S.mode !== 'own' && box.getBoundingClientRect().top > window.innerHeight * 0.6) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   async function copyTeams() {
     const [t1, t2] = S.teams, [p1, p2] = chances(t1, t2), b3 = bestOf3(p1);
@@ -629,12 +691,16 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   function setup() {
     const known = KNOWN.filter((p) => ELO.has(p)).length;
     $('#take').replaceChildren('Vælg hvem der er mødt op, og lav to hold: ', el('b', { textContent: 'tilfældigt' }), ' eller ',
-      el('b', { textContent: 'så lige som muligt' }), ' efter Elo pr. kamp (' + known + ' spillere, ' + GAMES + ' kampe).');
+      el('b', { textContent: 'så lige som muligt' }), ' efter Elo pr. kamp (' + known + ' spillere, ' + GAMES + ' kampe). Eller sæt ',
+      el('b', { textContent: 'egne hold' }), ' og se deres vinderchance.');
     $('#players').addEventListener('click', (e) => {
       const drop = e.target.closest('[data-drop]');
       if (drop) { const g = drop.dataset.drop; S.guests = S.guests.filter((x) => x !== g); S.sel.delete(g); return selectionChanged(); }
       const b = e.target.closest('button[data-p]'); if (!b) return;
-      const p = b.dataset.p; if (S.sel.has(p)) S.sel.delete(p); else S.sel.add(p);
+      const p = b.dataset.p;
+      if (S.mode === 'own') {                      // Egne hold: off -> Hold 1 -> Hold 2 -> off
+        if (!S.sel.has(p)) { S.sel.add(p); S.own.set(p, 1); } else if (S.own.get(p) !== 2) S.own.set(p, 2); else { S.sel.delete(p); S.own.delete(p); }
+      } else if (S.sel.has(p)) S.sel.delete(p); else S.sel.add(p);
       selectionChanged();
     });
     $('#all').addEventListener('click', () => { for (const p of [...KNOWN, ...S.guests]) S.sel.add(p); selectionChanged(); });
@@ -643,6 +709,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     $('#add-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addNames(); } });
     $('#even').addEventListener('click', makeEven);
     $('#random').addEventListener('click', makeRandom);
+    $('#own').addEventListener('click', startOwn);
     $('#copy').addEventListener('click', copyTeams);
     $('#again').addEventListener('click', () => (S.mode === 'even' ? makeEven() : makeRandom()));
     const b = String(BETA).replace('.', ',');
@@ -656,6 +723,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     $('#foot').textContent = 'Elo pr. kamp fra stats-siden' + (UPDATED ? ' (opdateret ' + UPDATED + ')' : '') + ', hentet kl. '
       + new Date().toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' }) + '.';
     drawPlayers();
+    if (S.ownStart) startOwn();
   }
 
   load();
