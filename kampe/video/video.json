@@ -1,47 +1,23 @@
 {
- "dato": "2026-11-16",
- "titel": "Kampgennemgang fra 16. november",
+ "dato": "2026-11-23",
+ "titel": "Kampgennemgang fra 23. november",
  "kampe": {
-  "2026-11-16-k1": {
+  "2026-11-23-k1": {
    "fil": "k1.mp4",
    "billede": "k1.jpg",
-   "sek": 63,
+   "sek": 64,
    "kurve": 13,
    "klip": 8,
    "alle": false
   },
-  "2026-11-16-k2": {
+  "2026-11-23-k2": {
    "fil": "k2.mp4",
    "billede": "k2.jpg",
-   "sek": 62,
-   "kurve": 15,
-   "klip": 8,
-   "alle": false
-  },
-  "2026-11-16-k3": {
-   "fil": "k3.mp4",
-   "billede": "k3.jpg",
-   "sek": 60,
-   "kurve": 20,
-   "klip": 8,
-   "alle": false
-  },
-  "2026-11-16-k4": {
-   "fil": "k4.mp4",
-   "billede": "k4.jpg",
-   "sek": 64,
-   "kurve": 14,
-   "klip": 8,
-   "alle": false
-  },
-  "2026-11-16-k5": {
-   "fil": "k5.mp4",
-   "billede": "k5.jpg",
-   "sek": 65,
+   "sek": 58,
    "kurve": 15,
    "klip": 8,
    "alle": false
   }
  },
- "v": "20261116-d27a7a"
+ "v": "20261123-7ab7a3"
 }
