@@ -5,7 +5,7 @@
   "2026-11-23-k1": {
    "fil": "k1.mp4",
    "billede": "k1.jpg",
-   "sek": 64,
+   "sek": 60,
    "kurve": 13,
    "klip": 8,
    "alle": false
@@ -13,11 +13,11 @@
   "2026-11-23-k2": {
    "fil": "k2.mp4",
    "billede": "k2.jpg",
-   "sek": 58,
+   "sek": 63,
    "kurve": 15,
    "klip": 8,
    "alle": false
   }
  },
- "v": "20261123-7ab7a3"
+ "v": "20261123-e2b4fb"
 }
