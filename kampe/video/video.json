@@ -6,7 +6,7 @@
    "fil": "k1.mp4",
    "billede": "k1.jpg",
    "sek": 60,
-   "kurve": 12,
+   "kurve": 11,
    "klip": 8,
    "alle": false
   },
@@ -14,10 +14,18 @@
    "fil": "k2.mp4",
    "billede": "k2.jpg",
    "sek": 60,
-   "kurve": 15,
+   "kurve": 14,
+   "klip": 8,
+   "alle": false
+  },
+  "2026-11-23-k3": {
+   "fil": "k3.mp4",
+   "billede": "k3.jpg",
+   "sek": 60,
+   "kurve": 10,
    "klip": 8,
    "alle": false
   }
  },
- "v": "20261123-eff247"
+ "v": "20261123-7e2bab"
 }

@@ -517,7 +517,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   function drawGame(m) {
     const g = m.g;
     drawVideo(m);
-    $('#game-h').textContent = g.game;
+    $('#game-h').textContent = g.game + (Number(g.unfinished) === 1 ? ' · ikke færdig' : '');   // 24 Nov 2026: 23 Nov game 3, the recording stops before the end
     $('#game-meta').textContent = [g.setup, g.length_min != null ? dk(Number(g.length_min), 1) + ' min' : null, 'til ' + g.target].filter(Boolean).join(' · ');
     $('#game-score').replaceChildren(
       el('div', { className: 'km-side w' }, el('small', { textContent: 'Vindere' }), el('b', { textContent: (g.winners || []).join(', ') })),
