@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>D9 Streetball Stats</title>
-<meta name="d9-opdateret" content="2026-11-26T14:28|ece673dc43b5f3b7">
+<meta name="d9-opdateret" content="2026-11-26T14:43|b49f12259781c593">
 <meta name="description" content="Stats fra vores pickup-kampe: box scores, scouting reports med video, sæsonens priser og rekorder, Elo pr. kamp, holdgenerator, WPA, heatmaps, spillestil, impact, nemesis-tabel, pivot og makkerpar.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -223,7 +223,7 @@ html:not([data-side="forside"]) #hl-card { display: none; }
 <div class="d9">
   <header id="top">
     <h1 class="d9-title">D9 Streetball Stats</h1>
-    <p class="d9-updated">Sidst opdateret <time datetime="2026-11-26T14:28">26. nov. 2026 kl. 14:28</time></p>
+    <p class="d9-updated">Sidst opdateret <time datetime="2026-11-26T14:43">26. nov. 2026 kl. 14:43</time></p>
     <p class="d9-take" id="take" data-source="games player_games"><b data-k="ov.games">—</b> kampe på <b data-k="ov.days">—</b> spilledage med
       <b data-k="ov.players">—</b> spillere (<span data-k="ov.formats">—</span>). Bedste sejrsprocent: <b data-k="ov.wins">—</b>.
       Holdene blandes hver gang, så der vises ingen holdnavne – kun hvem der spillede sammen.
@@ -668,7 +668,7 @@ html:not([data-side="forside"]) #hl-card { display: none; }
 </div>
 
 
-<p class="d9-foot">Opdateret 26. nov. 2026 kl. 14:28 · Spilledage: 28. sep (4v4), 12. okt (2v2), 17. okt (3v3), 26. okt (4v4), 2. nov (3v3), 16. nov (3v3), 23. nov (4v4) · Alle kurve og assists er tjekket i videoen, og 1 eller 2 er målt mod den sorte 2'er-linje; spillere i ens tøj kan være byttet om. 2v2 er fravalgt som standard (se Format).</p>
+<p class="d9-foot">Opdateret 26. nov. 2026 kl. 14:43 · Spilledage: 28. sep (4v4), 12. okt (2v2), 17. okt (3v3), 26. okt (4v4), 2. nov (3v3), 16. nov (3v3), 23. nov (4v4) · Alle kurve og assists er tjekket i videoen, og 1 eller 2 er målt mod den sorte 2'er-linje; spillere i ens tøj kan være byttet om. 2v2 er fravalgt som standard (se Format).</p>
 </div>
 <script>// Public site only (20 Nov 2026, user: "Byg forslag B (kort forside med undersider)"). The page used to be 20 cards in one
 // scroll. Now the front page shows the leaders, the day video and the box score (top 5), and the other cards live on
@@ -802,6 +802,23 @@ html:not([data-side="forside"]) #hl-card { display: none; }
     const s = kort && sideAf(kort.id);
     if (s && s !== side) { e.preventDefault(); location.href = url(s) + a.getAttribute('href'); }
   });
+})();
+</script>
+<script>// 26 Nov 2026: link to the player's coach report under the chosen player in the scouting card (site only).
+// ["Benjamin", "Casper", "Daniel", "Faber", "Frederik", "Jacob", "Moltved", "Nicehair", "Nicklas", "Thomas"] is replaced by build_site.py with the players that have a folder in site/traener/.
+(function () {
+  var HAR = ["Benjamin", "Casper", "Daniel", "Faber", "Frederik", "Jacob", "Moltved", "Nicehair", "Nicklas", "Thomas"];
+  var navn = document.getElementById('scout-name'), sub = document.getElementById('scout-sub');
+  if (!navn || !sub) return;
+  var p = document.createElement('p'); p.className = 'd9-note'; p.id = 'scout-traener'; p.hidden = true;
+  var a = document.createElement('a'); p.appendChild(a); sub.insertAdjacentElement('afterend', p);
+  function vis() {
+    var n = navn.textContent.trim(), ok = HAR.indexOf(n) >= 0;
+    p.hidden = !ok;
+    if (ok) { a.href = 'traener/' + n.toLowerCase() + '/'; a.textContent = 'Trænerrapport for ' + n + ' →'; }
+  }
+  new MutationObserver(vis).observe(navn, { childList: true, characterData: true, subtree: true });
+  vis();
 })();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>

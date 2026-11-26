@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trænerrapport Nicehair</title>
+
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* layout: one reading column. Every finding = the claim, the counts behind it, a clip from his own games, what to do.
+   Colours repeat the drawings in the clips: yellow = the player of this report, red = opponent / don't, green = target / do. */
+:root{--bg:#F3F4F0;--surface:#FFFFFF;--ink:#16202A;--muted:#5A6672;--line:#D8DCD4;--jacob:#FFD23F;--jacob-ink:#7A5600;--bad:#C4362E;--good:#1B8A4B;--bad-bg:#FBE9E7;--good-bg:#E4F4EA;--court:#E9E3D3;--court-line:#B9AE92;
+ --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F141A;--surface:#182029;--ink:#E9EDF0;--muted:#9AA7B3;--line:#2B3642;--jacob:#FFD23F;--jacob-ink:#FFD23F;--bad:#FF7A6E;--good:#5FD38D;--bad-bg:#3A1F1D;--good-bg:#173224;--court:#222C36;--court-line:#465564;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F141A;--surface:#182029;--ink:#E9EDF0;--muted:#9AA7B3;--line:#2B3642;--jacob:#FFD23F;--jacob-ink:#FFD23F;--bad:#FF7A6E;--good:#5FD38D;--bad-bg:#3A1F1D;--good-bg:#173224;--court:#222C36;--court-line:#465564;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+.wrap{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 72px;display:flex;flex-direction:column;gap:44px}
+h1,h2,h3,.num b,.eyebrow,.rank b{font-family:var(--display);text-wrap:balance}
+h1{font-size:clamp(40px,8vw,64px);line-height:.98;margin:0;font-weight:700;letter-spacing:-.01em;text-transform:uppercase}
+h1 span{background:var(--jacob);color:#16202A;padding:0 .14em}
+h2{font-size:clamp(28px,5vw,38px);line-height:1.05;margin:0;font-weight:700}
+h3{font-size:22px;margin:0 0 6px;font-weight:600}
+p{margin:0;max-width:66ch} .eyebrow{font-size:17px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--jacob-ink);margin:0}
+.lead{font-size:19px;line-height:1.5} .muted,.fine{color:var(--muted)} .fine{font-size:13.5px}
+header,section{display:flex;flex-direction:column;gap:16px} section{border-top:3px solid var(--ink);padding-top:18px}
+.rank{list-style:none;margin:0;padding:0;display:grid;gap:8px;counter-reset:r}
+.rank li{counter-increment:r;display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px}
+.rank li::before{content:counter(r);font-family:var(--display);font-size:34px;font-weight:700;line-height:1;color:var(--jacob-ink)}
+.rank b{font-size:21px;font-weight:600;display:block;line-height:1.15} .rank span{color:var(--muted);font-size:15px} .rank a{color:inherit;text-decoration:none} .rank a:hover b{text-decoration:underline}
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.num{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 12px;min-width:0}
+.num b{display:block;font-size:34px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums} .num span{font-size:14px;color:var(--muted);display:block;margin-top:4px}
+.num.bad b{color:var(--bad)} .num.good b{color:var(--good)}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.do,.dont,.measure{border-radius:6px;padding:14px 16px;min-width:0} .do{background:var(--good-bg)} .dont{background:var(--bad-bg)} .measure{background:var(--surface);border:1px solid var(--line)}
+.do h3{color:var(--good)} .dont h3{color:var(--bad)} ul{margin:0;padding-left:20px;display:grid;gap:6px} li{max-width:64ch}
+.clip{margin:0;display:flex;flex-direction:column;gap:6px} .clip figcaption{font-size:14px;color:var(--muted)}
+.play{all:unset;display:block;position:relative;cursor:pointer;border-radius:6px;overflow:hidden;background:#000;aspect-ratio:16/9;max-width:100%}
+.play img{width:100%;height:100%;object-fit:cover;display:block;opacity:.86} .play:focus-visible{outline:3px solid var(--jacob);outline-offset:3px}
+.pl{position:absolute;left:14px;bottom:14px;background:var(--jacob);color:#16202A;font-family:var(--display);font-weight:700;font-size:21px;padding:6px 14px 6px 12px;border-radius:4px;display:flex;align-items:center;gap:10px}
+.pl i{width:0;height:0;border-left:13px solid #16202A;border-top:8px solid transparent;border-bottom:8px solid transparent}
+video{width:100%;border-radius:6px;background:#000;display:block;aspect-ratio:16/9}
+.bars{display:grid;gap:8px} .bar{display:grid;grid-template-columns:minmax(88px,34%) 1fr auto;gap:10px;align-items:center;font-size:14.5px}
+.bar .t{height:22px;background:var(--line);border-radius:3px;position:relative;overflow:hidden} .bar .t i{position:absolute;inset:0 auto 0 0;background:var(--jacob);border-radius:3px}
+.bar .t u{position:absolute;top:-2px;bottom:-2px;width:3px;background:var(--ink)} .bar b{font-variant-numeric:tabular-nums;font-weight:600;min-width:64px;text-align:right}
+.legend{font-size:13.5px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap} .legend i{display:inline-block;width:14px;height:10px;background:var(--jacob);border-radius:2px;margin-right:6px} .legend u{display:inline-block;width:3px;height:12px;background:var(--ink);margin-right:6px;vertical-align:-1px}
+.courts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px} .courts figure{margin:0;display:flex;flex-direction:column;gap:6px} .courts figcaption{font-size:14px;color:var(--muted)}
+svg.court{width:100%;height:auto;display:block;background:var(--court);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:14.5px;font-variant-numeric:tabular-nums} th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right} th:first-child{text-align:left;font-weight:500} thead th{font-weight:600;color:var(--muted)}
+.plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px} .plan>div{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 16px;min-width:0}
+.key{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;color:var(--muted)} .key b{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+</style>
+</head>
+<body>
+<p style="max-width:860px;margin:0 auto;padding:14px 16px 0;font:500 14px Inter,system-ui,sans-serif"><a href="../../?side=spillere" style="color:inherit">← Til D9 Streetball Stats</a></p>
+
+<div class="wrap">
+<header>
+ <p class="fine"><strong>Bygget 26. nov 2026. Tal og video er fra dine fem dage på video: 28. september, 12., 17. og 26. oktober og 2. november. Alle dine skud er set på samme måde, uden at kende resultatet.</strong></p>
+ <p class="eyebrow">D9 Streetball · 5 spilledage på video · 127 skud og 148 spilsekvenser set</p>
+ <h1>Trænerrapport <span>Nicehair</span></h1>
+ <p class="lead">Du tager mange skud, du tager flere returbolde end næsten alle, og tæt på kurven går dine skud godt i. Det, der skiller dine kurve fra dine bom, er hvor tæt forsvareren står: pull-ups og drives ind i en mand, der allerede står klar, går sjældent i. I forsvar står du ofte for langt fra din mand, og når skuddet går, ser du på bolden i stedet for at finde en mand.</p>
+ <div class="nums">
+  <div class="num"><b>7 af 13</b><span>kampe vundet på video, samlet +8 i plus/minus</span></div>
+  <div class="num"><b>29 %</b><span>af dine skud går i (de andre samme dage: 30 %)</span></div>
+  <div class="num good"><b>3,1</b><span>returbolde pr. 10 minutter. De andre tager 2,3</span></div>
+  <div class="num bad"><b>5 af 35</b><span>pull-ups gik i. Med en forsvarer tæt på eller klar foran dig: 2 af 22</span></div>
+ </div>
+ <p class="key"><span><b style="background:var(--jacob)"></b>Gul i klippene er dig</span><span><b style="background:var(--bad)"></b>Rød er modstanderen</span><span><b style="background:var(--good)"></b>Grøn er der, du skal hen</span></p>
+</header>
+
+<section id="styrker">
+ <p class="eyebrow">Det, du gør godt</p>
+ <h2>Returbolde, skud ved kurven, og bolden videre</h2>
+ <ul>
+  <li><strong>Du tager returbolde.</strong> 3,1 pr. 10 minutter (de andre: 2,3). I angreb har du flest af alle de dage: 0,75 pr. 10 minutter mod de andres 0,45.</li>
+  <li><strong>Tæt på kurven går de i.</strong> Inden for 2 meter gik 12 af 15 i. Inden for 4 meter 28 af 56 (de andre 53 %). Dine drives helt ind går i 12 af 30 gange.</li>
+  <li><strong>Du mister sjældent bolden:</strong> 4 boldtab på 242 minutter, 0,17 pr. 10 minutter (de andre: 0,26).</li>
+  <li><strong>Du spiller bolden videre.</strong> 19 assists, 0,79 pr. 10 minutter, lige som de andre (0,79). 11 af de 19 assists, jeg har set, kom fra stilstand: du griber og spiller straks videre.</li>
+  <li><strong>Uden bold står du rigtigt:</strong> god afstand til bold og medspillere i 35 af 47 angreb, hvor en medspiller skød.</li>
+ </ul>
+</section>
+
+<section id="prioritet">
+ <p class="eyebrow">Rækkefølgen</p>
+ <h2>Fire ting, i den rækkefølge de flytter mest</h2>
+ <ol class="rank">
+  <li><a href="#skudvalg"><b>Skud med plads, ikke over hånden</b><span>Tvungne skud: 8 af 49 i. Resten: 31 af 78. Pull-up mod en forsvarer tæt på eller klar foran dig: 2 af 22.</span></a></li>
+  <li><a href="#drive"><b>Forbi ham, ikke ind i ham</b><span>Drive, hvor forsvareren kun var let på dig: 4 af 4. Tæt på eller klar foran dig: 8 af 26. Landet i balance 5 af 6, lænet 5 af 17.</span></a></li>
+  <li><a href="#forsvar2"><b>Tæt på din mand, før han skyder</b><span>Hånden oppe i 6 af 15 skud. To meter eller mere fra din mand i 25 af 58 sekvenser.</span></a></li>
+  <li><a href="#forsvar"><b>Når skuddet går: find en mand, gå ind</b><span>Krop på en mand 4 af 50 gange i forsvar. Stod ude i 29 af 42 angreb, da en medspiller skød.</span></a></li>
+ </ol>
+</section>
+
+<section id="skudvalg">
+ <p class="eyebrow">Skudvalg</p>
+ <h2>Skud med plads, ikke over hånden</h2>
+ <p>Alle 132 hændelser, der står som dine skud på de fem dage, er set på samme måde: billedserier fra før skuddet til efter slippet, uden at kende resultatet, og med spørgsmålet "er det et skud, og er det dit?" først. 127 af dem er dine skud (121 sikkert, resten sandsynligt). Tallene her er kurve ud af skud, hvor det enkelte forhold kunne ses.</p>
+ <h3>Hvor godt skuddet var</h3>
+ <div class="bars">
+  <div class="bar"><span>Godt skud (i rytme, i balance, fri eller let presset)</span><div class="t"><i style="width:33%"></i></div><b>7 af 21</b></div>
+  <div class="bar"><span>Halvgodt skud</span><div class="t"><i style="width:42%"></i></div><b>24 af 57</b></div>
+  <div class="bar"><span>Tvunget skud</span><div class="t"><i style="width:16%"></i></div><b>8 af 49</b></div>
+ </div>
+ <p>Det her er det tydeligste mønster i dine skud. Skud, der blev set som tvungne (ind i en forsvarer, ude af balance eller uden rytme), gik i 8 af 49 gange. Alle andre skud gik i 31 af 78 gange. Og 49 af dine 127 skud var tvungne.</p>
+ <h3>Hvilket skud</h3>
+ <div class="bars">
+  <div class="bar"><span>Drive helt ind</span><div class="t"><i style="width:40%"></i></div><b>12 af 30</b></div>
+  <div class="bar"><span>Pull-up efter dribling</span><div class="t"><i style="width:14%"></i></div><b>5 af 35</b></div>
+  <div class="bar"><span>Lige på modtagelsen</span><div class="t"><i style="width:18%"></i></div><b>6 af 34</b></div>
+  <div class="bar"><span>Ryggen til kurven</span><div class="t"><i style="width:100%"></i></div><b>3 af 3</b></div>
+  <div class="bar"><span>Floater eller hook</span><div class="t"><i style="width:50%"></i></div><b>2 af 4</b></div>
+  <div class="bar"><span>Returbold</span><div class="t"><i style="width:17%"></i></div><b>1 af 6</b></div>
+ </div>
+ <p>Det er især pull-uppet. Det går i 5 af 35 gange, og 22 af dem tog du med en forsvarer tæt på dig eller klar foran dig. Af dem gik 2 i. Med plads gik 3 af 13 i, så pull-uppet er dit sværeste skud, også når du er fri. Lige på modtagelsen går 6 af 34 i. Spring-skud i alt, pull-up og modtagelse: 11 af 69.</p>
+ <h3>Hvor på banen</h3>
+ <div class="bars">
+  <div class="bar"><span>Ved kurven, 0–2 m</span><div class="t"><i style="width:80%"></i><u style="left:67%"></u></div><b>12 af 15</b></div>
+  <div class="bar"><span>2–4 m</span><div class="t"><i style="width:39%"></i><u style="left:45%"></u></div><b>16 af 41</b></div>
+  <div class="bar"><span>4–6,3 m</span><div class="t"><i style="width:17%"></i><u style="left:25%"></u></div><b>9 af 53</b></div>
+  <div class="bar"><span>Længere end 6,3 m</span><div class="t"><i style="width:0%"></i><u style="left:9%"></u></div><b>0 af 13</b></div>
+  <div class="bar"><span>Fra venstre side</span><div class="t"><i style="width:22%"></i><u style="left:23%"></u></div><b>10 af 46</b></div>
+  <div class="bar"><span>Fra midten</span><div class="t"><i style="width:37%"></i><u style="left:35%"></u></div><b>17 af 46</b></div>
+  <div class="bar"><span>Fra højre side</span><div class="t"><i style="width:38%"></i><u style="left:28%"></u></div><b>10 af 26</b></div>
+ </div>
+ <p class="legend"><span><i></i>Dig</span><span><u></u>De andre spillere samme dage</span></p>
+ <p class="fine">Statistikkens tal for alle dine skud de fem dage. Afstanden er målt fra kurven; side = mere end 1,5 m til siden for kurven. 3 af afstandene så ud til ikke at passe med der, hvor skuddet blev taget.</p>
+ <p>Tæt på er du lige så god som de andre: inden for 4 meter 28 af 56 (de andre 53 %). Længere ude går 9 af 66 i (de andre 19 %), og over 6,3 meter 0 af 13 (de andre 9 %). 66 af 122 af dine skud kommer udefra.</p>
+ <div class="nums">
+  <div class="num good"><b>31 af 78</b><span>gode og halvgode skud gik i</span></div>
+  <div class="num bad"><b>8 af 49</b><span>tvungne skud gik i</span></div>
+  <div class="num bad"><b>2 af 22</b><span>pull-ups mod en forsvarer tæt på eller klar foran dig</span></div>
+ </div>
+ <p><strong>Det, der ikke skiller.</strong> Kun spring-skud (pull-up og modtagelse) her, så drives ikke blander sig: fuldt hop 3 af 18, lille hop 8 af 50; tydeligt knæbøj 5 af 24, lidt bøj 6 af 42; i balance 7 af 49, lænet 3 af 16; front mod kurven 5 af 34, drejet 6 af 32; bolden lige op 8 af 49, ned forbi brystet først 3 af 16. Ingen af dem skiller. Du holder tit bolden efter grebet: lige på modtagelsen venter den i 23 af 33 skud. Skud, hvor bolden ventede, gik i 3 af 31, skud lige op fra grebet 7 af 37. Det er en lille forskel på kun 10 kurve, så den bygger jeg ikke på. Målt på video holdt du faktisk bolden lidt længere i kurvene (median 0,27 s) end i bommene (0,23 s), så ventetiden skiller ikke. Dine skud slippes højt over hovedet (126 af 126). Det skal du beholde.</p>
+ <div class="measure"><h3>Målt på video</h3><p>Kropspunkter (ankler og hofter) er fulgt billede for billede i 122 af dine skud af et program, der ikke ved, om skuddet gik i. Med et hop på over ca. 18 cm går 30 af 79 i, med et lavere hop 9 af 43. Det er en tydelig forskel.</p><table><thead><tr><th></th><th>Kurve (39)</th><th>Bom (83)</th></tr></thead><tbody><tr><th>Hop (anklernes løft)</th><td>21 cm</td><td>20 cm</td></tr><tr><th>Knæbøj (hoften sænkes)</th><td>19 cm</td><td>22 cm</td></tr></tbody></table><p class="fine">Median. Omregnet til cm med en højde på 1,80 m. Kameraet står bag jer, så tallene er omtrentlige. Drives og returbolde er med, så hoppet blandes med løbet ind.</p></div>
+ <p class="fine">Forskellen i hoppet i boksen kommer fra dine drives, hvor du altid hopper fuldt. I spring-skuddene alene skiller hoppet ikke: fuldt hop 3 af 18, lille hop 8 af 50.</p>
+ <div style="overflow-x:auto"><table><thead><tr><th>Dag</th><th>Skud pr. 10 min (de andre)</th><th>Kurve af skud</th><th>Bolden venter</th><th>Tvungne</th><th>Vundet</th></tr></thead><tbody>
+  <tr><th>28. sep · 4 mod 4</th><td>4,7 (3,3)</td><td>6 af 23</td><td>12 af 20</td><td>7 af 23</td><td>2 af 3</td></tr>
+  <tr><th>12. okt · 2 mod 2</th><td>10,4 (9,1)</td><td>9 af 24</td><td>10 af 21</td><td>6 af 23</td><td>0 af 1</td></tr>
+  <tr><th>17. okt · 3 mod 3</th><td>10,0 (4,7)</td><td>11 af 28</td><td>7 af 24</td><td>13 af 27</td><td>2 af 2</td></tr>
+  <tr><th>26. okt · 4 mod 4</th><td>3,7 (3,2)</td><td>8 af 28</td><td>9 af 24</td><td>16 af 28</td><td>2 af 4</td></tr>
+  <tr><th>2. nov · 3 mod 3</th><td>4,5 (4,7)</td><td>5 af 30</td><td>8 af 21</td><td>7 af 26</td><td>1 af 3</td></tr>
+ </tbody></table></div>
+ <p class="fine">Skud pr. 10 minutter, kurve og sejre er statistikkens tal. "Bolden venter" og "tvungne" er ud af dine skud den dag, hvor det kunne ses på video.</p>
+ <p><strong>2, 3 og 4 mod 4.</strong> I 3 mod 3 gik 16 af 58 i, i 4 mod 4 14 af 51, og i den ene kamp 2 mod 2 9 af 24. Flest tvungne skud havde du 26. oktober (16 af 28). Dagene er for få til at skille formatet fra dagsformen.</p>
+ <figure class="clip"><button class="play" type="button" data-clip="nh_pullup" aria-label="Afspil klip: Skud med plads, ikke over hånden"><img src="klip/nh_pullup.jpg" alt="" loading="lazy"><span class="pl"><i></i>Se klip · 0:44</span></button><figcaption>Én pull-up over en forsvarer, der står klar, og to skud med plads foran dig.</figcaption></figure>
+ <div class="pair">
+  <div class="do"><h3>Gør sådan</h3><ul>
+   <li>Plads foran dig: op med det samme.</li>
+   <li>Tag dine skud tæt på kurven. Der går halvdelen i.</li>
+  </ul></div>
+  <div class="dont"><h3>Lad være med</h3><ul>
+   <li>At stoppe op foran en forsvarer, der står klar med hånden oppe, og skyde over den.</li>
+   <li>At lade bolden hænge over hovedet, mens han kommer.</li>
+  </ul></div>
+ </div>
+</section>
+
+<section id="drive">
+ <p class="eyebrow">Skud · drive</p>
+ <h2>Forbi ham, ikke ind i ham</h2>
+ <p>Dit drive er et godt våben: 12 af 30 går i. Men det afhænger af, om du er kommet forbi din mand. Var forsvareren kun let på dig, gik 4 af 4 i. Var han tæt på dig eller stod klar foran dig, gik 8 af 26 i, og ind i en mand, der allerede stod klar: 1 af 7. Det samme ses på kroppen: landede du i balance, gik 5 af 6 i. Hoppede du lænet ind i ham: 5 af 17. Tallene er små, men de peger samme vej.</p>
+ <div class="nums">
+  <div class="num good"><b>4 af 4</b><span>drives, hvor han kun var let på dig</span></div>
+  <div class="num bad"><b>8 af 26</b><span>drives ind i en forsvarer tæt på eller klar</span></div>
+  <div class="num"><b>5 af 6</b><span>i balance ved afslutningen</span></div>
+ </div>
+ <figure class="clip"><button class="play" type="button" data-clip="nh_drive" aria-label="Afspil klip: Forbi ham, ikke ind i ham"><img src="klip/nh_drive.jpg" alt="" loading="lazy"><span class="pl"><i></i>Se klip · 0:41</span></button><figcaption>To drives forbi manden og ét ind i en forsvarer, der står klar.</figcaption></figure>
+ <div class="pair">
+  <div class="do"><h3>Gør sådan</h3><ul>
+   <li>Kom forbi hans hofte, før du går op.</li>
+   <li>Står han klar foran dig: stop, drej, eller spil den ud til den, der blev fri.</li>
+  </ul></div>
+  <div class="dont"><h3>Lad være med</h3><ul>
+   <li>At hoppe lænet ind i en mand, der allerede står med armen oppe.</li>
+  </ul></div>
+ </div>
+</section>
+
+<section id="forsvar2">
+ <p class="eyebrow">Forsvar · på din mand</p>
+ <h2>Tæt på, før han skyder</h2>
+ <p>Du stod oprejst i 58 af 68 forsvarssekvenser og to meter eller mere fra din mand i 25 af 58. Det koster, når han får bolden: når din mand skød, og det kunne ses, var hånden oppe i 6 af 15 skud. 4 gange kom den for sent, 5 gange var den slet ikke oppe. Din mand kom forbi dig i 9 af 52 sekvenser, og 5 af dem var fordi, du kom for sent ud til ham.</p>
+ <p>Når du først er tæt på, gør du det godt: 13 af 72 af dine forsvarssekvenser blev valgt som eksempler på godt forsvar, de fleste med lav stilling og hånden oppe ved slippet. Det er afstanden, før han får bolden, der skal ned.</p>
+ <p class="fine">Hvem dækkede hvem er registreret 12. og 17. oktober og 2. november. Dine mænd de dage: Moltved (47 min, 13 point), Casper (15 min, 5 point), Lous (14 min, 2 point), Nicklas (14 min, 5 point), Jacob (3 min, 2 point), Daniel (2 min, 0 point) (point, de scorede, mens du dækkede dem).</p>
+ <figure class="clip"><button class="play" type="button" data-clip="nh_closeout" aria-label="Afspil klip: Tæt på, før han skyder"><img src="klip/nh_closeout.jpg" alt="" loading="lazy"><span class="pl"><i></i>Se klip · 0:47</span></button><figcaption>To gange for langt fra din mand, da han skyder, og én gang tæt på ham.</figcaption></figure>
+ <div class="pair">
+  <div class="do"><h3>Gør sådan</h3><ul>
+   <li>En armslængde fra din mand, når han har bolden.</li>
+   <li>Er du hjælper, så løb ud, mens bolden er på vej til ham.</li>
+   <li>Hånden op foran bolden, når han går op.</li>
+  </ul></div>
+  <div class="dont"><h3>Lad være med</h3><ul>
+   <li>At stå to-tre meter væk og først række ud, når skuddet er på vej.</li>
+  </ul></div>
+ </div>
+</section>
+
+<section id="forsvar">
+ <p class="eyebrow">Forsvar · rebound</p>
+ <h2>Find en mand, når skuddet går</h2>
+ <p>I det øjeblik modstanderen skyder, stopper du. I 50 sekvenser, hvor det kunne ses, satte du kroppen på en mand 4 gange. 37 gange stod du og så på bolden, 9 gange gik du direkte efter den. Du så på bolden og ikke din mand i 33 af 43 sekvenser.</p>
+ <p>Du tager alligevel mange returbolde: 3,1 pr. 10 minutter, de andre 2,3. Så det her handler ikke om dine egne tal, men om din mand: står han fri, når bolden kommer ned, får han den eller en ny chance. Det kan statistikken ikke vise, men det kan klippene.</p>
+ <div class="nums">
+  <div class="num bad"><b>4 af 50</b><span>krop på en mand</span></div>
+  <div class="num"><b>37</b><span>stod og så på bolden</span></div>
+  <div class="num good"><b>3,1</b><span>returbolde pr. 10 minutter (de andre 2,3)</span></div>
+ </div>
+ <p class="fine">Pr. dag: 28. sep 1 af 11, 12. okt 0 af 5, 17. okt 0 af 6, 26. okt 0 af 15, 2. nov 3 af 13.</p>
+ <figure class="clip"><button class="play" type="button" data-clip="nh_spaer_ud" aria-label="Afspil klip: Find en mand, når skuddet går"><img src="klip/nh_spaer_ud.jpg" alt="" loading="lazy"><span class="pl"><i></i>Se klip · 0:45</span></button><figcaption>To gange, hvor du ser på bolden, og én, hvor du står krop mod krop med din mand.</figcaption></figure>
+ <div class="do"><h3>Gør sådan</h3><ul>
+  <li>Skud i luften: vend dig, find din mand, og sæt kroppen på ham. Først derefter bolden.</li>
+  <li>Er du hjælper uden en mand tæt på, så tag den nærmeste modstander ved kurven.</li>
+ </ul></div>
+</section>
+
+<section id="angreb">
+ <p class="eyebrow">Angreb uden bold</p>
+ <h2>Du står rigtigt. Gå så ind, når skuddet går</h2>
+ <p>Uden bold står du det meste af tiden rigtigt. I 50 angreb, hvor en medspiller skød, havde du god afstand til bold og medspillere i 35 af 47, og du var fri til en aflevering i 16 af 49. Du stod i vejen for en medspillers drive eller tæt på bolden i 6 af 47, så det er ikke dér, problemet er. Du stod helt stille i 15 af 49, cuttede mod kurven 5 gange og satte 0 screens.</p>
+ <p>Men når skuddet går, bliver du ude: i 29 af 42 angreb, hvor det kunne ses. Du gik ind 13 gange. Og du er den bedste til at tage returbolde i angreb: 0,75 pr. 10 minutter mod de andres 0,45. Så det er der, du kan hente mest ved at gå ind lidt oftere.</p>
+ <div class="nums">
+  <div class="num good"><b>35 af 47</b><span>angreb med god afstand</span></div>
+  <div class="num bad"><b>29 af 42</b><span>gange blev du stående ude, da skuddet gik</span></div>
+  <div class="num good"><b>0,75</b><span>offensive returbolde pr. 10 minutter (de andre 0,45)</span></div>
+ </div>
+ <figure class="clip"><button class="play" type="button" data-clip="nh_efter_skuddet" aria-label="Afspil klip: Gå ind, når skuddet går"><img src="klip/nh_efter_skuddet.jpg" alt="" loading="lazy"><span class="pl"><i></i>Se klip · 0:58</span></button><figcaption>To gange, hvor du bliver stående ude, og to, hvor du går ind mod kurven.</figcaption></figure>
+ <div class="pair">
+  <div class="do"><h3>Gør sådan</h3><ul>
+   <li>Hold din plads, mens bolden bliver spillet.</li>
+   <li>Skud i luften: ind mod kurven i modsatte side af skytten.</li>
+  </ul></div>
+  <div class="dont"><h3>Lad være med</h3><ul>
+   <li>At blive stående i hjørnet eller på fløjen og se skuddet.</li>
+  </ul></div>
+ </div>
+</section>
+
+<section id="bold">
+ <p class="eyebrow">Med bolden</p>
+ <h2>Bolden videre, og kroppen foran den</h2>
+ <p>Du har 19 assists på de fem dage. Jeg har set 19 af dem: 11 kom fra stilstand, hvor du greb og spillede straks videre, og 3 efter et drive, hvor du spillede bolden ud. Dine 4 boldtab er få. I alle 4, jeg har set, var bolden ikke beskyttet med kroppen: én aflevering under pres, ét hvor to mand lukkede, ét hvor bolden blev taget på driblingen, og ét hvor det ikke kunne ses. Det er så få, at det her er finpudsning.</p>
+ <figure class="clip"><button class="play" type="button" data-clip="nh_bolden" aria-label="Afspil klip: Bolden videre, og kroppen foran den"><img src="klip/nh_bolden.jpg" alt="" loading="lazy"><span class="pl"><i></i>Se klip · 0:48</span></button><figcaption>To afleveringer straks videre til den frie, og ét boldtab med bolden ude foran dig.</figcaption></figure>
+ <div class="do"><h3>Gør sådan</h3><ul>
+  <li>Grib, se, og spil videre, før forsvaret når at flytte sig.</li>
+  <li>Dribler du ind mellem to: kroppen mellem bolden og forsvareren.</li>
+ </ul></div>
+</section>
+
+<section id="plan">
+ <p class="eyebrow">Træning</p>
+ <h2>Ti minutter før kampene, og tre ting i hovedet</h2>
+ <div class="plan">
+  <div><h3>Før I spiller</h3><ul>
+   <li>10 drives, hvor en makker står klar foran dig: drej forbi ham eller spil den ud. Ingen skud ind i ham.</li>
+   <li>20 skud tæt på kurven fra begge sider, i balance.</li>
+   <li>10 gange: en makker spiller bolden til din mand, du løber ud og står en armslængde fra ham med hånden oppe.</li>
+  </ul></div>
+  <div><h3>I kampen</h3><ul>
+   <li>Står han klar med hånden oppe: intet skud. Drej, eller spil videre.</li>
+   <li>I forsvar: en armslængde fra din mand.</li>
+   <li>Skud i luften: find en mand i forsvar, gå ind mod kurven i angreb.</li>
+  </ul></div>
+  <div><h3>Det kan ses i statistikken</h3><ul>
+   <li>Flere af dine skud går i, fordi færre er tvungne.</li>
+   <li>Endnu flere returbolde i angreb.</li>
+  </ul></div>
+ </div>
+</section>
+
+<section id="grundlag">
+ <p class="eyebrow">Grundlaget</p>
+ <h2>Hvad jeg har set, og hvad jeg ikke har</h2>
+ <ul>
+  <li><strong>Dine skud:</strong> alle 132 hændelser, der stod som dine skud i statistikken 28. september, 12., 17. og 26. oktober og 2. november. Hver er set én gang: billedserier med nærbilleder af dig fra før skuddet til efter slippet, uden at bedømmeren vidste, om skuddet gik i. 127 var dine skud. 5 var ikke dine, ikke et skud, eller skuddet kunne ikke ses; ligaejeren har 26. november afgjort, at 4 af dem er dine skud. De står i statistikken, men er ikke med i tallene for skudteknik, fordi bedømmeren ikke så dig skyde; 1 er endnu ikke afgjort. 2 hændelser, der stod som dine skud, var efter ligaejerens svar en anden spillers skud eller ikke et skud; de er taget ud af statistikken og af rapporten. Kropspunkterne er målt på 122 af dine skud.</li>
+  <li><strong>Spilsekvenser:</strong> 148 sekvenser valgt jævnt over dagene: 75 af modstandernes skud, 50 af dine medspilleres skud, alle dine 19 assists, der kunne ses, og alle dine 4 boldtab. Du blev fundet sikkert i 139 af dem og sandsynligt i 6; kun dem er talt med. I 3 kunne du ikke findes sikkert. Hver sekvens er set én gang.</li>
+  <li><strong>28. september</strong> findes kun som en mindre skarp kopi uden sporing af spillere og bold, så de billeder er blødere. 12. oktober var 2 mod 2.</li>
+  <li><strong>Tallene fra statistikken</strong> er for de fem dage, som de står 26. november.</li>
+  <li><strong>Ikke set:</strong> juli og august (telefonoptagelser) og de dage, du ikke var med.</li>
+  <li><strong>Forbehold:</strong> kameraet står bag jer, så albue og støttehånd kan sjældent ses. Tallene pr. dag og for drives er små. Brug mønstrene, ikke decimalerne.</li>
+ </ul>
+</section>
+</div>
+<script>
+(function(){
+ function fail(btn){var p=document.createElement('p');p.className='fine';p.textContent='Videoen kunne ikke afspilles her.';btn.replaceWith(p)}
+ function show(btn,src,fallback){var v=document.createElement('video');v.controls=true;v.playsInline=true;v.autoplay=true;v.src=src;
+  v.addEventListener('error',function(){if(fallback){var f=fallback;fallback=null;v.src=f;v.play().catch(function(){})}else{fail(v)}});btn.replaceWith(v);v.play().catch(function(){})}
+ document.querySelectorAll('.play').forEach(function(btn){btn.addEventListener('click',function(){
+  var url='klip/'+btn.dataset.clip+'.mp4';var lab=btn.querySelector('.pl');if(lab){lab.lastChild.textContent='Henter …'}
+  fetch(url).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(b){show(btn,URL.createObjectURL(new Blob([b],{type:'video/mp4'})),url)}).catch(function(){show(btn,url,null)})
+ })});
+})();
+</script>
+
+</body>
+</html>
