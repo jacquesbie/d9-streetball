@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>D9 Streetball Stats</title>
-<meta name="d9-opdateret" content="2026-11-26T15:23|08fed6b4eeb6ede0">
+<meta name="d9-opdateret" content="2026-11-27T12:04|314ddf5304a96390">
 <meta name="description" content="Stats fra vores pickup-kampe: box scores, scouting reports med video, sæsonens priser og rekorder, Elo pr. kamp, holdgenerator, WPA, heatmaps, spillestil, impact, nemesis-tabel, pivot og makkerpar.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -223,7 +223,7 @@ html:not([data-side="forside"]) #hl-card { display: none; }
 <div class="d9">
   <header id="top">
     <h1 class="d9-title">D9 Streetball Stats</h1>
-    <p class="d9-updated">Sidst opdateret <time datetime="2026-11-26T15:23">26. nov. 2026 kl. 15:23</time></p>
+    <p class="d9-updated">Sidst opdateret <time datetime="2026-11-27T12:04">27. nov. 2026 kl. 12:04</time></p>
     <p class="d9-take" id="take" data-source="games player_games"><b data-k="ov.games">—</b> kampe på <b data-k="ov.days">—</b> spilledage med
       <b data-k="ov.players">—</b> spillere (<span data-k="ov.formats">—</span>). Bedste sejrsprocent: <b data-k="ov.wins">—</b>.
       Holdene blandes hver gang, så der vises ingen holdnavne – kun hvem der spillede sammen.
@@ -668,7 +668,7 @@ html:not([data-side="forside"]) #hl-card { display: none; }
 </div>
 
 
-<p class="d9-foot">Opdateret 26. nov. 2026 kl. 15:23 · Spilledage: 28. sep (4v4), 12. okt (2v2), 17. okt (3v3), 26. okt (4v4), 2. nov (3v3), 16. nov (3v3), 23. nov (4v4) · Alle kurve og assists er tjekket i videoen, og 1 eller 2 er målt mod den sorte 2'er-linje; spillere i ens tøj kan være byttet om. 2v2 er fravalgt som standard (se Format).</p>
+<p class="d9-foot">Opdateret 27. nov. 2026 kl. 12:04 · Spilledage: 28. sep (4v4), 12. okt (2v2), 17. okt (3v3), 26. okt (4v4), 2. nov (3v3), 16. nov (3v3), 23. nov (4v4) · Alle kurve og assists er tjekket i videoen, og 1 eller 2 er målt mod den sorte 2'er-linje; spillere i ens tøj kan være byttet om. 2v2 er fravalgt som standard (se Format).</p>
 </div>
 <script>// Public site only (20 Nov 2026, user: "Byg forslag B (kort forside med undersider)"). The page used to be 20 cards in one
 // scroll. Now the front page shows the leaders, the day video and the box score (top 5), and the other cards live on
@@ -819,6 +819,44 @@ html:not([data-side="forside"]) #hl-card { display: none; }
   }
   new MutationObserver(vis).observe(navn, { childList: true, characterData: true, subtree: true });
   vis();
+})();
+</script>
+<script>// 27 Nov 2026 (user): award "Mr. Vertical" (highest measured jump) among the season awards, and average jump + max
+// vertical under the chosen player in the scouting card. Site only; {"metode": "Hoppehøjden er målt på spillerens egne skud (ikke rebounds eller blocks) ud fra kropspunkterne i videoen: hvor meget fødderne løfter sig over gulvet på toppen af hoppet, regnet om til cm ud fra hans egen højde i billedet. Et hop tæller kun med, når tiden i luften giver samme højde (inden for ca. 6 cm). Skud, hvor fødderne ikke ses tydeligt, hvor målingen kan have fulgt en anden spiller, eller hvor han bevæger sig meget mod eller væk fra kameraet, er sorteret fra, og de højeste hop er tjekket i videoen. Usikkerheden er ca. ±4 cm på et enkelt hop. Alle spillere er indtil videre regnet som 185 cm høje; 5 cm forkert højde flytter tallene ca. 3 %.", "min_n": 10, "spillere": {"Jacob": {"n_maalt": 53, "snit_cm": 13.8, "max_cm": 28.3, "max": {"gid": "2026-10-26-k4"}}, "Nicklas": {"n_maalt": 38, "snit_cm": 21.1, "max_cm": 42.4, "max": {"gid": "2026-10-17-k1"}}, "Nicehair": {"n_maalt": 49, "snit_cm": 14.5, "max_cm": 27.0, "max": {"gid": "2026-10-12-k1"}}, "Casper": {"n_maalt": 41, "snit_cm": 21.8, "max_cm": 36.7, "max": {"gid": "2026-09-28-k3"}}, "Thomas": {"n_maalt": 39, "snit_cm": 13.9, "max_cm": 26.0, "max": {"gid": "2026-10-26-k1"}}, "Moltved": {"n_maalt": 15, "snit_cm": 24.8, "max_cm": 40.2, "max": {"gid": "2026-11-02-k2"}}, "Benjamin": {"n_maalt": 14, "snit_cm": 15.4, "max_cm": 31.2, "max": {"gid": "2026-11-23-k2"}}, "Frederik": {"n_maalt": 10, "snit_cm": 21.7, "max_cm": 28.6, "max": {"gid": "2026-10-26-k3"}}, "Daniel": {"n_maalt": 19, "snit_cm": 8.7, "max_cm": 28.5, "max": {"gid": "2026-11-23-k2"}}, "Faber": {"n_maalt": 12, "snit_cm": 19.4, "max_cm": 38.5, "max": {"gid": "2026-11-16-k3"}}}} = coach/hop/hop.json (build_site.py).
+(function () {
+  var HOP = {"metode": "Hoppehøjden er målt på spillerens egne skud (ikke rebounds eller blocks) ud fra kropspunkterne i videoen: hvor meget fødderne løfter sig over gulvet på toppen af hoppet, regnet om til cm ud fra hans egen højde i billedet. Et hop tæller kun med, når tiden i luften giver samme højde (inden for ca. 6 cm). Skud, hvor fødderne ikke ses tydeligt, hvor målingen kan have fulgt en anden spiller, eller hvor han bevæger sig meget mod eller væk fra kameraet, er sorteret fra, og de højeste hop er tjekket i videoen. Usikkerheden er ca. ±4 cm på et enkelt hop. Alle spillere er indtil videre regnet som 185 cm høje; 5 cm forkert højde flytter tallene ca. 3 %.", "min_n": 10, "spillere": {"Jacob": {"n_maalt": 53, "snit_cm": 13.8, "max_cm": 28.3, "max": {"gid": "2026-10-26-k4"}}, "Nicklas": {"n_maalt": 38, "snit_cm": 21.1, "max_cm": 42.4, "max": {"gid": "2026-10-17-k1"}}, "Nicehair": {"n_maalt": 49, "snit_cm": 14.5, "max_cm": 27.0, "max": {"gid": "2026-10-12-k1"}}, "Casper": {"n_maalt": 41, "snit_cm": 21.8, "max_cm": 36.7, "max": {"gid": "2026-09-28-k3"}}, "Thomas": {"n_maalt": 39, "snit_cm": 13.9, "max_cm": 26.0, "max": {"gid": "2026-10-26-k1"}}, "Moltved": {"n_maalt": 15, "snit_cm": 24.8, "max_cm": 40.2, "max": {"gid": "2026-11-02-k2"}}, "Benjamin": {"n_maalt": 14, "snit_cm": 15.4, "max_cm": 31.2, "max": {"gid": "2026-11-23-k2"}}, "Frederik": {"n_maalt": 10, "snit_cm": 21.7, "max_cm": 28.6, "max": {"gid": "2026-10-26-k3"}}, "Daniel": {"n_maalt": 19, "snit_cm": 8.7, "max_cm": 28.5, "max": {"gid": "2026-11-23-k2"}}, "Faber": {"n_maalt": 12, "snit_cm": 19.4, "max_cm": 38.5, "max": {"gid": "2026-11-16-k3"}}}}, SP = HOP.spillere || {}, MIN = HOP.min_n || 1;
+  var cm = function (v) { return String(Math.round(v)).replace('.', ',') + ' cm'; };
+  var MD = ['jan.', 'feb.', 'mar.', 'apr.', 'maj', 'jun.', 'jul.', 'aug.', 'sep.', 'okt.', 'nov.', 'dec.'];
+  var hvor = function (m) {
+    if (!m) return '';
+    var g = /^(\d{4})-(\d\d)-(\d\d)-k(\d+)/.exec(m.gid || '');
+    return g ? ' (' + Number(g[3]) + '. ' + MD[Number(g[2]) - 1] + ', kamp ' + g[4] + ')' : '';
+  };
+  var liste = Object.keys(SP).filter(function (p) { return SP[p].n_maalt >= MIN && SP[p].max_cm != null; })
+    .sort(function (a, b) { return SP[b].max_cm - SP[a].max_cm; });
+  var span = function (c, t) { var s = document.createElement('span'); s.className = c; s.textContent = t; return s; };
+  var aw = document.getElementById('awards');
+  function pris() {
+    if (!aw || !liste.length || !aw.children.length || aw.querySelector('#d9-vertical')) return;
+    var p = liste[0], s = SP[p], d = document.createElement('div'); d.className = 'd9-tile'; d.id = 'd9-vertical';
+    d.append(span('lbl', 'Mr. Vertical'), span('big', p),
+      span('sub', 'Højeste målte hop på et skud: ' + cm(s.max_cm) + hvor(s.max) + ', ± 4 cm · snit ' + cm(s.snit_cm) + ' på ' + s.n_maalt + ' målte skud'));
+    if (liste[1]) d.append(span('sub', 'Nr. 2: ' + liste[1] + ' (' + cm(SP[liste[1]].max_cm) + ')' + (liste[2] ? ' · nr. 3: ' + liste[2] + ' (' + cm(SP[liste[2]].max_cm) + ')' : '') + (s.max_cm - SP[liste[1]].max_cm < 6 ? ' · inden for måleusikkerheden' : '')));
+    d.title = HOP.metode || '';
+    aw.append(d);
+  }
+  if (aw) { new MutationObserver(pris).observe(aw, { childList: true }); pris(); }
+  var navn = document.getElementById('scout-name'), sub = document.getElementById('scout-sub');
+  if (navn && sub) {
+    var l = document.createElement('p'); l.className = 'd9-note'; l.id = 'scout-hop'; l.hidden = true;
+    (document.getElementById('scout-traener') || sub).insertAdjacentElement('afterend', l);
+    var vis = function () {
+      var s = SP[navn.textContent.trim()]; l.hidden = !(s && s.n_maalt);
+      if (s && s.n_maalt) l.textContent = 'Hop på skud: snit ' + cm(s.snit_cm) + ' · max vertical ' + cm(s.max_cm) + hvor(s.max) + ' · målt på ' + s.n_maalt + ' skud'
+        + (s.n_maalt < MIN ? ' (for få til prisen Mr. Vertical)' : '');
+    };
+    new MutationObserver(vis).observe(navn, { childList: true, characterData: true, subtree: true }); vis();
+  }
 })();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>

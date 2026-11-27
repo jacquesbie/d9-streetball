@@ -40,7 +40,7 @@ li:first-child { border-top: 0; }
         const [y, m, d] = r.d.split('-').map(Number), h = document.createElement('h2');
         h.textContent = d + '. ' + MD[m - 1] + ' ' + y; ul = document.createElement('ul'); box.append(h, ul); last = r.d;
       }
-      const li = document.createElement('li'); li.textContent = r.t; ul.append(li);
+      const li = document.createElement('li'); li.textContent = r.t; if (r.l) { const a = document.createElement('a'); a.href = r.l; a.textContent = r.lt || 'Se effekten på tallene'; li.append(' ', a); } ul.append(li);
     }
   } catch (e) { box.textContent = 'Kunne ikke hente loggen (' + e.message + ').'; }
 })();
