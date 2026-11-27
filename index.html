@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>D9 Streetball Stats</title>
-<meta name="d9-opdateret" content="2026-11-27T13:45|d49f798b0f200e82">
+<meta name="d9-opdateret" content="2026-11-27T14:05|5cbb7037f7b93d99">
 <meta name="description" content="Stats fra vores pickup-kampe: box scores, scouting reports med video, sæsonens priser og rekorder, Elo pr. kamp, holdgenerator, WPA, heatmaps, spillestil, impact, nemesis-tabel, pivot og makkerpar.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -223,7 +223,7 @@ html:not([data-side="forside"]) #hl-card { display: none; }
 <div class="d9">
   <header id="top">
     <h1 class="d9-title">D9 Streetball Stats</h1>
-    <p class="d9-updated">Sidst opdateret <time datetime="2026-11-27T13:45">27. nov. 2026 kl. 13:45</time></p>
+    <p class="d9-updated">Sidst opdateret <time datetime="2026-11-27T14:05">27. nov. 2026 kl. 14:05</time></p>
     <p class="d9-take" id="take" data-source="games player_games"><b data-k="ov.games">—</b> kampe på <b data-k="ov.days">—</b> spilledage med
       <b data-k="ov.players">—</b> spillere (<span data-k="ov.formats">—</span>). Bedste sejrsprocent: <b data-k="ov.wins">—</b>.
       Holdene blandes hver gang, så der vises ingen holdnavne – kun hvem der spillede sammen.
@@ -270,6 +270,7 @@ html:not([data-side="forside"]) #hl-card { display: none; }
         <button class="d9-chip" data-mode="pergame">Pr. kamp</button>
         <button class="d9-chip" data-mode="sum">I alt</button>
         <button class="d9-chip" data-mode="fmt" title="Pr. kamp, regnet om til 3 mod 3: tal fra 4 mod 4 gange 4/3, fra 2 mod 2 gange 2/3">Formatjusteret</button>
+        <button class="d9-chip" data-mode="udv" title="Én spillers tal pr. spilledag: bliver det bedre?">Udvikling</button>
       </div></div>
     </div>
     <div class="d9-scroll" id="box-table" data-source="player_games"></div>
@@ -668,7 +669,7 @@ html:not([data-side="forside"]) #hl-card { display: none; }
 </div>
 
 
-<p class="d9-foot">Opdateret 27. nov. 2026 kl. 13:45 · Spilledage: 28. sep (4v4), 12. okt (2v2), 17. okt (3v3), 26. okt (4v4), 2. nov (3v3), 16. nov (3v3), 23. nov (4v4) · Alle kurve og assists er tjekket i videoen, og 1 eller 2 er målt mod den sorte 2'er-linje; spillere i ens tøj kan være byttet om. 2v2 er fravalgt som standard (se Format).</p>
+<p class="d9-foot">Opdateret 27. nov. 2026 kl. 14:05 · Spilledage: 28. sep (4v4), 12. okt (2v2), 17. okt (3v3), 26. okt (4v4), 2. nov (3v3), 16. nov (3v3), 23. nov (4v4) · Alle kurve og assists er tjekket i videoen, og 1 eller 2 er målt mod den sorte 2'er-linje; spillere i ens tøj kan være byttet om. 2v2 er fravalgt som standard (se Format).</p>
 </div>
 <script>// Public site only (20 Nov 2026, user: "Byg forslag B (kort forside med undersider)"). The page used to be 20 cards in one
 // scroll. Now the front page shows the leaders, the day video and the box score (top 5), and the other cards live on
@@ -3391,6 +3392,165 @@ function drawAll() {
   safe($('#rel-now'), drawReliab);
 }
 dash.onData(drawAll);
+</script>
+<script>// 27 Nov 2026 (user: "en måde hvorpå man kan se sin udvikling ... klikke det frem ligesom på formatjusteret"):
+// fourth view in the box score, "Udvikling". One player, one number per game day (per game, as 3v3 equivalent like
+// "Formatjusteret"; percentages pooled over the day's games), with the whole group's average as a reference and the
+// last two game days compared with the ones before. All 3v3 and 4v4 games, whatever the filters say, since a trend
+// needs every day. Site only; build_site.py adds the chip to the markup and inlines this file after the page script.
+(function () {
+  var D = window.D9_DATA || {}, PG = (D.player_games || []).filter(function (r) { return r.format === '3v3' || r.format === '4v4'; });
+  var box = document.getElementById('box-table'), modes = document.getElementById('d9-box-mode');
+  var chip = modes && modes.querySelector('button[data-mode=udv]');
+  if (!box || !chip || !PG.length || !window.d3) return;
+  var STATS = [
+    { id: 'PTS', navn: 'Point' }, { id: 'FGP', navn: 'Skud-%', pct: ['FGM', 'FGA'] }, { id: 'P2P', navn: "2'er-%", pct: ['P2M', 'P2A'] },
+    { id: 'REB', navn: 'Rebounds' }, { id: 'OREB', navn: 'Offensive rebounds' }, { id: 'DREB', navn: 'Defensive rebounds' },
+    { id: 'AST', navn: 'Assists' }, { id: 'STL', navn: 'Steals' }, { id: 'BLK', navn: 'Blocks' },
+    { id: 'TOV', navn: 'Boldtab', lavGod: true }, { id: 'PM', navn: '+/-', raa: true, fortegn: true },
+  ];
+  var num = function (x) { return x === null || x === undefined || x === '' || isNaN(Number(x)) ? null : Number(x); };
+  var str = function (r) { var m = /^(\d)v\d$/.exec(r.format || ''); return m ? Number(m[1]) : 3; };
+  // one value for a set of player-game rows: per game (3v3 equivalent) or a pooled percentage; null when nothing measured
+  function vaerdi(rs, s) {
+    if (s.pct) { var a = 0, b = 0; rs.forEach(function (r) { var x = num(r[s.pct[0]]), y = num(r[s.pct[1]]); if (x !== null && y !== null) { a += x; b += y; } }); return b > 0 ? { v: (a / b) * 100, n: b } : null; }
+    var xs = []; rs.forEach(function (r) { var x = num(r[s.id]); if (x !== null) xs.push(s.raa ? x : (x * str(r)) / 3); });
+    return xs.length ? { v: xs.reduce(function (p, q) { return p + q; }, 0) / xs.length, n: xs.length } : null;
+  }
+  var tal = function (v, s) {
+    if (v === null || v === undefined) return '–';
+    if (s.pct) return Math.round(v) + ' %';
+    var t = Math.abs(v).toFixed(1).replace('.', ',');
+    return s.fortegn ? (v > 0.04 ? '+' : v < -0.04 ? '−' : '') + t : (v < 0 ? '−' : '') + t;
+  };
+  var forskel = function (d, s) { if (Math.abs(d) < (s.pct ? 0.5 : 0.05)) d = 0; return (d > 0 ? '+' : d < 0 ? '−' : '') + (s.pct ? Math.round(Math.abs(d)) + ' pct.-point' : Math.abs(d).toFixed(1).replace('.', ',')); };
+  var el = function (tag, props) { var e = Object.assign(document.createElement(tag), props || {}); for (var i = 2; i < arguments.length; i++) e.append(arguments[i]); return e; };
+  var gem = { get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+
+  var spillere = Array.from(new Set(PG.map(function (r) { return r.player; }))).sort(function (a, b) { return a.localeCompare(b, 'da'); });
+  var valgt = spillere.indexOf(gem.get('d9-udv-spiller')) >= 0 ? gem.get('d9-udv-spiller') : spillere[0];
+  var stat = STATS.filter(function (s) { return s.id === gem.get('d9-udv-stat'); })[0] || STATS[0];
+
+  var css = document.createElement('style');
+  css.textContent = '.d9-udv{display:grid;gap:var(--cds-gap-md);min-width:0}.d9-udv-top{display:flex;flex-wrap:wrap;gap:var(--cds-gap-md);align-items:end}' +
+    '.d9-udv-dom{margin:0;font-size:var(--cds-font-size-body)}.d9-udv-dom b{font-weight:600}.d9-udv-fig{position:relative;min-width:0}' +
+    '.d9-udv-fig svg{display:block;width:100%;height:auto}.d9-udv-fig text{font-family:inherit;fill:var(--color-fg-muted);font-size:12px}' +
+    '.d9-udv-fig .v{fill:var(--color-fg);font-weight:600}.d9-udv-forkl{display:flex;flex-wrap:wrap;gap:var(--cds-gap-md);margin:0;font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}' +
+    '.d9-udv-forkl i{display:inline-block;width:18px;height:0;border-top:3px solid var(--d9-accent);vertical-align:middle;margin-right:6px}' +
+    '.d9-udv-forkl i.g{border-top:2px dashed var(--color-fg-muted)}.d9-udv-forkl i.k{width:7px;height:7px;border:0;border-radius:50%;background:var(--d9-accent);opacity:.3}' +
+    '.d9-udv table button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left;text-decoration:underline;text-underline-offset:3px}' +
+    '.d9-udv tr[aria-selected=true] th,.d9-udv tr[aria-selected=true] td{background:color-mix(in srgb,var(--d9-accent) 12%,var(--color-panel))}' +
+    '.d9-udv .op{color:var(--color-ok)}.d9-udv .ned{color:var(--color-bad)}.d9-udv-tw{overflow:auto;min-width:0}#box-table.d9-udv-on{max-height:none}#box-table.d9-udv-on tbody tr{display:table-row!important}#box-table.d9-udv-on+.d9-boxmere{display:none}';
+  document.head.append(css);
+
+  var rod = el('div', { className: 'd9-udv' });
+  var selSp = el('select', { id: 'd9-udv-sp' }); spillere.forEach(function (p) { selSp.append(new Option(p, p)); });
+  var chips = el('div', { className: 'd9-chips' });
+  STATS.forEach(function (s) { var b = el('button', { className: 'd9-chip', textContent: s.navn, type: 'button' }); b.dataset.stat = s.id; chips.append(b); });
+  var dom = el('p', { className: 'd9-udv-dom' }), fig = el('div', { className: 'd9-udv-fig' }), tip = el('div', { className: 'd9-tip', hidden: true });
+  var forkl = el('p', { className: 'd9-udv-forkl' }), tw = el('div', { className: 'd9-udv-tw' });
+  var note = el('p', { className: 'd9-note', textContent: 'Ét punkt pr. spilledag: snit pr. kamp, regnet om til 3 mod 3 som i "Formatjusteret" (procenter er alle dagens skud lagt sammen, +/- er ikke regnet om). ' +
+    'Alle 3v3- og 4v4-kampe er med, uanset filtrene. En spilledag er kun 2–5 korte kampe, så et enkelt punkt kan svinge meget: se efter en retning over flere dage. Klik på en række i tabellen for at se den i grafen.' });
+  rod.append(el('div', { className: 'd9-udv-top' }, el('label', { className: 'd9-field', htmlFor: 'd9-udv-sp', textContent: 'Spiller' }, selSp), el('div', { className: 'd9-field', textContent: 'Tal' }, chips)), dom, fig, forkl, tw, note);
+  selSp.addEventListener('change', function () { valgt = selSp.value; gem.set('d9-udv-spiller', valgt); tegn(); });
+  chips.addEventListener('click', function (e) { var b = e.target.closest('button[data-stat]'); if (b) vaelg(b.dataset.stat); });
+  tw.addEventListener('click', function (e) { var b = e.target.closest('button[data-stat]'); if (b) vaelg(b.dataset.stat); });
+  function vaelg(id) { stat = STATS.filter(function (s) { return s.id === id; })[0] || stat; gem.set('d9-udv-stat', stat.id); tegn(); }
+
+  // the player's game days, oldest first, with his rows and everybody's rows on each
+  function dage() {
+    var m = new Map();
+    PG.forEach(function (r) { if (!m.has(r.date)) m.set(r.date, { date: r.date, navn: r.session, mine: [], alle: [] }); var d = m.get(r.date); d.alle.push(r); if (r.player === valgt) d.mine.push(r); });
+    return Array.from(m.values()).filter(function (d) { return d.mine.length; }).sort(function (a, b) { return a.date.localeCompare(b.date); });
+  }
+  // last two game days with the number against all earlier ones (games pooled, not day averages)
+  function retning(ds, s) {
+    if (ds.length < 3) return null;
+    var ny = [], gl = []; ds.forEach(function (d, i) { var til = i >= ds.length - 2 ? ny : gl; til.push.apply(til, d.mine); });
+    var a = vaerdi(ny, s), b = vaerdi(gl, s); if (!a || !b) return null;
+    if (s.pct && (a.n < 5 || b.n < 5)) return null;   // a percentage of fewer than 5 attempts says nothing
+    var d = a.v - b.v, graense = s.pct ? 5 : Math.max(0.3, Math.abs(b.v) * 0.1);
+    return { ny: a, gl: b, d: d, ret: Math.abs(d) < graense ? 0 : d > 0 ? 1 : -1, nyK: new Set(ny.map(function (r) { return r.game_id; })).size, glK: new Set(gl.map(function (r) { return r.game_id; })).size };
+  }
+
+  function tegn() {
+    selSp.value = valgt;
+    chips.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.stat === stat.id)); });
+    var ds = dage(), s = stat;
+    var pkt = ds.map(function (d) { var v = vaerdi(d.mine, s), g = vaerdi(d.alle, s); return { d: d, v: v ? v.v : null, n: v ? v.n : 0, g: g ? g.v : null, kampe: d.mine.map(function (r) { var x = vaerdi([r], s); return x ? x.v : null; }).filter(function (x) { return x !== null; }) }; });
+    var har = pkt.filter(function (p) { return p.v !== null; });
+    var r = retning(ds, s);
+    dom.replaceChildren();
+    if (!har.length) dom.textContent = s.navn + ' er ikke målt i ' + valgt + 's kampe.';
+    else if (!r) dom.textContent = valgt + ' har ' + s.navn.toLowerCase() + ' fra ' + har.length + ' spilledag' + (har.length === 1 ? '' : 'e') + ', og det er for lidt til at sige noget om en retning' + (s.pct ? ' (kræver mindst 5 forsøg både de seneste 2 spilledage og før).' : ' (kræver tal fra de seneste 2 spilledage og fra tidligere).');
+    else {
+      var ord = r.ret === 0 ? 'Omtrent uændret' : r.ret > 0 ? 'Op' : 'Ned', god = r.ret === 0 ? '' : (r.ret > 0) !== !!s.lavGod ? 'op' : 'ned';
+      dom.append(el('b', { className: god, textContent: ord + (r.ret ? ' ' + forskel(r.d, s).replace(/^[+−]/, '') : '') }),
+        ' · ' + s.navn + (s.pct ? '' : ' pr. kamp') + ' de seneste 2 spilledage: ' + tal(r.ny.v, s) + ' (' + r.nyK + ' kampe) mod ' + tal(r.gl.v, s) + ' før (' + r.glK + ' kampe).' + (s.lavGod && r.ret ? ' Færre er bedre.' : ''));
+    }
+    // chart
+    var W = Math.max(300, Math.round(fig.clientWidth || box.clientWidth || 640)), H = 250, m = { t: 26, r: 18, b: 30, l: 36 };
+    var svg = d3.create('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', s.navn + ' pr. spilledag for ' + valgt);
+    var alleV = []; pkt.forEach(function (p) { if (p.v !== null) alleV.push(p.v); if (p.g !== null) alleV.push(p.g); if (!s.pct) p.kampe.forEach(function (k) { alleV.push(k); }); });
+    var lo = Math.min(0, d3.min(alleV) || 0), hi = s.pct ? 100 : (d3.max(alleV) || 1);
+    var x = d3.scalePoint().domain(pkt.map(function (p) { return p.d.date; })).range([m.l, W - m.r]).padding(0.4);
+    var y = d3.scaleLinear().domain([lo, hi]).nice(4).range([H - m.b, m.t]);
+    y.ticks(4).forEach(function (t) {
+      svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', 'var(--color-border-line)').attr('stroke-width', t === 0 && lo < 0 ? 1.5 : 1);
+      svg.append('text').attr('x', m.l - 6).attr('y', y(t) + 4).attr('text-anchor', 'end').text(s.pct ? t : String(t).replace('.', ','));
+    });
+    var smal = W < 480 && pkt.length > 5;
+    pkt.forEach(function (p, i) { if (smal && i % 2 !== (pkt.length - 1) % 2) return; svg.append('text').attr('x', x(p.d.date)).attr('y', H - 8).attr('text-anchor', 'middle').text(p.d.navn); });
+    var linje = function (f) { return d3.line().defined(function (p) { return f(p) !== null; }).x(function (p) { return x(p.d.date); }).y(function (p) { return y(f(p)); }); };
+    svg.append('path').attr('d', linje(function (p) { return p.g; })(pkt)).attr('fill', 'none').attr('stroke', 'var(--color-fg-muted)').attr('stroke-width', 1.5).attr('stroke-dasharray', '4 4');
+    if (!s.pct) pkt.forEach(function (p) { p.kampe.forEach(function (k) { svg.append('circle').attr('cx', x(p.d.date)).attr('cy', y(k)).attr('r', 3.5).attr('fill', 'var(--d9-accent)').attr('opacity', 0.28); }); });
+    svg.append('path').attr('d', linje(function (p) { return p.v; })(har)).attr('fill', 'none').attr('stroke', 'var(--d9-accent)').attr('stroke-width', 3).attr('stroke-linejoin', 'round');
+    har.forEach(function (p) {
+      svg.append('circle').attr('cx', x(p.d.date)).attr('cy', y(p.v)).attr('r', 5).attr('fill', 'var(--d9-accent)').attr('stroke', 'var(--color-panel)').attr('stroke-width', 2);
+      svg.append('text').attr('class', 'v').attr('x', x(p.d.date)).attr('y', y(p.v) - 10).attr('text-anchor', 'middle').text(tal(p.v, s).replace(' %', ''));
+    });
+    // hover / tap: the day's details
+    pkt.forEach(function (p) {
+      svg.append('rect').attr('x', x(p.d.date) - x.step() / 2).attr('y', m.t - 20).attr('width', x.step()).attr('height', H - m.t + 20).attr('fill', 'transparent')
+        .on('pointerenter pointermove', function (ev) {
+          tip.replaceChildren(el('div', { className: 'k', textContent: p.d.navn + ' · ' + new Set(p.d.mine.map(function (r) { return r.game_id; })).size + ' kampe' }),
+            el('div', { textContent: valgt + ': ' + tal(p.v, s) + (s.pct && p.n ? ' af ' + p.n + ' skud' : '') }), el('div', { className: 'k', textContent: 'Alle spillere: ' + tal(p.g, s) }));
+          tip.hidden = false; var q = d3.pointer(ev, fig);
+          tip.style.left = Math.min(fig.clientWidth - tip.offsetWidth - 4, Math.max(4, q[0] + 12)) + 'px'; tip.style.top = Math.max(0, q[1] - 10) + 'px';
+        }).on('pointerleave', function () { tip.hidden = true; });
+    });
+    fig.replaceChildren(svg.node(), tip);
+    forkl.replaceChildren(el('span', null, el('i'), valgt + ', snit pr. spilledag'), el('span', null, el('i', { className: 'g' }), 'Alle spillere samme dag'));
+    if (!s.pct) forkl.append(el('span', null, el('i', { className: 'k' }), 'De enkelte kampe'));
+    // table: every number per game day
+    var t = el('table'), hr = t.createTHead().insertRow();
+    ['Tal'].concat(ds.map(function (d) { return d.navn; }), ['Seneste 2 mod før']).forEach(function (h, i) { var th = el('th', { scope: 'col', textContent: h }); if (!i) th.style.textAlign = 'left'; hr.append(th); });
+    var kr = t.createTBody().insertRow(); kr.append(el('th', { scope: 'row', textContent: 'Kampe' }));
+    ds.forEach(function (d) { kr.insertCell().textContent = String(new Set(d.mine.map(function (r) { return r.game_id; })).size); }); kr.insertCell().className = 'na';
+    STATS.forEach(function (st) {
+      var tr = t.tBodies[0].insertRow(), b = el('button', { type: 'button', textContent: st.navn }); b.dataset.stat = st.id;
+      tr.append(el('th', { scope: 'row' }, b)); if (st.id === s.id) tr.setAttribute('aria-selected', 'true');
+      ds.forEach(function (d) { var v = vaerdi(d.mine, st), td = tr.insertCell(); td.textContent = v ? tal(v.v, st) : '–'; if (!v) td.className = 'na'; });
+      var rr = retning(ds, st), td = tr.insertCell();
+      if (!rr) { td.textContent = '–'; td.className = 'na'; }
+      else { td.textContent = (rr.ret > 0 ? '▲ ' : rr.ret < 0 ? '▼ ' : '≈ ') + forskel(rr.d, st); if (rr.ret) td.className = (rr.ret > 0) !== !!st.lavGod ? 'op' : 'ned'; }
+    });
+    tw.replaceChildren(t);
+  }
+
+  var scope = document.getElementById('d9-box-scope'), scopeFelt = scope && scope.closest('.d9-field');
+  function synk() {
+    var paa = chip.getAttribute('aria-pressed') === 'true';
+    if (scopeFelt) scopeFelt.style.display = paa ? 'none' : '';
+    box.classList.toggle('d9-udv-on', paa);
+    if (!paa) return;
+    if (box.firstElementChild !== rod) { box.replaceChildren(rod); tegn(); }
+  }
+  new MutationObserver(synk).observe(box, { childList: true });
+  new MutationObserver(synk).observe(chip, { attributes: true, attributeFilter: ['aria-pressed'] });
+  var bred = 0; window.addEventListener('resize', function () { if (rod.isConnected && fig.clientWidth !== bred) { bred = fig.clientWidth; tegn(); } });
+  synk();
+})();
 </script>
 <script src="forside.js?v=20261120"></script>
 </body>

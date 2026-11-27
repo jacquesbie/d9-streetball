@@ -1,6 +1,10 @@
 [
  {
   "d": "2026-11-27",
+  "t": "Ny visning i box scoren på forsiden: \"Udvikling\" (ved siden af Formatjusteret). Vælg en spiller og et tal, og se det pr. spilledag som graf med alle spilleres snit som sammenligning, plus en tabel med alle tal pr. spilledag og de seneste 2 spilledage mod dem før. Tallene er pr. kamp regnet om til 3 mod 3. Ingen tal er ændret."
+ },
+ {
+  "d": "2026-11-27",
   "t": "Hoppehøjderne er regnet om med spillernes rigtige højder (Casper, Frederik og Benjamin 170 cm, Moltved 192 cm, Nicehair 190 cm, resten 185 cm) i stedet for 185 cm til alle. Mr. Vertical er stadig Nicklas (42 cm), nu foran Moltved (42 cm, før 40) og Faber (39 cm); de tre ligger fortsat inden for måleusikkerheden. Max vertical: Casper 37 → 34 cm, Benjamin 31 → 29, Frederik 29 → 26, Nicehair 27 → 28. Ingen andre tal er ændret.",
   "l": "2026-11-26/",
   "lt": "Alle ændringer 26.–27. nov. og effekten på hver spillers tal"
